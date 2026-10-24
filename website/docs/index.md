@@ -37,3 +37,5 @@ HTMLKit uses [HTML Next](https://nextwebwg.org/html-next/), the implementation o
 ## Bring your existing HTMLKit project.
 
 HTMLKit now lives at Threadlabs as `@threadlabs/htmlkit`. The `htmlkit` commands and your page markup stay familiar. Follow the [migration guide](migration.md) to update package names and imports.
+
+The new npm name is awaiting its first publication. The existing `@nextwebwg/htmlkit@1.0.0-alpha.69` release remains available during the transition.

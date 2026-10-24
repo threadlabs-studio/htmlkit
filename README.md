@@ -20,6 +20,8 @@ request, which `htmlkit start` runs on Node and Deno and Bun run through its `fe
 Use Node `>=22.22.2 <23 || >=24.15 <25`. Install `@threadlabs/htmlkit` and add its commands to your
 `package.json` scripts:
 
+The first Threadlabs npm publication is pending. Until it is available, install `@nextwebwg/htmlkit@1.0.0-alpha.69` and use its package name in imports. The [migration guide](./website/docs/migration.md) covers the transition.
+
 ```json
 {
   "scripts": {

@@ -9,6 +9,8 @@ HTMLKit is now a Threadlabs product. Its package is `@threadlabs/htmlkit` and it
 
 ## Update the package
 
+The first Threadlabs npm publication is pending. Run these steps once `@threadlabs/htmlkit@0.1.0` is available; keep the existing package installed until then.
+
 ```sh
 npm uninstall @nextwebwg/htmlkit
 npm install @threadlabs/htmlkit

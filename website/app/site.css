@@ -1,0 +1,44 @@
+/* HTMLKit's product palette is independent of the proposal site and Markupress's default theme. */
+html:root, html [data-theme="light"], html [data-theme="dark"] {
+  --ui-surface: light-dark(#f7f3e9, #201f1b);
+  --ui-surface-raised: light-dark(#fffcf5, #2b2923);
+  --ui-surface-sunken: light-dark(#eee7d8, #191814);
+  --ui-text: light-dark(#27281f, #f5f0e4);
+  --ui-text-secondary: light-dark(#57564b, #c8c2b5);
+  --ui-text-muted: light-dark(#666154, #bab2a0);
+  --ui-accent: light-dark(#a73c16, #ffad84);
+  --ui-on-accent: light-dark(#fffaf1, #351c10);
+  --ui-border: light-dark(#d7cdb9, #504a3c);
+  --ui-radius-md: .25rem;
+  --ui-radius-lg: .4rem;
+  --markupress-home-width: 82rem;
+  --markupress-font: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+}
+html [data-component] .hero {
+  padding-block: clamp(2rem, 6vw, 6rem) 4rem;
+  gap: 4rem;
+}
+html [data-component] .hero h1 {
+  max-inline-size: 14ch;
+  font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  font-size: clamp(2.8rem, 5.5vw, 5.4rem);
+  font-weight: 500;
+  letter-spacing: -.045em;
+  line-height: 1.03;
+  text-wrap: balance;
+}
+html [data-component] .hero p { max-inline-size: 40ch; font-size: 1.15rem; line-height: 1.65; }
+html [data-component] .hero-image {
+  border: 1px solid var(--ui-border);
+  border-radius: 50% 50% .4rem .4rem;
+  background: #fffdf7;
+  padding: 3rem 1.5rem;
+}
+html [data-component] .hero-image img { max-block-size: 22rem; }
+html [data-component] .features { padding-block: 2rem; border-top: 1px solid var(--ui-border); }
+html [data-component] h2 { letter-spacing: -.025em; }
+@media (max-width: 768px) {
+  html [data-component] .hero { gap: 2rem; padding-block: 2rem; }
+  html [data-component] .hero h1 { max-inline-size: 18ch; }
+  html [data-component] .hero-image { padding: 2rem; }
+}

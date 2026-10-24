@@ -42,5 +42,5 @@ async function report(example: string, output: string): Promise<void> {
 await rm(work, { recursive: true, force: true });
 const basic = await buildApplication({ root: fileURLToPath(new URL("../examples/basic/", import.meta.url)), outDir: join(work, "basic") });
 await report("basic", basic.outDir);
-const docs = await buildDocsProof(join(work, "docs"), join(dirname(fileURLToPath(import.meta.url)), "../../../docs/guide"));
+const docs = await buildDocsProof(join(work, "docs"), join(dirname(fileURLToPath(import.meta.url)), "../tests/fixtures/docs"));
 await report("docs", docs.outDir);

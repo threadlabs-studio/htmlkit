@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, it } from "vitest";
 import { basename, extname } from "node:path";
-import { buildApplication, createApplication, devApplication, previewApplication, readManifest, startApplication, type BuildEndContext, type BuildStartContext, type HtmlKitPlugin } from "../src/index.js";
+import { buildApplication, createApplication, devApplication, previewApplication, readManifest, startApplication, type BuildEndContext, type BuildStartContext, type HtmlKitPlugin } from "../dist/index.js";
 import { write } from "./fixture.js";
 
 const roots: string[] = [];

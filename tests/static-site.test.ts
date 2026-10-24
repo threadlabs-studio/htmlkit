@@ -3,8 +3,8 @@ import { mkdtemp, readFile, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildApplication, createApplication, devApplication, type HtmlKitPlugin } from "../src/index.js";
-import { checkLinks } from "../src/links.js";
+import { buildApplication, createApplication, devApplication, type HtmlKitPlugin } from "../dist/index.js";
+import { checkLinks } from "../dist/links.js";
 import { write } from "./fixture.js";
 
 const roots: string[] = [];

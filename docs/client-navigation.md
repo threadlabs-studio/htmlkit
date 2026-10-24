@@ -255,7 +255,7 @@ request would run that page's loaders.
 ## Measurements
 
 JavaScript per page, gzip -9 of the page's module and every chunk it imports, from
-`pnpm --filter @nextwebwg/htmlkit measure:delivery` on HTMLKit's examples. The live column is the
+`pnpm --filter @threadlabs/htmlkit measure:delivery` on HTMLKit's examples. The live column is the
 same pages delivered with the live runtime and serialized definitions, client navigation included:
 
 | Page | Live runtime | Compiled |

@@ -1,0 +1,125 @@
+{
+  "bundles": [
+    "typescript-library"
+  ],
+  "documentation": {
+    "hotspots": []
+  },
+  "exceptions": [],
+  "freshness": {
+    "holds": [
+      {
+        "name": "@types/node",
+        "owner": "threadlabs-studio",
+        "reason": "Type declarations target the minimum supported Node LTS line.",
+        "reviewDate": "2027-01-31"
+      }
+    ]
+  },
+  "modules": [],
+  "ownership": [
+    {
+      "mode": "local",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "mode": "local",
+      "path": ".github/workflows/release.yml"
+    },
+    {
+      "mode": "local",
+      "path": ".gitignore"
+    },
+    {
+      "mode": "local",
+      "path": "AGENTS.md"
+    },
+    {
+      "mode": "local",
+      "path": "CHANGELOG.md"
+    },
+    {
+      "mode": "local",
+      "path": "LICENSE"
+    },
+    {
+      "mode": "local",
+      "path": "README.md"
+    },
+    {
+      "mode": "local",
+      "path": "package.json"
+    },
+    {
+      "mode": "local",
+      "path": "pnpm-workspace.yaml"
+    },
+    {
+      "mode": "local",
+      "path": "scripts/release.mjs"
+    },
+    {
+      "mode": "local",
+      "path": "src/index.ts"
+    },
+    {
+      "mode": "local",
+      "path": "tests/index.test.ts"
+    },
+    {
+      "mode": "local",
+      "path": "tests/package.test.ts"
+    },
+    {
+      "mode": "local",
+      "path": "tsconfig.build.json"
+    },
+    {
+      "mode": "local",
+      "path": "tsconfig.json"
+    },
+    {
+      "mode": "local",
+      "path": "vitest.config.ts"
+    },
+    {
+      "mode": "managed",
+      "path": ".gitattributes"
+    },
+    {
+      "mode": "managed",
+      "path": ".github/dependabot.yml"
+    },
+    {
+      "mode": "managed",
+      "path": ".threadlabs.lock.json"
+    },
+    {
+      "mode": "managed",
+      "path": "CLAUDE.md"
+    },
+    {
+      "mode": "managed",
+      "path": "docs/code-documentation-standard.md"
+    },
+    {
+      "mode": "managed",
+      "path": "oxlint.json"
+    },
+    {
+      "mode": "managed",
+      "path": "threadlabs.config.json"
+    }
+  ],
+  "release": {
+    "strategy": "single-package"
+  },
+  "schemaVersion": "1.0",
+  "settings": {
+    "description": "Build applications with HTML, CSS, and JavaScript, powered by HTML Next.",
+    "licenseHolder": "threadlabs-studio",
+    "licenseYear": 2026,
+    "projectName": "htmlkit"
+  },
+  "standardVersion": "1.0.0"
+}

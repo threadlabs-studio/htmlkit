@@ -5,9 +5,9 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { encodeHydrationValue, decodeHydrationValue } from "../../html-next/src/bindings.js";
+import { encodeHydrationValue, decodeHydrationValue } from "@nextwebwg/html-next/bindings";
 
-import { buildApplication, createApplication, discoverRoutes, devApplication, previewApplication } from "../src/index.js";
+import { buildApplication, createApplication, discoverRoutes, devApplication, previewApplication } from "../dist/index.js";
 import { bindingFixture, environmentFixture, fixture, privateFixture, retainedProviderFixture, universalFixture, titleOf, write } from "./fixture.js";
 
 const roots: string[] = [];

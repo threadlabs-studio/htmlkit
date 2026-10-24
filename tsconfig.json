@@ -1,41 +1,35 @@
 {
-  "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "target": "ES2023",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": [
+      "ES2023",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "types": [
       "node",
       "vitest/globals"
     ],
-    "paths": {
-      "@nextwebwg/html-next": [
-        "../html-next/src/index.ts"
-      ],
-      "@nextwebwg/html-next/node-loader": [
-        "../html-next/src/node-loader.ts"
-      ],
-      "@nextwebwg/html-next/generated-runtime": [
-        "../html-next/src/generated-runtime.ts"
-      ],
-      "@nextwebwg/html-next/server": [
-        "../html-next/src/server.ts"
-      ],
-      "@nextwebwg/html-next/runtime": [
-        "../html-next/src/runtime.ts"
-      ],
-      "@nextwebwg/html-next/inputs": [
-        "../html-next/src/component-inputs.ts"
-      ],
-      "@nextwebwg/html-next/bindings": [
-        "../html-next/src/bindings.ts"
-      ]
-    }
+    "strict": true,
+    "noEmit": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true
   },
   "include": [
     "src/**/*.ts",
     "tests/**/*.ts",
-    "vitest.config.ts"
+    "vitest.config.ts",
+    "vitest.browser.config.ts"
   ],
   "exclude": [
     "dist",
-    "node_modules"
+    "node_modules",
+    "website"
   ]
 }

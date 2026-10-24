@@ -22,12 +22,12 @@ import type { Application, ApplicationOptions, ContentSecurityPolicyOptions, End
 
 // Built-in components need no link: a resource that uses one gets it added after its content, so
 // diagnostics keep their line numbers. The import map below resolves it from this package.
-const builtins = [["hk-nav", "@nextwebwg/htmlkit/components/nav.html"], ["hk-breadcrumbs", "@nextwebwg/htmlkit/components/breadcrumbs.html"],
-  ["hk-pager", "@nextwebwg/htmlkit/components/pager.html"]] as const;
+const builtins = [["hk-nav", "@threadlabs/htmlkit/components/nav.html"], ["hk-breadcrumbs", "@threadlabs/htmlkit/components/breadcrumbs.html"],
+  ["hk-pager", "@threadlabs/htmlkit/components/pager.html"]] as const;
 
 /** HTMLKit's import map: @/ is the project root, as in Nuxt, and built-ins resolve from this package. */
 function importMap(root: string) {
-  return { imports: { "@/": pathToFileURL(root).href + "/", "@nextwebwg/htmlkit/components/": new URL("../components/", import.meta.url).href } };
+  return { imports: { "@/": pathToFileURL(root).href + "/", "@threadlabs/htmlkit/components/": new URL("../components/", import.meta.url).href } };
 }
 
 function packageResource(path: string) {

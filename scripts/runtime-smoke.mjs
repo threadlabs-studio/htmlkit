@@ -6,7 +6,7 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { buildApplication, createApplication } from "@nextwebwg/htmlkit";
+import { buildApplication, createApplication } from "@threadlabs/htmlkit";
 
 const runtime = globalThis.Deno ? "Deno" : globalThis.Bun ? "Bun" : "Node";
 const page = '<template component="page-smoke"><defs><prop name="count" type="number" default="21">Count</prop></defs><p>{$count * 2}</p></template>';

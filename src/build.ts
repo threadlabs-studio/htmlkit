@@ -101,7 +101,7 @@ async function writeServer({ root, base, canonicalOrigin, stage, redirects, file
   if (ids.size > 0) await bundleServer({ root, outDir: directory, inputs });
   await mkdir(directory, { recursive: true });
   await writeFile(join(directory, "entry.js"), "// The build's request server: `htmlkit start` serves it, and its default export's fetch answers requests on any runtime.\n" +
-    'import { serverApplication } from "@nextwebwg/htmlkit/server";\n' +
+    'import { serverApplication } from "@threadlabs/htmlkit/server";\n' +
     `export function create(options) { return serverApplication(import.meta.url, JSON.parse(${JSON.stringify(JSON.stringify(data))}), {\n` +
     Object.keys(inputs).map(id => `  ${JSON.stringify(id)}: () => import(${JSON.stringify(`./${id}.js`)}),\n`).join("") + "}, options); }\nexport default await create();\n");
 }

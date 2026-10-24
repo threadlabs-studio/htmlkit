@@ -3,8 +3,8 @@ import { mkdtemp, readFile, readdir, realpath, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { afterEach, expect, it } from "vitest";
-import { withPlugins } from "../src/config.js";
-import { buildApplication, createApplication, devApplication, loadConfig, type HtmlKitPlugin, type NavigationItem, type NavigationQuery } from "../src/index.js";
+import { withPlugins } from "../dist/config.js";
+import { buildApplication, createApplication, devApplication, loadConfig, type HtmlKitPlugin, type NavigationItem, type NavigationQuery } from "../dist/index.js";
 import { write } from "./fixture.js";
 
 const roots: string[] = [];

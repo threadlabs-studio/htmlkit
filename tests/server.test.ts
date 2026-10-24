@@ -5,7 +5,7 @@ import { join } from "node:path";
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { buildApplication, createApplication, readManifest, startApplication } from "../src/index.js";
+import { buildApplication, createApplication, readManifest, startApplication } from "../dist/index.js";
 import { fixture, privateFixture, universalFixture, write } from "./fixture.js";
 
 it("keeps built private readers on the server while serving browser reads for prerendered components", async () => {

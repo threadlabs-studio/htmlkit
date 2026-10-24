@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { decodeHydrationValue, encodeHydrationValue } from "../../html-next/src/bindings.js";
-import { privateReadBridge, type ServerReadContext } from "../src/private-readers.js";
-import { readChannel } from "../src/read-channel.js";
-import type { LoadContext } from "../src/types.js";
+import { decodeHydrationValue, encodeHydrationValue } from "@nextwebwg/html-next/bindings";
+import { privateReadBridge, type ServerReadContext } from "../dist/private-readers.js";
+import { readChannel } from "../dist/read-channel.js";
+import type { LoadContext } from "../dist/types.js";
 
 describe("private read channel", () => {
   it("cancels one parent operation while another read completes on the same bridge", async () => {

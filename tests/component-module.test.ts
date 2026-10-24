@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "vitest";
-import { componentModule, connectModules } from "../src/component-module.js";
+import { componentModule, connectModules } from "../dist/component-module.js";
 
 describe("component module composition", () => {
   it("closes completed hooks on abort and disposes a later asynchronous setup exactly once", async () => {

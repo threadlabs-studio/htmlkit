@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
 
-import { buildApplication, createApplication, startApplication } from "../src/index.js";
+import { buildApplication, createApplication, startApplication } from "../dist/index.js";
 import { fixture, write } from "./fixture.js";
 
 const roots: string[] = [];

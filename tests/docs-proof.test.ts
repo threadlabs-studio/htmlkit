@@ -8,7 +8,7 @@ import { buildDocsProof } from "../examples/docs/proof.js";
 it("builds existing Markdown, heading links, generated reference data, and an authored live example in a consumer", async () => {
   const root = await mkdtemp(join(tmpdir(), "htmlkit-docs-"));
   try {
-    const result = await buildDocsProof(root, fileURLToPath(new URL("../../../docs/guide", import.meta.url)), "/proof/");
+    const result = await buildDocsProof(root, fileURLToPath(new URL("./fixtures/docs/", import.meta.url)), "/proof/");
     expect(result.routes).toContain("/proof/guide/quick-start/");
     const guide = await readFile(join(result.outDir, "guide/quick-start/index.html"), "utf8");
     expect(guide).toContain('href="#');

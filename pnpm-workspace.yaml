@@ -1,0 +1,7 @@
+minimumReleaseAge: 1440
+minimumReleaseAgeExclude:
+  - '@nextwebwg/html-next@1.0.0-alpha.69'
+  - '@threadlabs/looma@0.33.0'
+  - 'markupress@0.8.4'
+allowBuilds:
+  esbuild: true

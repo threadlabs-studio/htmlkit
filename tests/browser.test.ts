@@ -1,7 +1,7 @@
 import { readFile, rm } from "node:fs/promises";
 import { chromium, firefox, webkit } from "playwright";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { buildApplication, devApplication, previewApplication, startApplication, type ApplicationServer } from "../src/index.js";
+import { buildApplication, devApplication, previewApplication, startApplication, type ApplicationServer } from "../dist/index.js";
 import { buildDocsProof } from "../examples/docs/proof.js";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -364,7 +364,7 @@ describe.skipIf(process.env.HTMLNEXT_BROWSER_TEST !== "1")("built application ad
     server = await previewApplication({ root, port: 0 });
     // The live runtime's API, as page code would import it, to read the compiled roots it did not create.
     const live = await build({ configFile: false, logLevel: "silent", build: { write: false, minify: false,
-      lib: { entry: fileURLToPath(new URL("../../html-next/src/live.ts", import.meta.url)), formats: ["iife"], name: "HtmlRuntime" } } });
+      lib: { entry: fileURLToPath(import.meta.resolve("@nextwebwg/html-next/live")), formats: ["iife"], name: "HtmlRuntime" } } });
     runtime = (Array.isArray(live) ? live[0]! : live as { output: { code?: string }[] }).output[0]!.code!;
   });
   afterAll(async () => { await server?.close(); if (root) await rm(root, { recursive: true, force: true }); });
@@ -487,7 +487,7 @@ describe.skipIf(process.env.HTMLNEXT_BROWSER_TEST !== "1")("development and docu
     const browser = await chromium.launch({ headless: true });
     let server: ApplicationServer | undefined;
     try {
-      await buildDocsProof(root, fileURLToPath(new URL("../../../docs/guide", import.meta.url)), "/proof/");
+      await buildDocsProof(root, fileURLToPath(new URL("./fixtures/docs/", import.meta.url)), "/proof/");
       server = await previewApplication({ root, port: 0 });
       const page = await browser.newPage();
       const errors: string[] = [];

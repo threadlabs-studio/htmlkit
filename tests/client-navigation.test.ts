@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { chromium, firefox, webkit, type Browser, type BrowserContext, type Page, type Route } from "playwright";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { buildApplication, devApplication, previewApplication, startApplication, type ApplicationServer } from "../src/index.js";
+import { buildApplication, devApplication, previewApplication, startApplication, type ApplicationServer } from "../dist/index.js";
 import { write } from "./fixture.js";
 
 const navigationItems = "list(object({ href: string, label: string, current: string, depth: number, pageName: string }))";

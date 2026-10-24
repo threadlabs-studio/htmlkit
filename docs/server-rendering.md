@@ -147,7 +147,7 @@ rejected, including transitive imports and raw/URL imports.
 
 ## Cost
 
-`pnpm --filter @nextwebwg/htmlkit measure:server` builds a small site and loads `htmlkit start` with
+`pnpm --filter @threadlabs/htmlkit measure:server` builds a small site and loads `htmlkit start` with
 keep-alive clients. A render in a warm worker takes a few milliseconds to create its document and a
 few more to render and serialize a small page; starting a worker and importing jsdom takes 0.4 to
 0.9 s, which each worker pays once. With 16 connections on a shared machine (load average about 22):

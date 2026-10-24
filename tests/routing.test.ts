@@ -2,7 +2,7 @@ import { mkdtemp, readFile, rm, symlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, it } from "vitest";
-import { buildApplication, createApplication, devApplication, discoverRoutes, readManifest } from "../src/index.js";
+import { buildApplication, createApplication, devApplication, discoverRoutes, readManifest } from "../dist/index.js";
 import { write } from "./fixture.js";
 
 const roots: string[] = [];

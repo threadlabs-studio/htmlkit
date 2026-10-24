@@ -2,9 +2,9 @@
  * Request throughput and latency of a built server under `htmlkit start`: a prerendered page, a
  * server-rendered page, and an endpoint. Build the package first (`pnpm build`); the server runs
  * from dist without Vite. The application builds into `.measure/`, which git ignores, inside this
- * package, so its server entry resolves @nextwebwg/htmlkit/server by the package's own name.
+ * package, so its server entry resolves @threadlabs/htmlkit/server by the package's own name.
  *
- *   pnpm --filter @nextwebwg/htmlkit measure:server [--seconds 10] [--connections 16]
+ *   pnpm --filter @threadlabs/htmlkit measure:server [--seconds 10] [--connections 16]
  */
 import { spawn } from "node:child_process";
 import { Agent, request } from "node:http";

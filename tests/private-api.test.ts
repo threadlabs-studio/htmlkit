@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import { parseComponent } from "../../html-next/src/source-parser.js";
-import { decodeHydrationValue, encodeHydrationValue } from "../../html-next/src/bindings.js";
-import { privateReadResponse } from "../src/private-api.js";
-import { requestReadContext } from "../src/server.js";
-import { serverReaders } from "../src/private-readers.js";
+import { parseComponent } from "@nextwebwg/html-next";
+import { decodeHydrationValue, encodeHydrationValue } from "@nextwebwg/html-next/bindings";
+import { privateReadResponse } from "../dist/private-api.js";
+import { requestReadContext } from "../dist/server.js";
+import { serverReaders } from "../dist/private-readers.js";
 
 describe("private reader input boundary", () => {
   it("leaves loader-only modules and their helper exports alone", () => {

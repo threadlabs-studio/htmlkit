@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, it } from "vitest";
-import { createApplication, discoverRoutes } from "../src/index.js";
+import { createApplication, discoverRoutes } from "../dist/index.js";
 import { titleOf, write } from "./fixture.js";
 
 const roots: string[] = [];
@@ -232,6 +232,6 @@ it("names the removed routeOrdering option and exports every built-in component"
   // Package consumers link built-ins by specifier, through exports rather than HTMLKit's import map.
   const require = createRequire(import.meta.url);
   for (const file of await readdir(new URL("../components/", import.meta.url))) {
-    expect(require.resolve(`@nextwebwg/htmlkit/components/${file}`).replaceAll("\\", "/")).toMatch(new RegExp(`/components/${file}$`));
+    expect(require.resolve(`@threadlabs/htmlkit/components/${file}`).replaceAll("\\", "/")).toMatch(new RegExp(`/components/${file}$`));
   }
 });

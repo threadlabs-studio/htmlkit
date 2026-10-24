@@ -1,7 +1,7 @@
 {
-  "name": "@nextwebwg/htmlkit",
-  "version": "1.0.0-alpha.69",
-  "description": "HTML Next application platform: file-based routes, layouts, loaders, and static deployment.",
+  "name": "@threadlabs/htmlkit",
+  "version": "0.1.0",
+  "description": "Build applications with HTML, CSS, and JavaScript, powered by HTML Next.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
@@ -26,27 +26,37 @@
   "scripts": {
     "build": "pnpm clean && tsc -p tsconfig.build.json",
     "clean": "node --input-type=module --eval \"import { rmSync } from 'node:fs'; rmSync('dist', { recursive: true, force: true });\"",
-    "test": "vitest run --config vitest.config.ts",
-    "typecheck": "tsc -p tsconfig.json",
+    "test": "pnpm build && vitest run --exclude tests/package.test.ts",
+    "typecheck": "pnpm build && tsc -p tsconfig.json",
     "prepack": "pnpm build",
     "build:docs-proof": "tsx examples/docs/build.ts",
     "measure:delivery": "tsx scripts/measure-delivery.ts",
     "measure:navigation": "tsx scripts/measure-navigation.ts",
-    "measure:server": "tsx scripts/measure-server.ts"
+    "measure:server": "tsx scripts/measure-server.ts",
+    "lint": "oxlint --deny-warnings .",
+    "test:package": "vitest run tests/package.test.ts",
+    "test:browser": "pnpm build && vitest run --config vitest.browser.config.ts",
+    "verify:inner": "pnpm lint && pnpm typecheck && pnpm test",
+    "verify:pr": "pnpm verify:inner && pnpm build && pnpm test:package && pnpm build:site",
+    "verify:release": "pnpm verify:pr",
+    "build:site": "node dist/cli.js build website"
   },
   "dependencies": {
-    "@nextwebwg/html-next": "workspace:*",
+    "@nextwebwg/html-next": "1.0.0-alpha.69",
     "typescript-compiler": "npm:@typescript/typescript6@6.0.2",
-    "vite": "catalog:",
-    "parse5": "catalog:"
+    "vite": "8.3.4",
+    "parse5": "8.0.1"
   },
   "devDependencies": {
-    "@types/node": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:",
-    "playwright": "catalog:",
+    "@types/node": "22.20.1",
+    "typescript": "7.0.2",
+    "vitest": "5.0.4",
+    "playwright": "1.64.0",
     "marked": "18.1.1",
-    "tsx": "catalog:"
+    "tsx": "4.23.15",
+    "oxlint": "1.81.0",
+    "markupress": "0.8.4",
+    "@threadlabs/looma": "0.33.0"
   },
   "publishConfig": {
     "access": "public",
@@ -55,10 +65,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nextwebwg/html-next.git",
-    "directory": "packages/htmlkit"
+    "url": "git+https://github.com/threadlabs-studio/htmlkit.git"
   },
   "bin": {
     "htmlkit": "./dist/cli.js"
+  },
+  "packageManager": "pnpm@12.9.1",
+  "homepage": "https://threadlabs-studio.github.io/htmlkit/",
+  "bugs": {
+    "url": "https://github.com/threadlabs-studio/htmlkit/issues"
   }
 }

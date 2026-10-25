@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";
-import { HtmlKitError, loadConfig } from "./config.js";
+import { MarkupKitError, loadConfig } from "./config.js";
 import type { ServerOptions } from "./types.js";
 
-const usage = `Usage: htmlkit <command> [root] [options]
+const usage = `Usage: markupkit <command> [root] [options]
 
 Commands:
   dev       Serve the application with live reload
@@ -28,7 +28,7 @@ async function main(): Promise<void> {
   } });
   if (values.help || positionals.length === 0) { console.log(usage); return; }
   const command = positionals[0];
-  if (!["dev", "build", "preview", "start"].includes(command!) || positionals.length > 2) throw new HtmlKitError("Choose dev, build, preview, or start and an optional application root.");
+  if (!["dev", "build", "preview", "start"].includes(command!) || positionals.length > 2) throw new MarkupKitError("Choose dev, build, preview, or start and an optional application root.");
   const root = resolve(positionals[1] ?? process.cwd());
   // start runs the build alone: it reads no config file, which Vite would load.
   const port = values.port ?? (command === "start" ? process.env.PORT : undefined);
@@ -39,10 +39,10 @@ async function main(): Promise<void> {
     ...(values["out-dir"] === undefined ? {} : { outDir: values["out-dir"] }),
     ...(host === undefined ? {} : { host }),
     ...(port === undefined ? {} : { port: Number(port) }) };
-  if (options.port !== undefined && (!Number.isInteger(options.port) || options.port < 0 || options.port > 65535)) throw new HtmlKitError("port must be an integer from 0 to 65535.");
+  if (options.port !== undefined && (!Number.isInteger(options.port) || options.port < 0 || options.port > 65535)) throw new MarkupKitError("port must be an integer from 0 to 65535.");
   if (values["render-workers"] !== undefined) {
     const count = Number(values["render-workers"]);
-    if (!Number.isInteger(count) || count < 1) throw new HtmlKitError("render-workers must be a whole number of at least 1.");
+    if (!Number.isInteger(count) || count < 1) throw new MarkupKitError("render-workers must be a whole number of at least 1.");
     (await import("@nextwebwg/html-next/server")).setRenderWorkers(count);
   }
   if (command === "build") {
@@ -56,7 +56,7 @@ async function main(): Promise<void> {
     ? await (await import("./server.js")).startApplication({ outDir: resolve(root, options.outDir ?? "dist"),
       ...(options.host === undefined ? {} : { host: options.host }), ...(options.port === undefined ? {} : { port: options.port }) })
     : await (await import("./serve.js"))[command === "dev" ? "devApplication" : "previewApplication"](options);
-  console.log(`HTMLKit ${command}: ${server.url}`);
+  console.log(`MarkupKit ${command}: ${server.url}`);
   const stop = () => { void server.close().then(() => { process.exitCode = 0; }).catch(error => { console.error(String(error)); process.exitCode = 1; }); };
   process.once("SIGINT", stop); process.once("SIGTERM", stop);
 }

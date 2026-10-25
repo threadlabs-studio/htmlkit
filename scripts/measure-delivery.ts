@@ -1,5 +1,5 @@
 /**
- * The JavaScript each page of HTMLKit's examples ships: its browser module and every chunk it
+ * The JavaScript each page of MarkupKit's examples ships: its browser module and every chunk it
  * imports, raw and gzip -9. Builds go to `.measure/`, which git ignores.
  */
 import { readFile, rm } from "node:fs/promises";
@@ -24,7 +24,7 @@ async function closure(output: string, file: string, files = new Set<string>()):
 }
 
 async function report(example: string, output: string): Promise<void> {
-  const manifest = JSON.parse(await readFile(join(output, "_htmlkit/manifest.json"), "utf8")) as
+  const manifest = JSON.parse(await readFile(join(output, "_markupkit/manifest.json"), "utf8")) as
     { base: string; pages: readonly { pathname: string; browserModule: string }[] };
   for (const page of manifest.pages) {
     let bytes = 0;

@@ -6,7 +6,7 @@ import { parseFragment } from "parse5";
 import { createApplicationInternals, headScripts, notFoundPage, type RouteGraph } from "./application.js";
 import { browserSources, stylesheetSources } from "./browser.js";
 import { bundleBrowser, bundleServer } from "./bundle.js";
-import { configure, globalStylesheets, HtmlKitError, runHook, withPlugins, within } from "./config.js";
+import { configure, globalStylesheets, MarkupKitError, runHook, withPlugins, within } from "./config.js";
 import { documentHTML, escapeHTML, pagePayload, payloadPath, redirectPage, type PageAssets } from "./document.js";
 import { checkLinks } from "./links.js";
 import { matchRoute } from "./routes.js";
@@ -22,11 +22,11 @@ async function exists(path: string): Promise<boolean> {
 
 async function copyPublic(source: string, output: string): Promise<void> {
   if (!await exists(source)) return;
-  if ((await lstat(source)).isSymbolicLink()) throw new HtmlKitError("Public assets must not be symbolic links.", source);
+  if ((await lstat(source)).isSymbolicLink()) throw new MarkupKitError("Public assets must not be symbolic links.", source);
   for (const file of await readdir(source, { withFileTypes: true })) {
     const from = join(source, file.name);
     const to = join(output, file.name);
-    if (file.isSymbolicLink()) throw new HtmlKitError("Public assets must not be symbolic links.", from);
+    if (file.isSymbolicLink()) throw new MarkupKitError("Public assets must not be symbolic links.", from);
     if (file.isDirectory()) { await mkdir(to, { recursive: true }); await copyPublic(from, to); }
     else if (file.isFile()) { await mkdir(dirname(to), { recursive: true }); await copyFile(from, to); }
   }
@@ -40,17 +40,17 @@ async function canonicalDestination(path: string): Promise<string> {
   }
 }
 
-/** Read a build's _htmlkit/manifest.json, refusing a format version this HTMLKit doesn't know. */
+/** Read a build's _markupkit/manifest.json, refusing a format version this MarkupKit doesn't know. */
 export async function readManifest(outDir: string): Promise<BuildManifest> {
-  const file = join(outDir, "_htmlkit/manifest.json");
+  const file = join(outDir, "_markupkit/manifest.json");
   const manifest = JSON.parse(await readFile(file, "utf8")) as BuildManifest;
-  if (manifest.version !== 1) throw new HtmlKitError(`Unsupported manifest version ${String(manifest.version)}; this HTMLKit reads version 1.`, file);
+  if (manifest.version !== 1) throw new MarkupKitError(`Unsupported manifest version ${String(manifest.version)}; this MarkupKit reads version 1.`, file);
   // Builds from before redirects or generated files have none.
   return { ...manifest, redirects: manifest.redirects ?? [], files: manifest.files ?? [] };
 }
 
 /**
- * Write _htmlkit/server: entry.js, whose default export answers requests, and the loaders, endpoints,
+ * Write _markupkit/server: entry.js, whose default export answers requests, and the loaders, endpoints,
  * and middleware it imports. Prerendered pages need none of their code there; their files serve them.
  */
 async function writeServer({ root, base, canonicalOrigin, stage, redirects, files, scripts, policy, internals, serverGraphs, components }: { readonly root: string; readonly base: string; readonly canonicalOrigin: string;
@@ -81,7 +81,7 @@ async function writeServer({ root, base, canonicalOrigin, stage, redirects, file
           ...component.binding.readers === undefined ? {} : { readers: component.binding.readers } }]])),
       layers: graph.layers.map((layer, i) => {
         const loader = layers[i]!.server;
-        if (loader !== undefined && typeof loader !== "string") throw new HtmlKitError("A server-rendered page's layout loaders must be files, which the build bundles into its server.", route.component);
+        if (loader !== undefined && typeof loader !== "string") throw new MarkupKitError("A server-rendered page's layout loaders must be files, which the build bundles into its server.", route.component);
         return { definition: layer.definition, ...(loader === undefined ? {} : { module: module(loader, "loader") }), origin: source(layer.origin) };
       }) };
     if (route === application.error) error = { ...page, route: path(route) };
@@ -97,11 +97,11 @@ async function writeServer({ root, base, canonicalOrigin, stage, redirects, file
     catalog: [...catalog].map(([path, route]) => [path, application.routes.indexOf(route)] as const),
     endpoints: application.endpoints.map(endpoint => ({ ...endpoint, file: source(endpoint.file), module: module(endpoint.file, "api") })),
     ...(application.middleware === undefined ? {} : { middleware: module(application.middleware, "middleware") }) };
-  const directory = join(stage, "_htmlkit/server");
+  const directory = join(stage, "_markupkit/server");
   if (ids.size > 0) await bundleServer({ root, outDir: directory, inputs });
   await mkdir(directory, { recursive: true });
-  await writeFile(join(directory, "entry.js"), "// The build's request server: `htmlkit start` serves it, and its default export's fetch answers requests on any runtime.\n" +
-    'import { serverApplication } from "@threadlabs/htmlkit/server";\n' +
+  await writeFile(join(directory, "entry.js"), "// The build's request server: `markupkit start` serves it, and its default export's fetch answers requests on any runtime.\n" +
+    'import { serverApplication } from "@threadlabs/markupkit/server";\n' +
     `export function create(options) { return serverApplication(import.meta.url, JSON.parse(${JSON.stringify(JSON.stringify(data))}), {\n` +
     Object.keys(inputs).map(id => `  ${JSON.stringify(id)}: () => import(${JSON.stringify(`./${id}.js`)}),\n`).join("") + "}, options); }\nexport default await create();\n");
 }
@@ -112,11 +112,11 @@ export async function buildApplication(input: ApplicationOptions = {}): Promise<
   const root = await realpath(config.root);
   const destination = await canonicalDestination(config.outDir);
   if (within(destination, root) || (await Promise.all(["app", "src", "public", "node_modules", ".git"].map(path => canonicalDestination(join(root, path))))).some(path => within(path, destination))) {
-    throw new HtmlKitError("Unsafe output directory through a filesystem alias.", config.outDir);
+    throw new MarkupKitError("Unsafe output directory through a filesystem alias.", config.outDir);
   }
-  if (await exists(config.outDir) && !(await lstat(config.outDir)).isDirectory()) throw new HtmlKitError("Output must be a directory.", config.outDir);
-  if (await exists(config.outDir) && (await readdir(config.outDir)).length > 0 && !await exists(join(config.outDir, "_htmlkit/manifest.json"))) {
-    throw new HtmlKitError("Refusing to replace nonempty output without an HTMLKit build manifest.", config.outDir);
+  if (await exists(config.outDir) && !(await lstat(config.outDir)).isDirectory()) throw new MarkupKitError("Output must be a directory.", config.outDir);
+  if (await exists(config.outDir) && (await readdir(config.outDir)).length > 0 && !await exists(join(config.outDir, "_markupkit/manifest.json"))) {
+    throw new MarkupKitError("Refusing to replace nonempty output without a MarkupKit build manifest.", config.outDir);
   }
   await mkdir(dirname(config.outDir), { recursive: true });
   // Before any page is read, so generated pages, data, and assets are part of the build.
@@ -125,17 +125,17 @@ export async function buildApplication(input: ApplicationOptions = {}): Promise<
   const { application } = internals;
   // Sibling staging keeps rename on the same volume. No failed render or bundle replaces dist.
   let stage: string;
-  try { stage = await mkdtemp(join(dirname(config.outDir), ".htmlkit-build-")); }
+  try { stage = await mkdtemp(join(dirname(config.outDir), ".markupkit-build-")); }
   catch (error) { await application.close(); throw error; }
   const backup = stage + "-previous";
   try {
     const entries = await application.entries();
     const serverRoutes = application.routes.filter(route => route.render === "server");
-    if (entries.length === 0 && serverRoutes.length === 0 && application.endpoints.length === 0) throw new HtmlKitError("No pages found in app/pages or registered routes.", config.root);
+    if (entries.length === 0 && serverRoutes.length === 0 && application.endpoints.length === 0) throw new MarkupKitError("No pages found in app/pages or registered routes.", config.root);
     await copyPublic(resolve(config.root, "public"), stage);
-    if (await exists(join(stage, "_htmlkit"))) throw new HtmlKitError("Public asset collision: _htmlkit is reserved for generated assets.");
+    if (await exists(join(stage, "_markupkit"))) throw new MarkupKitError("Public asset collision: _markupkit is reserved for generated assets.");
     if (options.robots !== undefined && options.robots !== false && await exists(join(stage, "robots.txt"))) {
-      throw new HtmlKitError("Public asset collision: robots.txt is generated from the robots option.");
+      throw new MarkupKitError("Public asset collision: robots.txt is generated from the robots option.");
     }
     const pages = [];
     const sources = new Map<string, string>();
@@ -153,7 +153,7 @@ export async function buildApplication(input: ApplicationOptions = {}): Promise<
       }
       pages.push(page);
       for (const [id, source] of browserSources(page.components, { base: config.base, prefetch: config.prefetch,
-        manifest: config.base + "_htmlkit/manifest.json" }, `virtual:htmlkit/page-${pages.length - 1}`, globalStylesheets(options, config.root))) sources.set(id, source);
+        manifest: config.base + "_markupkit/manifest.json" }, `virtual:markupkit/page-${pages.length - 1}`, globalStylesheets(options, config.root))) sources.set(id, source);
       for (const [id, css] of stylesheetSources(page.components)) sources.set(id, css);
     }
     // A server-rendered route's browser bundle follows the pages', one per route rather than per URL.
@@ -163,23 +163,23 @@ export async function buildApplication(input: ApplicationOptions = {}): Promise<
     for (const route of renders && application.error !== undefined ? [...serverRoutes, application.error] : serverRoutes) {
       const graph = await internals.graph(route);
       for (const [id, source] of browserSources(graph.components, { base: config.base, prefetch: config.prefetch,
-        manifest: config.base + "_htmlkit/manifest.json" }, `virtual:htmlkit/page-${pages.length + serverGraphs.length}`, globalStylesheets(options, config.root))) sources.set(id, source);
+        manifest: config.base + "_markupkit/manifest.json" }, `virtual:markupkit/page-${pages.length + serverGraphs.length}`, globalStylesheets(options, config.root))) sources.set(id, source);
       for (const [id, css] of stylesheetSources(graph.components)) sources.set(id, css);
       serverGraphs.push({ route, graph });
     }
     const browserInputs = await bundleBrowser({ root: config.root, base: config.base, outDir: stage, sources });
     for (const [path, file] of application.files) {
       const target = join(stage, path);
-      if (await exists(target)) throw new HtmlKitError(`Generated file collision at ${path}.`, file);
+      if (await exists(target)) throw new MarkupKitError(`Generated file collision at ${path}.`, file);
       await mkdir(dirname(target), { recursive: true });
       await copyFile(file, target);
     }
-    const manifest = JSON.parse(await readFile(join(stage, "_htmlkit/vite-manifest.json"), "utf8")) as Manifest;
+    const manifest = JSON.parse(await readFile(join(stage, "_markupkit/vite-manifest.json"), "utf8")) as Manifest;
     const bundles = new Map(Object.values(manifest).filter(chunk => chunk.isEntry).map(chunk => [chunk.name, chunk]));
     // A bundle's stylesheets and module, and the shared chunks it imports.
     const bundled = (i: number, name: string) => {
       const entry = bundles.get(`page-${i}`);
-      if (entry === undefined) throw new HtmlKitError(`Missing browser bundle for ${name}.`);
+      if (entry === undefined) throw new MarkupKitError(`Missing browser bundle for ${name}.`);
       // Vite's manifest includes CSS from the entry and its shared static imports.
       const styles = new Set<string>();
       const seen = new Set<ManifestChunk>();
@@ -203,7 +203,7 @@ export async function buildApplication(input: ApplicationOptions = {}): Promise<
     for (let i = 0; i < pages.length; i++) {
       const page = pages[i]!;
       const path = join(stage, decodeURIComponent(page.pathname.slice(config.base.length)), "index.html");
-      if (i !== notFoundIndex && await exists(path)) throw new HtmlKitError(`Public asset collision with route ${page.pathname}.`, path);
+      if (i !== notFoundIndex && await exists(path)) throw new MarkupKitError(`Public asset collision with route ${page.pathname}.`, path);
       const route = i === notFoundIndex ? application.notFound! : matchRoute(application.routes, page.pathname, config.base)!.route;
       const { entry, chunks, assets } = bundled(i, page.pathname);
       // Served at any missing path, so it has no route, manifest entry, or payload; its asset URLs are absolute.
@@ -221,13 +221,13 @@ export async function buildApplication(input: ApplicationOptions = {}): Promise<
         await writeFile(file, JSON.stringify(payload));
       }
     }
-    await rm(join(stage, "_htmlkit/vite-manifest.json"));
-    if (await exists(join(stage, "404.html"))) throw new HtmlKitError("Public asset collision: 404.html is generated.");
+    await rm(join(stage, "_markupkit/vite-manifest.json"));
+    if (await exists(join(stage, "404.html"))) throw new MarkupKitError("Public asset collision: 404.html is generated.");
     await writeFile(join(stage, "404.html"), notFoundHTML);
     // Static hosts have no server redirects, so each old URL gets a page that sends readers on.
     for (const { from, to } of redirects) {
       const path = join(stage, decodeURIComponent(from.slice(config.base.length)), "index.html");
-      if (await exists(path)) throw new HtmlKitError(`Redirect collision at ${from}: a public asset or page is already there.`, path);
+      if (await exists(path)) throw new MarkupKitError(`Redirect collision at ${from}: a public asset or page is already there.`, path);
       await mkdir(dirname(path), { recursive: true });
       await writeFile(path, redirectPage(to, policy).html);
     }
@@ -238,7 +238,7 @@ export async function buildApplication(input: ApplicationOptions = {}): Promise<
       await mkdir(dirname(target), { recursive: true });
       try { await writeFile(target, contents, { flag: "wx" }); }
       catch (error) {
-        if (["EEXIST", "EISDIR"].includes((error as NodeJS.ErrnoException).code!)) throw new HtmlKitError(`Generated file collision at ${pathname}: the build already wrote it.`);
+        if (["EEXIST", "EISDIR"].includes((error as NodeJS.ErrnoException).code!)) throw new MarkupKitError(`Generated file collision at ${pathname}: the build already wrote it.`);
         throw error;
       }
       files.push({ pathname, type });
@@ -258,17 +258,17 @@ export async function buildApplication(input: ApplicationOptions = {}): Promise<
       ({ route, graph, assets: bundled(pages.length + i, route.pattern).assets })) });
     const routes = delivery.map(page => page.pathname);
     const published: BuildManifest = { version: 1, base: config.base, routes, pages: delivery, redirects, files };
-    await writeFile(join(stage, "_htmlkit/manifest.json"), JSON.stringify(published, null, 2) + "\n");
+    await writeFile(join(stage, "_markupkit/manifest.json"), JSON.stringify(published, null, 2) + "\n");
     await runHook(options, "buildEnd", { root: config.root, base: config.base, outDir: stage, routes: application.routes, pages: routes,
       async writeFile(path, contents) {
         const target = resolve(stage, path);
-        if (isAbsolute(path) || target === stage || !within(stage, target)) throw new HtmlKitError(`Output path ${path} must be relative and inside the output.`);
-        if (within(join(stage, "_htmlkit"), target)) throw new HtmlKitError(`Output path ${path} is in _htmlkit, which is reserved for generated assets.`);
+        if (isAbsolute(path) || target === stage || !within(stage, target)) throw new MarkupKitError(`Output path ${path} must be relative and inside the output.`);
+        if (within(join(stage, "_markupkit"), target)) throw new MarkupKitError(`Output path ${path} is in _markupkit, which is reserved for generated assets.`);
         await mkdir(dirname(target), { recursive: true });
         // wx refuses an existing file, so a plugin never replaces a page, an asset, or another plugin's file.
         try { await writeFile(target, contents, { flag: "wx" }); }
         catch (error) {
-          if ((error as NodeJS.ErrnoException).code === "EEXIST") throw new HtmlKitError(`Output collision at ${path}: the build already wrote it.`);
+          if ((error as NodeJS.ErrnoException).code === "EEXIST") throw new MarkupKitError(`Output collision at ${path}: the build already wrote it.`);
           throw error;
         }
       } });

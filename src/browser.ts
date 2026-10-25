@@ -26,13 +26,13 @@ export function stylesheetSources(components: readonly BrowserDefinition[]): Rea
     // first component (their layout) would otherwise overwrite each other's styles.
     const files = components.map(component => component.definition.source.file);
     const graph = createHash("sha256").update(files.join("\0")).digest("hex").slice(0, 16);
-    sources.set(`${normalizePath(fileURLToPath(files[0]!))}.${graph}.htmlkit-shared.css`,
+    sources.set(`${normalizePath(fileURLToPath(files[0]!))}.${graph}.markupkit-shared.css`,
       compileComponentGraphStylesForBuild(components.map(component => component.definition)));
     return sources;
   }
   for (const component of components) {
     if (component.styles.css === "") continue;
-    const id = normalizePath(fileURLToPath(component.definition.source.file)) + ".htmlkit.css";
+    const id = normalizePath(fileURLToPath(component.definition.source.file)) + ".markupkit.css";
     sources.set(id, (sources.get(id) ?? "") + component.styles.css);
   }
   return sources;
@@ -41,7 +41,7 @@ export function stylesheetSources(components: readonly BrowserDefinition[]): Rea
 /** A component's compiled module: the same id on every page, so pages share its chunk. */
 function componentId(definition: ComponentDefinition): string {
   const source = createHash("sha256").update(`${definition.source.file}\0${definition.contract.tag}`).digest("hex").slice(0, 12);
-  return `virtual:htmlkit/component/${definition.contract.tag}-${source}.js`;
+  return `virtual:markupkit/component/${definition.contract.tag}-${source}.js`;
 }
 
 /**
@@ -101,7 +101,7 @@ export async function adoption() {
       if (/^(?:[A-Za-z][A-Za-z\d+.-]*:|\/\/)/.test(source)) return declaration;
       const url = new URL(source, component.definition.source.file);
       reads.push(`import read${reads.length} from ${JSON.stringify(fileURLToPath(url) + "?url&no-inline")};`);
-      return { ...declaration, source: `\u0000htmlkit-read-${reads.length - 1}${url.search}${url.hash}` };
+      return { ...declaration, source: `\u0000markupkit-read-${reads.length - 1}${url.search}${url.hash}` };
     });
     const definition = { ...component.definition, ...declarations === undefined ? {} : { declarations },
       ...component.controller === undefined ? {} : { controller: component.controller },
@@ -111,7 +111,7 @@ export async function adoption() {
       .replace('"@nextwebwg/html-next/generated-runtime"', JSON.stringify(runtime))
       // The page's entry imports its stylesheets: one for the page's graph, or one per source file.
       .replace(`import "../styles/${definition.contract.tag}.css";`, "")
-      .replaceAll(/"\\u0000htmlkit-read-(\d+)([^"]*)"/g, (_, index: string, suffix: string) => `read${index} + ${JSON.stringify(suffix)}`);
+      .replaceAll(/"\\u0000markupkit-read-(\d+)([^"]*)"/g, (_, index: string, suffix: string) => `read${index} + ${JSON.stringify(suffix)}`);
     if (reads.length > 0) module = `${reads.join("\n")}\n${module}`;
     sources.set(componentId(definition), module);
   }
@@ -134,7 +134,7 @@ page({ ${functions} }, ${JSON.stringify(options)}, { ${registered.join(", ")} })
 
 export function browserPlugin(sources: ReadonlyMap<string, string>, inputs?: Set<string>): Plugin {
   return {
-    name: "htmlkit-browser",
+    name: "markupkit-browser",
     // Vite adds ?direct when a document <link> requests a stylesheet; keep the query for its CSS plugin.
     resolveId(id) { const path = id.split("?")[0]!; if (sources.has(path)) return path.endsWith(".css") ? id : `\0${id}`; },
     load(id) { return sources.get((id.startsWith("\0") ? id.slice(1) : id).split("?")[0]!); },

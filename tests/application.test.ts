@@ -42,7 +42,7 @@ describe("application platform", () => {
       const revision = page.components.find(component => component.definition.contract.tag === "client-page")!.binding!.source;
       const packet = { version: 1, source: revision, tag: "client-page", name: "label", url: "http://localhost/",
         inputs: encodeHydrationValue({ props: {}, state: { query: "b" } }) };
-      const send = (body = packet, user = true) => application.fetch(new Request("http://localhost/_htmlkit/read", {
+      const send = (body = packet, user = true) => application.fetch(new Request("http://localhost/_markupkit/read", {
         method: "POST", headers: { "content-type": "application/json", ...user ? { cookie: "user=Grace" } : {} }, body: JSON.stringify(body),
       }));
       const response = await send();
@@ -56,8 +56,8 @@ describe("application platform", () => {
       expect((await send({ ...packet, inputs: ["reference", 999] })).status).toBe(400);
       expect((await send({ ...packet, url: "https://elsewhere.test/" })).status).toBe(400);
       expect((await send({ ...packet, inputs: encodeHydrationValue({ props: {}, state: { query: "b", invented: true } }) })).status).toBe(400);
-      expect((await application.fetch(new Request("http://localhost/_htmlkit/read"))).status).toBe(405);
-      expect((await application.fetch(new Request("http://localhost/_htmlkit/read", { method: "POST", headers: { origin: "https://elsewhere.test" }, body: JSON.stringify(packet) }))).status).toBe(403);
+      expect((await application.fetch(new Request("http://localhost/_markupkit/read"))).status).toBe(405);
+      expect((await application.fetch(new Request("http://localhost/_markupkit/read", { method: "POST", headers: { origin: "https://elsewhere.test" }, body: JSON.stringify(packet) }))).status).toBe(403);
       expect(reads).toBe(3);
       const failed = await send({ ...packet, inputs: encodeHydrationValue({ props: {}, state: { query: "secret" } }) });
       expect(failed.status).toBe(500);
@@ -94,7 +94,7 @@ describe("application platform", () => {
     const other = await createApplication({ root, services });
     try {
       const source = (await application.render("/")).components.find(component => component.binding !== undefined)!.binding!.source;
-      const result = application.fetch(new Request("http://localhost/_htmlkit/read", { method: "POST", body: JSON.stringify({
+      const result = application.fetch(new Request("http://localhost/_markupkit/read", { method: "POST", body: JSON.stringify({
         version: 1, source, tag: "client-page", name: "label", url: "http://localhost/", inputs: encodeHydrationValue({ props: {}, state: { query: "hold" } }),
       }) }));
       const rejected = expect(result).rejects.toMatchObject({ name: "AbortError" });
@@ -154,7 +154,7 @@ describe("application platform", () => {
     const root = await environmentFixture(); roots.push(root);
     const result = await buildApplication({ root });
     expect(result.browserInputs.some(file => file.includes("index.client.ts"))).toBe(true);
-    const directory = join(result.outDir, "_htmlkit/server");
+    const directory = join(result.outDir, "_markupkit/server");
     const files = await readdir(directory, { recursive: true });
     for (const file of files.filter(file => file.endsWith(".js"))) {
       expect(await readFile(join(directory, file), "utf8")).not.toMatch(/CLIENT_GRAPH_ONLY|environmentCreates|@example\/browser-only/);
@@ -264,7 +264,7 @@ describe("application platform", () => {
       expect(page.body).toContain('<output class="count">0</output>');
       expect(page.body).not.toContain("Nullable waiting.");
       expect(page.layers.at(-1)).toMatchObject({ attributes: { label: "Default", count: "0" }, props: { nullable: null, count: null } });
-      const payload = await (await application.fetch(new Request("http://localhost/_htmlkit/pages/defaults/payload.json"))).json();
+      const payload = await (await application.fetch(new Request("http://localhost/_markupkit/pages/defaults/payload.json"))).json();
       expect(payload.layers.at(-1).props).toEqual({ nullable: null, count: null });
     } finally { await application.close(); }
   });
@@ -275,7 +275,7 @@ describe("application platform", () => {
     const application = await createApplication({ root, fileRoutes: false, routes: [{ pattern: "/", component: "extra/signed.html", server: "extra/signed.server.ts" }] });
     try {
       expect((await application.render("/")).body).toContain(">0</output>");
-      expect((await application.fetch(new Request("http://localhost/_htmlkit/pages/payload.json"))).status).toBe(404);
+      expect((await application.fetch(new Request("http://localhost/_markupkit/pages/payload.json"))).status).toBe(404);
     } finally { await application.close(); }
   });
   it("resolves a component's sibling module without running its browser providers", async () => {
@@ -352,7 +352,7 @@ describe("application platform", () => {
       expect(head).toContain('<link rel="preload" as="script" href="https://js.pay.example/v3/" data-component-head="">');
       expect(head.replace(/<meta http-equiv="Content-Security-Policy"[^>]*>/, "")).not.toMatch(/<script src|maps\.example/);
       expect(head).toContain('<script type="application/ld+json" data-component-head="">{"@type":"WebPage"}</script>');
-      // HTMLKit reads its hk: settings and leaves them out of the head.
+      // MarkupKit reads its hk: settings and leaves them out of the head.
       expect(head).not.toMatch(/hk:|from:|\{\$/);
       expect(html.split("</head>")[1]).toContain("Helper content");
     } finally { await application.close(); }
@@ -373,7 +373,7 @@ describe("application platform", () => {
     await expect(createApplication({ root })).rejects.toThrow("app/head.js cannot contain");
     // A loader's head sets only the language; anything else names the head declarations instead.
     await rm(join(root, "app/head.js"));
-    await write(root, "app/layouts/default.server.ts", 'export const load = () => ({ props: { brand: "HTMLKit" }, head: { title: "Loaded", script: "injected()" } });');
+    await write(root, "app/layouts/default.server.ts", 'export const load = () => ({ props: { brand: "MarkupKit" }, head: { title: "Loaded", script: "injected()" } });');
     const unscripted = await createApplication({ root });
     try { await expect(unscripted.render("/")).rejects.toThrow("A loader's head sets only lang"); }
     finally { await unscripted.close(); }
@@ -398,18 +398,18 @@ describe("application platform", () => {
       expect((await handle(new Request("http://localhost/missing/"))).status).toBe(404);
       // A leading // would name another origin; it is simply not a page here.
       expect((await handle(new Request("http://localhost//evil.example/"))).status).toBe(404);
-      expect((await handle(new Request("http://localhost/_htmlkit/pages//evil.example/payload.json"))).status).toBe(404);
+      expect((await handle(new Request("http://localhost/_markupkit/pages//evil.example/payload.json"))).status).toBe(404);
       const post = await handle(new Request("http://localhost/", { method: "POST" }));
       expect([post.status, post.headers.get("allow")]).toEqual([405, "GET, HEAD"]);
       // Each page's payload, through the same render: its head, and each layer's invocation and state.
-      const payload = await handle(new Request("http://localhost/_htmlkit/pages/payload.json"));
+      const payload = await handle(new Request("http://localhost/_markupkit/pages/payload.json"));
       expect([payload.status, payload.headers.get("content-type")]).toEqual([200, "application/json"]);
       expect(await payload.json()).toMatchObject({ version: 1, modules: [], styles: [],
         head: { lang: "en" },
-        layers: [{ component: "app-layout", attributes: { brand: "HTMLKit" } }, { component: "home-page", attributes: { asset: "/mark.svg" }, state: { count: 4 } }] });
-      expect(JSON.stringify(await (await handle(new Request("http://localhost/_htmlkit/pages/items/one/payload.json"))).json())).not.toContain("owner");
+        layers: [{ component: "app-layout", attributes: { brand: "MarkupKit" } }, { component: "home-page", attributes: { asset: "/mark.svg" }, state: { count: 4 } }] });
+      expect(JSON.stringify(await (await handle(new Request("http://localhost/_markupkit/pages/items/one/payload.json"))).json())).not.toContain("owner");
       for (const path of ["missing/payload.json", "items/payload.json", "payload.json/", "items/one/other.json"]) {
-        expect((await handle(new Request(`http://localhost/_htmlkit/pages/${path}`))).status).toBe(404);
+        expect((await handle(new Request(`http://localhost/_markupkit/pages/${path}`))).status).toBe(404);
       }
     } finally { await application.close(); }
   }, 60_000);
@@ -418,15 +418,15 @@ describe("application platform", () => {
     const root = await app();
     await write(root, "app/pages/index.server.ts", "export const load = () => ({ props: { asset: '/mark.svg' }, state: { count: -0 } });");
     const result = await buildApplication({ root });
-    await expect(readFile(join(result.outDir, "_htmlkit/pages/payload.json"))).rejects.toThrow(/ENOENT/);
-    expect(JSON.parse(await readFile(join(result.outDir, "_htmlkit/pages/items/one/payload.json"), "utf8")).layers[1].component).toBe("item-page");
+    await expect(readFile(join(result.outDir, "_markupkit/pages/payload.json"))).rejects.toThrow(/ENOENT/);
+    expect(JSON.parse(await readFile(join(result.outDir, "_markupkit/pages/items/one/payload.json"), "utf8")).layers[1].component).toBe("item-page");
     const application = await createApplication({ root });
-    try { expect((await application.fetch(new Request("http://localhost/_htmlkit/pages/payload.json"))).status).toBe(404); }
+    try { expect((await application.fetch(new Request("http://localhost/_markupkit/pages/payload.json"))).status).toBe(404); }
     finally { await application.close(); }
   }, 60_000);
 
   it("gives each page graph with shared stylesheet imports its own stylesheet, even under one layout", async () => {
-    const root = await mkdtemp(join(tmpdir(), "htmlkit-shared-css-")); roots.push(root);
+    const root = await mkdtemp(join(tmpdir(), "markupkit-shared-css-")); roots.push(root);
     await write(root, "package.json", '{"type":"module"}');
     await write(root, "app/layouts/default.html", '<template component="site-shell"><main><slot name="page"></slot></main><style>:host { color: rgb(1, 1, 1); }</style></template>');
     await write(root, "app/styles/card.css", ".card { border-color: rgb(7, 7, 7); }");
@@ -436,7 +436,7 @@ describe("application platform", () => {
     const result = await buildApplication({ root });
     const css = async (page: string) => {
       const html = await readFile(join(result.outDir, page), "utf8");
-      return (await Promise.all([...html.matchAll(/href="\/(_htmlkit\/[^"]+\.css)"/g)].map(match => readFile(join(result.outDir, match[1]!), "utf8")))).join("");
+      return (await Promise.all([...html.matchAll(/href="\/(_markupkit\/[^"]+\.css)"/g)].map(match => readFile(join(result.outDir, match[1]!), "utf8")))).join("");
     };
     // Both graphs start with the layout; each page still links its own styles, not the last page's.
     for (const [page, own, other] of [["index.html", "home-page", "guide-page"], ["guide/index.html", "guide-page", "home-page"]] as const) {
@@ -446,7 +446,7 @@ describe("application platform", () => {
   }, 60_000);
 
   it("resolves @/ from the project root and links built-in components without a link", async () => {
-    const root = await mkdtemp(join(tmpdir(), "htmlkit-alias-")); roots.push(root);
+    const root = await mkdtemp(join(tmpdir(), "markupkit-alias-")); roots.push(root);
     await write(root, "package.json", '{"type":"module"}');
     await write(root, "components/card.html", '<template component="app-card" controller="@/controllers/card.ts"><p>Card</p><style>@import "@/styles/card.css";</style></template>');
     await write(root, "controllers/card.ts", "export default function (host) { host.root.dataset.card = 'ready'; }");
@@ -463,9 +463,9 @@ describe("application platform", () => {
     } finally { await application.close(); }
     const result = await buildApplication({ root });
     expect(result.browserInputs.some(input => input.endsWith("controllers/card.ts"))).toBe(true);
-    // Only source files: tools read each input, and HTMLKit's virtual stylesheets have no file.
+    // Only source files: tools read each input, and MarkupKit's virtual stylesheets have no file.
     expect(result.browserInputs.filter(input => !existsSync(input))).toEqual([]);
-    const styles = await Promise.all((await readdir(join(result.outDir, "_htmlkit"))).filter(name => name.endsWith(".css")).map(name => readFile(join(result.outDir, "_htmlkit", name), "utf8")));
+    const styles = await Promise.all((await readdir(join(result.outDir, "_markupkit"))).filter(name => name.endsWith(".css")).map(name => readFile(join(result.outDir, "_markupkit", name), "utf8")));
     expect(styles.join("")).toContain("#010203");
   }, 60_000);
 
@@ -555,7 +555,7 @@ describe("application platform", () => {
       expect(one.html).toContain("kit: one");
       expect(two.html).toContain("kit: two");
       expect(one.html).toContain("a &lt; b");
-      expect(one.html).toContain("HTMLKit");
+      expect(one.html).toContain("MarkupKit");
       expect(one.html).toContain(">one</title>");
       expect(one.html).toContain('data-component="items-layout"');
       expect(one.css).toContain("rgb(20, 30, 40)");
@@ -572,22 +572,22 @@ describe("application platform", () => {
     expect(home).toContain('<img alt="Mark" src="/docs/mark.svg">');
     expect(home).not.toContain('aria-invalid="true"');
     expect(home).toContain(">4</output>");
-    expect(home).toMatch(/src="\/docs\/_htmlkit\/.*\.js"/);
-    const manifest = JSON.parse(await readFile(join(result.outDir, "_htmlkit/manifest.json"), "utf8"));
+    expect(home).toMatch(/src="\/docs\/_markupkit\/.*\.js"/);
+    const manifest = JSON.parse(await readFile(join(result.outDir, "_markupkit/manifest.json"), "utf8"));
     expect(manifest.pages.map((page: { pathname: string; pageName: string }) => ({ pathname: page.pathname, pageName: page.pageName })))
       .toEqual([{ pathname: "/docs/", pageName: "home-page" },
         { pathname: "/docs/items/one/", pageName: "item-page" }, { pathname: "/docs/items/two/", pageName: "item-page" }]);
-    expect(manifest.pages.every((page: { browserModule: string }) => /^\/docs\/_htmlkit\/.*\.js$/.test(page.browserModule))).toBe(true);
+    expect(manifest.pages.every((page: { browserModule: string }) => /^\/docs\/_markupkit\/.*\.js$/.test(page.browserModule))).toBe(true);
     expect(result.browserInputs.some(path => /(?:server-worker|node-loader|jsdom|parse5|\.server\.|browser-source)/.test(path))).toBe(false);
     // Pages ship their components compiled to direct DOM code and the helpers those use, not the live interpreter.
     expect(result.browserInputs.some(path => /html-next[/\\](?:src|dist)[/\\]generated-runtime\.(?:ts|js)$/.test(path))).toBe(true);
     expect(result.browserInputs.filter(path => /html-next[/\\](?:src|dist)[/\\](?:runtime|live|parser|source-parser|graph)\.(?:ts|js)$/.test(path))).toEqual([]);
     // Every page module shares one client and runtime chunk, so client navigation keeps one registry.
-    const chunks = await Promise.all((await readdir(join(result.outDir, "_htmlkit"))).filter(file => file.endsWith(".js"))
-      .map(file => readFile(join(result.outDir, "_htmlkit", file), "utf8")));
+    const chunks = await Promise.all((await readdir(join(result.outDir, "_markupkit"))).filter(file => file.endsWith(".js"))
+      .map(file => readFile(join(result.outDir, "_markupkit", file), "utf8")));
     expect(chunks.filter(source => source.includes("hk-announcer"))).toHaveLength(1);
-    // Payloads live in the reserved _htmlkit tree and name what the page's document links.
-    const payload = JSON.parse(await readFile(join(result.outDir, "_htmlkit/pages/items/one/payload.json"), "utf8"));
+    // Payloads live in the reserved _markupkit tree and name what the page's document links.
+    const payload = JSON.parse(await readFile(join(result.outDir, "_markupkit/pages/items/one/payload.json"), "utf8"));
     expect(payload.modules).toEqual([manifest.pages[1].browserModule]);
     const itemDocument = await readFile(join(result.outDir, "items/one/index.html"), "utf8");
     expect(payload.styles).toEqual([...itemDocument.matchAll(/<link rel="stylesheet" href="([^"]+)">/g)].map(match => match[1]));
@@ -597,7 +597,7 @@ describe("application platform", () => {
     // Shared chunks, which links on screen prefetch, never include a page's own module.
     for (const page of manifest.pages) {
       expect(page.chunks.length).toBeGreaterThan(0);
-      expect(page.chunks.every((chunk: string) => /^\/docs\/_htmlkit\/[^/]+\.js$/.test(chunk) && !manifest.pages.some((other: { browserModule: string }) => other.browserModule === chunk))).toBe(true);
+      expect(page.chunks.every((chunk: string) => /^\/docs\/_markupkit\/[^/]+\.js$/.test(chunk) && !manifest.pages.some((other: { browserModule: string }) => other.browserModule === chunk))).toBe(true);
     }
     const server = await previewApplication({ root, port: 0 });
     try {
@@ -675,7 +675,7 @@ describe("application platform", () => {
       const response = await application.fetch(new Request("http://localhost/nowhere/"));
       expect(response.status).toBe(404);
       expect(await response.text()).toContain("Nothing at /nowhere/");
-      expect((await application.fetch(new Request("http://localhost/_htmlkit/pages/nowhere/payload.json"))).status).toBe(404);
+      expect((await application.fetch(new Request("http://localhost/_markupkit/pages/nowhere/payload.json"))).status).toBe(404);
     } finally { await application.close(); }
     const result = await buildApplication({ root });
     expect(result.routes).not.toContain("/404/");
@@ -684,8 +684,8 @@ describe("application platform", () => {
     expect(document).toContain(">Lost</title>");
     expect(document).toContain('data-component="app-layout"');
     // A static host serves 404.html at any missing path, so its modules are absolute.
-    expect(document).toMatch(/<script type="module" src="\/_htmlkit\/[^"]+\.js"><\/script>/);
-    const manifest = JSON.parse(await readFile(join(result.outDir, "_htmlkit/manifest.json"), "utf8"));
+    expect(document).toMatch(/<script type="module" src="\/_markupkit\/[^"]+\.js"><\/script>/);
+    const manifest = JSON.parse(await readFile(join(result.outDir, "_markupkit/manifest.json"), "utf8"));
     expect(manifest.routes).not.toContain("/404/");
     const server = await previewApplication({ root, port: 0 });
     try {

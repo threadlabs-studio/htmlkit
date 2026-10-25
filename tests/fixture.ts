@@ -9,15 +9,15 @@ export async function write(root: string, file: string, contents: string): Promi
 }
 
 export async function fixture(): Promise<string> {
-  const root = await mkdtemp(join(tmpdir(), "htmlkit-app-"));
-  await write(root, "package.json", '{"name":"htmlkit-fixture","private":true,"type":"module"}');
+  const root = await mkdtemp(join(tmpdir(), "markupkit-app-"));
+  await write(root, "package.json", '{"name":"markupkit-fixture","private":true,"type":"module"}');
   await write(root, "app/layouts/default.html", `<template component="app-layout"><defs>
     <prop name="brand" type="string" required>Brand</prop><title>Application</title><meta name="description" from:content="$brand"></defs>
     <main><header>{$brand}</header><slot name="page"></slot></main>
     <style>:host { color: rgb(20, 30, 40); background-image: url('./texture.svg'); }</style></template>`);
   await write(root, "app/layouts/texture.svg", '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"><!--' + 'asset'.repeat(1000) + '--><rect width="1" height="1" fill="white"/></svg>');
   await write(root, "app/layouts/default.server.ts", `export function load() {
-    return { props: { brand: 'HTMLKit' }, data: { owner: 'kit' } };
+    return { props: { brand: 'MarkupKit' }, data: { owner: 'kit' } };
   }`);
   await write(root, "app/pages/index.html", `<meta name="hk:page" content="home-page">
     <template component="home-button"><defs><prop name="count" type="number" default="0">Count</prop></defs><button type="button"><slot></slot><span>{$count}</span></button></template>
@@ -46,7 +46,7 @@ export async function fixture(): Promise<string> {
     return { props: { asset: base + 'mark.svg' }, state: { count: 4 } };
   }`);
   await write(root, "app/layouts/items.html", `<template component="items-layout"><defs><prop name="brand" type="string" required>Brand</prop></defs><main><header>{$brand}</header><article><h2>Items</h2><slot name="page"></slot></article></main><style>:host { color: rgb(20, 30, 40); }</style></template>`);
-  await write(root, "app/layouts/items.server.ts", `export const load = () => ({ props: { brand: "HTMLKit" }, data: { owner: "kit" } });`);
+  await write(root, "app/layouts/items.server.ts", `export const load = () => ({ props: { brand: "MarkupKit" }, data: { owner: "kit" } });`);
   await write(root, "app/pages/items/[slug].html", `<template component="item-page"><defs>
     <prop name="label" type="string" required>Label</prop>
     <prop name="tags" type="list(string)" required>Tags</prop>
@@ -64,8 +64,8 @@ export async function fixture(): Promise<string> {
 
 /** Ordinary component providers, with an explicit value standing in for one instance's data. */
 export async function bindingFixture(): Promise<string> {
-  const root = await mkdtemp(join(tmpdir(), "htmlkit-bindings-"));
-  await write(root, "package.json", '{"name":"htmlkit-bindings-fixture","private":true,"type":"module"}');
+  const root = await mkdtemp(join(tmpdir(), "markupkit-bindings-"));
+  await write(root, "package.json", '{"name":"markupkit-bindings-fixture","private":true,"type":"module"}');
   await write(root, "app/layouts/default.html", `<template component="binding-shell"><defs>
     <prop name="marker" type="string" default="Shell">Marker.</prop><state name="draft" type="string" from="$marker"></state></defs>
     <div class="shell"><strong class="shell-value">{$marker}</strong><output class="shell-draft">{$draft}</output><slot name="page"></slot></div></template>`);
@@ -110,8 +110,8 @@ export async function bindingFixture(): Promise<string> {
 
 /** Shared providers prepare through the same typed component contract in build, request and browser phases. */
 export async function universalFixture(): Promise<string> {
-  const root = await mkdtemp(join(tmpdir(), "htmlkit-universal-"));
-  await write(root, "package.json", '{"name":"htmlkit-universal-fixture","private":true,"type":"module"}');
+  const root = await mkdtemp(join(tmpdir(), "markupkit-universal-"));
+  await write(root, "package.json", '{"name":"markupkit-universal-fixture","private":true,"type":"module"}');
   for (const [file, tag, settings] of [["index", "universal-page", ""], ["fixture", "universal-fixture", ""],
     ["live", "universal-live", '<meta name="hk:render" content="server">'], ["delegated", "universal-delegated", ""], ["deferred", "universal-deferred", ""]]) {
     const rootTag = file === "delegated" ? "universal-shell" : "main";
@@ -172,8 +172,8 @@ export async function universalFixture(): Promise<string> {
 
 /** Browser-only companion modules share public selectors without entering server evaluation. */
 export async function environmentFixture(): Promise<string> {
-  const root = await mkdtemp(join(tmpdir(), "htmlkit-environments-"));
-  await write(root, "package.json", '{"name":"htmlkit-environments-fixture","private":true,"type":"module"}');
+  const root = await mkdtemp(join(tmpdir(), "markupkit-environments-"));
+  await write(root, "package.json", '{"name":"markupkit-environments-fixture","private":true,"type":"module"}');
   await write(root, "node_modules/@example/browser-only/package.json", '{"name":"@example/browser-only","type":"module","exports":{".":{"browser":"./browser.js"}}}');
   await write(root, "node_modules/@example/browser-only/browser.js", 'export const doc = document; export const marker = "CLIENT_GRAPH_ONLY";');
   for (const [file, tag, module, settings] of [["index", "client-page", "", ""], ["only", "client-only-page", "", ""],
@@ -227,8 +227,8 @@ export async function privateFixture(): Promise<string> {
 
 /** Both pages retain one layout whose private provider selects a route-supplied typed input. */
 export async function retainedProviderFixture(delegated = false): Promise<string> {
-  const root = await mkdtemp(join(tmpdir(), "htmlkit-retained-provider-"));
-  await write(root, "package.json", '{"name":"htmlkit-retained-provider-fixture","private":true,"type":"module"}');
+  const root = await mkdtemp(join(tmpdir(), "markupkit-retained-provider-"));
+  await write(root, "package.json", '{"name":"markupkit-retained-provider-fixture","private":true,"type":"module"}');
   const component = delegated ? "app/components/shell" : "app/layouts/default";
   await write(root, component + ".html", `<template component="retained-provider-shell"><defs>
     <prop name="id" type="string" required>Lookup.</prop><prop name="label" type="string" required>Result.</prop>

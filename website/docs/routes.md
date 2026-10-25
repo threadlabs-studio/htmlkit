@@ -102,7 +102,7 @@ export function load({ params }) {
 }
 ```
 
-When several pages could match a URL, HTMLKit compares their segments from the left. At the first
+When several pages could match a URL, MarkupKit compares their segments from the left. At the first
 segment where they differ, a literal name wins over `[name]`, which wins over `[...name]`, which
 wins over `[[...name]]`. So with `docs/index.html`, `docs/[id].html`, and `docs/[...path].html`,
 `/docs/` is the index, `/docs/a/` is `[id]`, and `/docs/a/b/` is `[...path]`. A build reports an
@@ -111,7 +111,7 @@ entry whose URL a more specific page matches.
 ## Route groups
 
 Wrap a folder's name in parentheses, such as `(marketing)`, to organize pages without including
-that folder name in their URLs. HTMLKit calls this a **route group**:
+that folder name in their URLs. MarkupKit calls this a **route group**:
 
 | File | URL |
 | --- | --- |
@@ -209,10 +209,10 @@ all three layouts; going to `/blog/` keeps only `default`.
 ## The not-found page
 
 `app/pages/404.html` is the page for any URL that matches no page. It renders through its layout like
-any other page, with status 404, in development, `preview`, `htmlkit start`, and `application.fetch`. `npm run build`
+any other page, with status 404, in development, `preview`, `markupkit start`, and `application.fetch`. `npm run build`
 writes it to `404.html`. It is not a route: `/404/` is not one of the site's pages, and navigation
 doesn't list it. Its loader receives the requested URL, except in the built `404.html`, which a static
-host serves for every missing path. Without the file, HTMLKit serves a plain "Page not found" page.
+host serves for every missing path. Without the file, MarkupKit serves a plain "Page not found" page.
 
 The same holds for a `404` page at the top of any [page folder](/configuration#page-folders)
 served at `/`, which renders through that folder's `layout`. A folder served at another prefix, such
@@ -253,15 +253,15 @@ itself goes to the server's console, so its message and stack stay out of the pa
 | Where | When a page fails |
 | --- | --- |
 | `application.fetch` | It answers 500 with `app/error.html`. The page's payload answers 500, so client navigation loads the error page's document. |
-| `htmlkit dev` | It answers 500 with the error and its stack, to fix in development. |
-| `htmlkit build` | The build fails with the error, and the previous `dist/` stays. A static build has no error page, because each of its pages rendered. |
-| `htmlkit preview` | It serves the built pages, which rendered during the build. |
-| `htmlkit start` | It answers 500 with `app/error.html`, which the build includes in the server when pages render on request or there are endpoints or middleware. |
+| `markupkit dev` | It answers 500 with the error and its stack, to fix in development. |
+| `markupkit build` | The build fails with the error, and the previous `dist/` stays. A static build has no error page, because each of its pages rendered. |
+| `markupkit preview` | It serves the built pages, which rendered during the build. |
+| `markupkit start` | It answers 500 with `app/error.html`, which the build includes in the server when pages render on request or there are endpoints or middleware. |
 
 Like the not-found page, it is not a route: no URL serves it, and navigation doesn't list it. It
 takes its layout as a page does, from `hk:layout`, the `layout` option, or `default.html`, and it
 has no loader of its own. When the layout's loader is what fails, or when there is no
-`app/error.html`, HTMLKit answers with a plain "Internal Server Error" page.
+`app/error.html`, MarkupKit answers with a plain "Internal Server Error" page.
 
 ## Redirects
 
@@ -269,7 +269,7 @@ The `redirects` option sends old URLs to their new place. Each key is an applica
 value is an application path or an `http(s)` URL. Application paths get the site's base path:
 
 ```ts
-// htmlkit.config.ts
+// markupkit.config.ts
 export default defineConfig({
   redirects: {
     '/getting-started/': '/docs/intro/',
@@ -278,7 +278,7 @@ export default defineConfig({
 });
 ```
 
-The development server, `htmlkit start`, and `application.fetch` answer `/getting-started/` and `/getting-started`
+The development server, `markupkit start`, and `application.fetch` answer `/getting-started/` and `/getting-started`
 with a 308 and a `Location` header. A static build writes a page at each old URL, for hosts such as
 GitHub Pages, which serve files as they are. The page refreshes to the new URL at once, names it as
 canonical, and links to it for readers who stay on the page:
@@ -381,8 +381,8 @@ map resolves. `$stripe.pending`, `$stripe.ok`, and `$stripe.error` read its stat
 connection hook waits for `host.scripts.stripe.ready`
 ([declared scripts](https://nextwebwg.org/declarative-components/components#declared-scripts)).
 
-Settings that start with `hk:` configure HTMLKit. They are `<meta>` entries in the component's
-`<defs>`, and HTMLKit leaves them out of the document head:
+Settings that start with `hk:` configure MarkupKit. They are `<meta>` entries in the component's
+`<defs>`, and MarkupKit leaves them out of the document head:
 
 | Metadata | Does |
 | --- | --- |
@@ -418,5 +418,5 @@ allow it with a `'sha256-…'` hash of its text.
 - Pages, layouts, and components link other components with
   `<link rel="component" href="…">`. `@/` is the project root, so
   `href="@/app/components/card.html"` works from anywhere.
-- Outside HTMLKit, the regular HTML Next loader ignores page metadata, so the same component files
+- Outside MarkupKit, the regular HTML Next loader ignores page metadata, so the same component files
   still work there.

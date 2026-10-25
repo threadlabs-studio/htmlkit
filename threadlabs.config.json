@@ -119,7 +119,7 @@
     "description": "Build applications with HTML, CSS, and JavaScript, powered by HTML Next.",
     "licenseHolder": "threadlabs-studio",
     "licenseYear": 2026,
-    "projectName": "htmlkit"
+    "projectName": "markupkit"
   },
   "standardVersion": "1.0.0"
 }

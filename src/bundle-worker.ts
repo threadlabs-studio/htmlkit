@@ -26,9 +26,9 @@ try {
     const options = work.browser;
     await build({ root: options.root, configFile: false, mode: "production", base: options.base, publicDir: join(options.root, "public"), resolve: { alias: rootAlias(options.root) },
       logLevel: "silent", plugins: [browserPlugin(options.sources, inputs)],
-      build: { outDir: options.outDir, emptyOutDir: false, copyPublicDir: false, assetsDir: "_htmlkit", target: "es2022", manifest: "_htmlkit/vite-manifest.json", modulePreload: false,
-        rolldownOptions: { input: Object.fromEntries([...options.sources.keys()].filter(id => id.startsWith("virtual:htmlkit/page-")).map(id => [id.slice("virtual:htmlkit/".length), id])),
-          output: { entryFileNames: "_htmlkit/[name]-[hash].js", chunkFileNames: "_htmlkit/[name]-[hash].js", assetFileNames: "_htmlkit/[name]-[hash][extname]" } } },
+      build: { outDir: options.outDir, emptyOutDir: false, copyPublicDir: false, assetsDir: "_markupkit", target: "es2022", manifest: "_markupkit/vite-manifest.json", modulePreload: false,
+        rolldownOptions: { input: Object.fromEntries([...options.sources.keys()].filter(id => id.startsWith("virtual:markupkit/page-")).map(id => [id.slice("virtual:markupkit/".length), id])),
+          output: { entryFileNames: "_markupkit/[name]-[hash].js", chunkFileNames: "_markupkit/[name]-[hash].js", assetFileNames: "_markupkit/[name]-[hash][extname]" } } },
     });
   }
   // oxlint-disable-next-line unicorn/require-post-message-target-origin -- Node MessagePort has no origin.

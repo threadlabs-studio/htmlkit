@@ -7,7 +7,7 @@ import { createServer, isRunnableDevEnvironment, normalizePath } from "vite";
 import { createApplication } from "./application.js";
 import { readManifest } from "./build.js";
 import { browserPlugin, browserSources, stylesheetSources } from "./browser.js";
-import { configure, globalStylesheets, HtmlKitError, rootAlias, runHook, withPlugins, within } from "./config.js";
+import { configure, globalStylesheets, MarkupKitError, rootAlias, runHook, withPlugins, within } from "./config.js";
 import { developmentPolicyOptions } from "./csp.js";
 import { authoredHead, documentHTML, escapeHTML, type PageAssets } from "./document.js";
 import { matchRoute } from "./routes.js";
@@ -37,12 +37,12 @@ export async function previewApplication(input: ServerOptions = {}): Promise<App
     if (found === "slash") { response.writeHead(308, { location: pathname + "/" }); response.end(); return; }
     if (found === "invalid") { response.writeHead(400); response.end(); return; }
     // The request server's code is never a file to serve.
-    let file = found === undefined || within(join(output, "_htmlkit/server"), found.file) ? undefined : found.file;
+    let file = found === undefined || within(join(output, "_markupkit/server"), found.file) ? undefined : found.file;
     let status = 200;
     if (file === undefined) {
       status = 404;
       file = await realpath(join(output, "404.html"));
-      if (!within(output, file)) throw new HtmlKitError("Missing-page output escapes the deployment directory.");
+      if (!within(output, file)) throw new MarkupKitError("Missing-page output escapes the deployment directory.");
     }
     const body = await readFile(file);
     response.writeHead(status, { "content-type": (status === 200 ? types.get(pathname) : undefined) ?? mime[extname(file)] ?? "application/octet-stream", "content-length": body.length });
@@ -65,8 +65,8 @@ const policyReporter = `addEventListener("securitypolicyviolation", event => {
     : url === null ? blocked : url.origin === "null" ? url.protocol : url.origin;
   const report = { page: location.pathname, blocked, directive, line: "csp: { " + JSON.stringify(directive) + ": [" + JSON.stringify(source) + "] }",
     blocks: event.disposition === "enforce" };
-  console.warn("HTMLKit: " + report.page + (report.blocks ? " blocked " : " would block ") + blocked + " under " + directive + ". To allow it, add to htmlkit.config.ts: " + report.line);
-  import.meta.hot?.send("htmlkit:csp", report);
+  console.warn("MarkupKit: " + report.page + (report.blocks ? " blocked " : " would block ") + blocked + " under " + directive + ". To allow it, add to markupkit.config.ts: " + report.line);
+  import.meta.hot?.send("markupkit:csp", report);
 });
 `;
 
@@ -86,7 +86,7 @@ export async function devApplication(input: ServerOptions = {}): Promise<Applica
   let refreshing: Promise<void> | undefined;
   const vite = await createServer({ root: config.root, configFile: false, appType: "custom", base: config.base, resolve: { alias: rootAlias(config.root) },
     mode: "development", plugins: [browserPlugin(sources), {
-      name: "htmlkit-watch-ready", configureServer(server) { server.watcher.once("ready", watchReady); },
+      name: "markupkit-watch-ready", configureServer(server) { server.watcher.once("ready", watchReady); },
       async closeBundle() { await refreshing?.catch(() => {}); await application?.close(); },
     }], optimizeDeps: { noDiscovery: true, include: [] },
     server: { host: options.host ?? "127.0.0.1", port: options.port ?? 3000,
@@ -96,7 +96,7 @@ export async function devApplication(input: ServerOptions = {}): Promise<Applica
   // Browser modules and stylesheets for each served page, as Vite virtual modules.
   const assets = (page: RenderedPage): PageAssets => {
     const graphId = createHash("sha256").update(page.components.map(component => component.definition.source.file).join("\0")).digest("hex").slice(0, 16);
-    const id = `virtual:htmlkit/${graphId}`;
+    const id = `virtual:markupkit/${graphId}`;
     for (const [module, source] of browserSources(page.components, { base: config.base, prefetch: config.prefetch }, id, css)) sources.set(module, source);
     const styles = stylesheetSources(page.components);
     for (const [id, css] of styles) sources.set(id, css);
@@ -106,11 +106,11 @@ export async function devApplication(input: ServerOptions = {}): Promise<Applica
     return { styles: [...css.map(normalizePath), ...styles.keys()].map(id => config.base + "@fs/" + id),
       modules: [config.base + "@vite/client", ...csp === false ? [] : [config.base + "@id/" + reporter], config.base + "@id/" + id] };
   };
-  const reporter = "virtual:htmlkit/csp-report";
+  const reporter = "virtual:markupkit/csp-report";
   if (csp !== false) {
     sources.set(reporter, policyReporter);
-    vite.ws.on("htmlkit:csp", (report: { page: string; blocked: string; directive: string; line: string; blocks: boolean }) => {
-      console.warn(`HTMLKit: ${report.page} ${report.blocks ? "blocked" : "would block"} ${report.blocked} under ${report.directive}. To allow it, add to htmlkit.config.ts: ${report.line}`);
+    vite.ws.on("markupkit:csp", (report: { page: string; blocked: string; directive: string; line: string; blocks: boolean }) => {
+      console.warn(`MarkupKit: ${report.page} ${report.blocks ? "blocked" : "would block"} ${report.blocked} under ${report.directive}. To allow it, add to markupkit.config.ts: ${report.line}`);
     });
   }
   try { application = await createApplication(options, vite, assets, csp); }
@@ -131,7 +131,7 @@ export async function devApplication(input: ServerOptions = {}): Promise<Applica
   vite.middlewares.use((request, response, next) => {
     const pathname = requestPath(request);
     if (!pathname.startsWith(config.base) || pathname.slice(config.base.length).startsWith("@")) { next(); return; }
-    const payload = pathname.startsWith(config.base + "_htmlkit/pages/");
+    const payload = pathname.startsWith(config.base + "_markupkit/pages/");
     void (async () => {
       if (current !== revision) {
         refreshing ??= (async () => {
@@ -173,7 +173,7 @@ export async function devApplication(input: ServerOptions = {}): Promise<Applica
   try { await vite.listen(); await watching; }
   catch (error) { await vite.close(); throw error; }
   const address = vite.httpServer?.address();
-  if (address === undefined || address === null || typeof address === "string") { await vite.close(); throw new HtmlKitError("Dev server did not obtain a TCP port."); }
+  if (address === undefined || address === null || typeof address === "string") { await vite.close(); throw new MarkupKitError("Dev server did not obtain a TCP port."); }
   const host = options.host ?? "127.0.0.1";
   let closing: Promise<void> | undefined;
   return { url: `http://${host.includes(":") ? `[${host}]` : host}:${address.port}${config.base}`, close: () => closing ??= vite.close() };

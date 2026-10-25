@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import type { ComponentDefinition } from "@nextwebwg/html-next";
-import { HtmlKitError } from "./config.js";
+import { MarkupKitError } from "./config.js";
 import type { ContentSecurityPolicyOptions, RenderedPolicy } from "./types.js";
 
 /** Directives a `<meta http-equiv>` policy ignores (CSP 3, §3.3), which only the header carries. */
@@ -10,15 +10,15 @@ const headerOnly = new Set(["frame-ancestors", "report-uri", "sandbox"]);
 export function checkPolicyOptions(csp: unknown): ContentSecurityPolicyOptions | false {
   if (csp === undefined) return {};
   if (csp === false) return false;
-  if (csp === null || typeof csp !== "object" || Array.isArray(csp)) throw new HtmlKitError("csp must be false or an object of sources per directive.");
+  if (csp === null || typeof csp !== "object" || Array.isArray(csp)) throw new MarkupKitError("csp must be false or an object of sources per directive.");
   for (const [name, value] of Object.entries(csp)) {
     if (name === "reportOnly") {
-      if (typeof value !== "boolean") throw new HtmlKitError("csp.reportOnly must be true or false.");
+      if (typeof value !== "boolean") throw new MarkupKitError("csp.reportOnly must be true or false.");
       continue;
     }
-    if (!/^[a-z][a-z-]*$/.test(name)) throw new HtmlKitError(`csp directive ${name} must be a lowercase CSP directive name, such as "script-src".`);
+    if (!/^[a-z][a-z-]*$/.test(name)) throw new MarkupKitError(`csp directive ${name} must be a lowercase CSP directive name, such as "script-src".`);
     if (!Array.isArray(value) || !value.every(source => typeof source === "string" && /^[^\s;,]+$/.test(source))) {
-      throw new HtmlKitError(`csp["${name}"] must be a list of CSP source expressions, such as ["https://cdn.example"], each without spaces, semicolons, or commas.`);
+      throw new MarkupKitError(`csp["${name}"] must be a list of CSP source expressions, such as ["https://cdn.example"], each without spaces, semicolons, or commas.`);
     }
   }
   return csp as ContentSecurityPolicyOptions;
@@ -30,7 +30,7 @@ export function scriptHash(script: string): string {
 }
 
 /**
- * The site's policy, which every page carries: script-src with 'self' for HTMLKit's own modules and
+ * The site's policy, which every page carries: script-src with 'self' for MarkupKit's own modules and
  * controllers, the origin of each script any component of the site declares, and the hash of each
  * inline head script; object-src and base-uri 'none'; then the csp option's sources, added to each
  * directive. One policy keeps client navigation in place, since a document keeps the policy it loaded
@@ -41,9 +41,9 @@ export function sitePolicy(csp: ContentSecurityPolicyOptions | false, definition
   const origins = new Set<string>();
   for (const definition of definitions) {
     for (const { src } of definition.scripts ?? []) {
-      // A relative or root-relative script is HTMLKit's own origin; a bare one resolves through an import map.
+      // A relative or root-relative script is MarkupKit's own origin; a bare one resolves through an import map.
       if (!/^(?:[A-Za-z][A-Za-z\d+.-]*:|\/\/)/.test(src)) continue;
-      const url = URL.parse(src, "https://htmlkit.invalid/");
+      const url = URL.parse(src, "https://markupkit.invalid/");
       if (url !== null && /^https?:$/.test(url.protocol)) origins.add(url.origin);
     }
   }

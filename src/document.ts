@@ -32,11 +32,11 @@ export function redirectPage(location: string, policy?: RenderedPolicy) {
 }
 
 /**
- * A page's payload URL: its route path under the reserved _htmlkit/pages/ tree, which no route or
+ * A page's payload URL: its route path under the reserved _markupkit/pages/ tree, which no route or
  * public file may use, so it never collides with an application's own files.
  */
 export function payloadPath(base: string, pathname: string): string {
-  return `${base}_htmlkit/pages/${pathname.slice(base.length)}payload.json`;
+  return `${base}_markupkit/pages/${pathname.slice(base.length)}payload.json`;
 }
 
 /** Whether JSON carries a value exactly: no undefined, -0, non-finite numbers, or shared or opaque objects. */

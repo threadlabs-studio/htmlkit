@@ -79,7 +79,7 @@ describe("the generated Content Security Policy", () => {
     finally { await off.close(); }
   }, 60_000);
 
-  it("sends the site's policy as a header from htmlkit start, header-only directives included", async () => {
+  it("sends the site's policy as a header from markupkit start, header-only directives included", async () => {
     const root = await app();
     const { outDir } = await buildApplication({ root, csp: { "frame-ancestors": ["'self'"] } });
     const server = await startApplication({ outDir, port: 0 });

@@ -10,8 +10,8 @@ const navigationItems = "list(object({ href: string, label: string, current: str
 
 /** A site whose layout keeps state across pages, with every kind of link client navigation must leave alone. */
 async function site(): Promise<string> {
-  const root = await mkdtemp(join(tmpdir(), "htmlkit-client-navigation-"));
-  await write(root, "package.json", '{"name":"htmlkit-client-navigation","private":true,"type":"module"}');
+  const root = await mkdtemp(join(tmpdir(), "markupkit-client-navigation-"));
+  await write(root, "package.json", '{"name":"markupkit-client-navigation","private":true,"type":"module"}');
   await write(root, "app/layouts/default.html", `<template component="site-shell" controller="./shell.ts"><defs>
     <prop name="navigation" type="${navigationItems}" required>Links</prop>
     <state name="open" type="boolean" value="false"></state></defs>
@@ -94,7 +94,7 @@ const head = (page: Page) => page.evaluate(() => ({ titles: document.querySelect
   widgets: document.querySelectorAll('script[src$="/kit/widget.js"]').length, runs: (window as unknown as { widgetRuns?: number }).widgetRuns ?? 0 }));
 const marked = (page: Page) => page.evaluate(() => (window as unknown as { marker?: boolean }).marker === true);
 const mark = (page: Page) => page.evaluate(() => { (window as unknown as { marker: boolean }).marker = true; });
-const payloadPath = (path: string, base = "/kit/") => `${base}_htmlkit/pages/${path}payload.json`;
+const payloadPath = (path: string, base = "/kit/") => `${base}_markupkit/pages/${path}payload.json`;
 /** A page's own module, as its payload names it. */
 async function moduleOf(url: string, path: string): Promise<string> {
   const payload = await (await fetch(new URL(payloadPath(path), url))).json() as { modules: string[] };
@@ -111,9 +111,9 @@ async function open(context: BrowserContext) {
   page.on("request", request => requests.push({ path: new URL(request.url()).pathname, type: request.resourceType() }));
   const count = (path: string, type?: string) => requests.filter(request => request.path === path && (type === undefined || request.type === type)).length;
   // Everything here works under the page's generated Content Security Policy.
-  await page.exposeFunction("htmlkitViolation", (violation: string) => errors.push(violation));
+  await page.exposeFunction("markupkitViolation", (violation: string) => errors.push(violation));
   await page.addInitScript(() => addEventListener("securitypolicyviolation", event =>
-    (window as unknown as { htmlkitViolation(violation: string): void }).htmlkitViolation(`${event.effectiveDirective} blocked ${event.blockedURI}`)));
+    (window as unknown as { markupkitViolation(violation: string): void }).markupkitViolation(`${event.effectiveDirective} blocked ${event.blockedURI}`)));
   return { page, errors, requests, count };
 }
 
@@ -135,12 +135,12 @@ async function scenario(browser: Browser, url: string, built: boolean): Promise<
 
     // Links on screen prefetch shared code only (from the build's manifest), except a link marked
     // data-hk-prefetch="visible", which prefetches its page's payload and module.
-    const payloads = () => requests.filter(request => request.path.includes("/_htmlkit/pages/")).map(request => request.path);
+    const payloads = () => requests.filter(request => request.path.includes("/_markupkit/pages/")).map(request => request.path);
     const pageModules = () => requests.filter(request => Object.values(modules).includes(request.path) && request.path !== modules[""]).map(request => request.path);
     await poll(() => [payloads(), pageModules()]).toEqual([[payloadPath("counter/")], [modules["counter/"]]]);
     await page.waitForTimeout(300);
     expect([payloads(), pageModules()]).toEqual([[payloadPath("counter/")], [modules["counter/"]]]);
-    expect(count("/kit/_htmlkit/manifest.json")).toBe(built ? 1 : 0);
+    expect(count("/kit/_markupkit/manifest.json")).toBe(built ? 1 : 0);
 
     // Sweeping across links prefetches nothing, nor does hovering a data-hk-prefetch="none" link.
     const links = await page.locator("nav a").evaluateAll(anchors => anchors.map(anchor => {
@@ -412,8 +412,8 @@ describe.skipIf(process.env.HTMLNEXT_BROWSER_TEST !== "1")("client navigation th
   let root: string;
   let preview: ApplicationServer;
   beforeAll(async () => {
-    root = await mkdtemp(join(tmpdir(), "htmlkit-nested-layouts-"));
-    await write(root, "package.json", '{"name":"htmlkit-nested-layouts","private":true,"type":"module"}');
+    root = await mkdtemp(join(tmpdir(), "markupkit-nested-layouts-"));
+    await write(root, "package.json", '{"name":"markupkit-nested-layouts","private":true,"type":"module"}');
     // A navigation tree, whose folders open around the current page as client navigation moves.
     await write(root, "app/layouts/default.html", `<template component="site-shell"><defs>
       <prop name="tree" type="list(object({ label: string, current: string, depth: number, ... }))" required>Tree</prop></defs>
@@ -475,7 +475,7 @@ describe.skipIf(process.env.HTMLNEXT_BROWSER_TEST !== "1")("client navigation be
   let preview: ApplicationServer;
   let development: ApplicationServer;
   beforeAll(async () => {
-    root = await mkdtemp(join(tmpdir(), "htmlkit-redefined-"));
+    root = await mkdtemp(join(tmpdir(), "markupkit-redefined-"));
     await write(root, "package.json", '{"type":"module"}');
     // A versioned site: the current pages and the archived v1 pages each define <demo-counter>.
     await write(root, "app/layouts/default.html", `<template component="site-shell"><div class="shell"><slot name="page"></slot><div class="spacer"></div>
@@ -505,7 +505,7 @@ describe.skipIf(process.env.HTMLNEXT_BROWSER_TEST !== "1")("client navigation be
       try {
         const { page, errors } = await open(await browser.newContext());
         const logged: string[] = [];
-        // Firefox's own warnings for a document left while it loads, such as an unfinished module, are not HTMLKit's.
+        // Firefox's own warnings for a document left while it loads, such as an unfinished module, are not MarkupKit's.
         page.on("console", message => { if (["error", "warning"].includes(message.type()) && !message.text().startsWith("[JavaScript Warning:")) logged.push(message.text()); });
         const shows = async (title: string, path: string, counter: string) => {
           await settled(page, title);
@@ -525,7 +525,7 @@ describe.skipIf(process.env.HTMLNEXT_BROWSER_TEST !== "1")("client navigation be
         await shows("V1 home", "/v/v1/", "v1 counter");
         expect([await marked(page), await page.evaluate(() => [scrollY, history.length])]).toEqual([false, [0, entries + 1]]);
         // Back, then forward before the previous page's document has run its scripts: Chromium and WebKit
-        // treat both entries as that document's own, so forward changes only its URL until HTMLKit starts.
+        // treat both entries as that document's own, so forward changes only its URL until MarkupKit starts.
         let release!: () => void;
         const scripts = new Promise<void>(done => { release = done; });
         let loading = false;
@@ -573,7 +573,7 @@ describe.skipIf(process.env.HTMLNEXT_BROWSER_TEST !== "1")("client navigation to
   let root: string;
   let server: ApplicationServer;
   beforeAll(async () => {
-    root = await mkdtemp(join(tmpdir(), "htmlkit-server-navigation-"));
+    root = await mkdtemp(join(tmpdir(), "markupkit-server-navigation-"));
     await write(root, "package.json", '{"type":"module"}');
     await write(root, "app/layouts/default.html", `<template component="list-shell"><div class="shell"><a id="home" href="/">Home</a> <a id="two" href="/list/?page=2">Two</a>
       <a id="three" href="/list/?page=3">Three</a><slot name="page"></slot></div></template>`);
@@ -607,7 +607,7 @@ describe.skipIf(process.env.HTMLNEXT_BROWSER_TEST !== "1")("client navigation to
         await page.goBack();
         await settled(page, "Page 2");
         expect([await page.locator("h1").textContent(), await page.locator(".reader").textContent()]).toEqual(["Page 2", "ada"]);
-        expect(requests.some(request => request.path === "/_htmlkit/pages/list/payload.json")).toBe(true);
+        expect(requests.some(request => request.path === "/_markupkit/pages/list/payload.json")).toBe(true);
         expect([await marked(page), errors]).toEqual([true, []]);
       } finally { await browser.close(); }
     }, 60_000);
@@ -618,7 +618,7 @@ describe.skipIf(process.env.HTMLNEXT_BROWSER_TEST !== "1")("form actions", () =>
   let root: string;
   let server: ApplicationServer;
   beforeAll(async () => {
-    root = await mkdtemp(join(tmpdir(), "htmlkit-form-actions-"));
+    root = await mkdtemp(join(tmpdir(), "markupkit-form-actions-"));
     await write(root, "package.json", '{"type":"module"}');
     await write(root, "app/layouts/default.html", `<template component="form-shell"><div class="shell"><a id="slow" href="/slow/">Slow</a> <a id="todos" href="/todos/">Todos</a>
       <slot name="page"></slot></div><style>:host { display: block; }</style></template>`);

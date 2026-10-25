@@ -1,5 +1,5 @@
 /**
- * HTMLKit's browser side, shared by every page module in a document. Each page module registers
+ * MarkupKit's browser side, shared by every page module in a document. Each page module registers
  * its components, compiled to direct DOM code, here; the first one adopts the server-rendered page
  * and starts client navigation. A navigation loads the next page's module and payload, renders its
  * layers with their factories as the server renders them, and swaps only the layers that changed.
@@ -11,14 +11,14 @@ import type { BindingSnapshot } from "@nextwebwg/html-next/bindings";
 
 /** Consume only this component's read identities; the renderer adopts accepted values itself. */
 export function preparedBinding(root: Element, tag: string): BindingSnapshot | undefined {
-  const text = root.getAttribute("data-htmlkit-bindings");
+  const text = root.getAttribute("data-markupkit-bindings");
   if (text === null) return undefined;
   const records = JSON.parse(text) as Record<string, BindingSnapshot>;
   if (!Object.hasOwn(records, tag)) return undefined;
   const snapshot = records[tag];
   delete records[tag];
-  if (Object.keys(records).length === 0) root.removeAttribute("data-htmlkit-bindings");
-  else root.setAttribute("data-htmlkit-bindings", JSON.stringify(records));
+  if (Object.keys(records).length === 0) root.removeAttribute("data-markupkit-bindings");
+  else root.setAttribute("data-markupkit-bindings", JSON.stringify(records));
   return snapshot;
 }
 
@@ -59,8 +59,8 @@ const components = new Map<string, Component>();
 let started = false;
 /** A page that defines a tag differently from this document. Only a document of its own can show it. */
 class Conflict extends Error {}
-/** Marks the document navigation a page that cannot render in place gets, which HTMLKit leaves native. */
-const documentLoad = Symbol("HTMLKit document load");
+/** Marks the document navigation a page that cannot render in place gets, which MarkupKit leaves native. */
+const documentLoad = Symbol("MarkupKit document load");
 
 /**
  * Adopts the server-rendered components within `root`, outermost first: each adopts the components its
@@ -80,7 +80,7 @@ export function page(runtime: Runtime, options: ClientOptions, pageComponents: R
   // A document keeps one component per tag, as HTML Next's registry does (HR001). A page that
   // redefines a tag fails here, when navigation imports its module, before anything renders, and loads as a document instead.
   for (const [tag, component] of Object.entries(pageComponents)) {
-    if ((components.get(tag)?.[0] ?? component[0]) !== component[0]) throw new Conflict(`HTMLKit: <${tag}> already has another definition in this document.`);
+    if ((components.get(tag)?.[0] ?? component[0]) !== component[0]) throw new Conflict(`MarkupKit: <${tag}> already has another definition in this document.`);
   }
   for (const [tag, component] of Object.entries(pageComponents)) components.set(tag, component);
   if (started) return;
@@ -96,7 +96,7 @@ const layer = (root: Document, index: number) => root.querySelector(`[data-hk-la
 const fresh = (time: number) => performance.now() - time < 30_000;
 const loaded = async (url: string, signal?: AbortSignal): Promise<Response> => {
   const response = await fetch(url, signal === undefined ? {} : { signal });
-  if (!response.ok || response.redirected) throw new Error(`HTMLKit cannot load ${url} (${response.status}).`);
+  if (!response.ok || response.redirected) throw new Error(`MarkupKit cannot load ${url} (${response.status}).`);
   return response;
 };
 
@@ -109,10 +109,10 @@ interface Rendered { readonly next: Document; readonly layers: readonly Element[
  * layer renders, kept layouts included, so a kept layout gets its new props from its rendering.
  */
 async function render(runtime: Runtime, payload: Payload): Promise<Rendered> {
-  if (![1, 2].includes(payload.version) || payload.layers.length === 0) throw new Error("HTMLKit cannot read this page payload.");
+  if (![1, 2].includes(payload.version) || payload.layers.length === 0) throw new Error("MarkupKit cannot read this page payload.");
   const next = document.implementation.createHTMLDocument("");
   if (payload.version === 2) {
-    if (payload.rendered === undefined) throw new Error("HTMLKit cannot read this prepared page payload.");
+    if (payload.rendered === undefined) throw new Error("MarkupKit cannot read this prepared page payload.");
     next.head.innerHTML = payload.rendered.head;
     next.body.innerHTML = payload.rendered.body;
   }
@@ -128,7 +128,7 @@ async function render(runtime: Runtime, payload: Payload): Promise<Rendered> {
   if (payload.version === 2) {
     const layers = payload.layers.map((_, index) => {
       const root = layer(next, index);
-      if (root === null) throw new Error(`HTMLKit cannot find prepared layer ${index}.`);
+      if (root === null) throw new Error(`MarkupKit cannot find prepared layer ${index}.`);
       return root;
     });
     return { next, layers, adopt: true };
@@ -138,7 +138,7 @@ async function render(runtime: Runtime, payload: Payload): Promise<Rendered> {
   for (let index = payload.layers.length - 1; index >= 0; index -= 1) {
     const { component: tag, attributes: authored, props, state } = payload.layers[index]!;
     const component = components.get(tag);
-    if (component === undefined) throw new Error(`HTMLKit cannot render <${tag}>: no page module defines it.`);
+    if (component === undefined) throw new Error(`MarkupKit cannot render <${tag}>: no page module defines it.`);
     const attributes: Record<string, string> = { id: `hk-layer-${index}`, "data-hk-layer": String(index), ...index === 0 ? {} : { slot: "page" } };
     const html: Record<string, string> = {};
     for (const [name, value] of Object.entries(authored)) {
@@ -148,7 +148,7 @@ async function render(runtime: Runtime, payload: Payload): Promise<Rendered> {
     const root = component[0]({ ...props, attributes, ...layers.length === 0 ? {} : { slots: { page: [layers[0]] } } }, props === undefined ? html : undefined);
     if (state !== undefined) {
       const host = runtime.generatedHost(root);
-      if (host === undefined) throw new Error(`HTMLKit cannot give layer ${index} its state.`);
+      if (host === undefined) throw new Error(`MarkupKit cannot give layer ${index} its state.`);
       Object.assign(host.state, state);
     }
     layers.unshift(root);
@@ -162,14 +162,14 @@ function navigate(runtime: Runtime, { base, prefetch: policy, manifest }: Client
   /**
    * The path and query whose layers the document shows. A navigation's URL commits before its layers
    * arrive. A document shows the page of the entry it loaded into, navigation.activation's, until
-   * HTMLKit renders another. Chromium 153 and WebKit 26.6 treat the entries of a document that a load
-   * replaced as the new document's own, so traversing to one before HTMLKit starts changes only the URL.
+   * MarkupKit renders another. Chromium 153 and WebKit 26.6 treat the entries of a document that a load
+   * replaced as the new document's own, so traversing to one before MarkupKit starts changes only the URL.
    */
   const loadedInto = navigation.activation?.entry;
   const shown = new URL(loadedInto?.url == null || loadedInto.key === navigation.currentEntry?.key ? location.href : loadedInto.url);
   let rendered = shown.pathname + shown.search;
   /**
-   * The links HTMLKit's documents carry: stylesheets and an alias page's canonical link. HTML Next
+   * The links MarkupKit's documents carry: stylesheets and an alias page's canonical link. HTML Next
    * manages head declarations, marked data-component-head; elements that scripts add are never removed.
    */
   const shell = (head: HTMLHeadElement) => [...head.querySelectorAll("link:not([data-component-head])")];
@@ -187,7 +187,7 @@ function navigate(runtime: Runtime, { base, prefetch: policy, manifest }: Client
    */
   const local = (url: URL, source: Element | null) => url.origin === location.origin && url.pathname.startsWith(base) &&
     url.pathname.endsWith("/") && !source?.closest("[data-hk-reload]") && !source?.hasAttribute("download");
-  const payloadURL = (url: URL) => `${base}_htmlkit/pages/${url.pathname.slice(base.length)}payload.json${url.search}`;
+  const payloadURL = (url: URL) => `${base}_markupkit/pages/${url.pathname.slice(base.length)}payload.json${url.search}`;
 
   // Prefetching never runs anything: payloads are data, and modules and stylesheets are only hinted.
   const hinted = new Set<string>();
@@ -260,7 +260,7 @@ function navigate(runtime: Runtime, { base, prefetch: policy, manifest }: Client
 
   /** A page's document, whose server markup the components adopt. */
   const parse = async (response: Response, url: URL): Promise<Rendered> => {
-    if (!response.headers.get("content-type")?.startsWith("text/html")) throw new Error(`HTMLKit cannot render ${url.href} in place.`);
+    if (!response.headers.get("content-type")?.startsWith("text/html")) throw new Error(`MarkupKit cannot render ${url.href} in place.`);
     const next = new DOMParser().parseFromString(await response.text(), "text/html");
     const layers: Element[] = [];
     for (let index = 0, root = layer(next, 0); root !== null; root = layer(next, ++index)) layers.push(root);
@@ -312,10 +312,10 @@ function navigate(runtime: Runtime, { base, prefetch: policy, manifest }: Client
       const { next, layers, adopt: hydrate } = await (handed !== undefined ? handed :
         event.formData !== null ? submit(url, form, event.sourceElement, event.formData, signal) : payload(url, signal).catch(error => {
         if (signal.aborted || error instanceof Conflict) throw error;
-        console.warn("HTMLKit renders this page from its HTML:", error);
+        console.warn("MarkupKit renders this page from its HTML:", error);
         return html(url, signal);
       }));
-      if (layers.length === 0 || layer(document, 0) === null) throw new Error(`HTMLKit cannot render ${url.href} in place: it has no layers.`);
+      if (layers.length === 0 || layer(document, 0) === null) throw new Error(`MarkupKit cannot render ${url.href} in place: it has no layers.`);
       // Links both documents share stay; the rest are removed or added at the swap.
       const kept = new Set<Element>();
       const added: Element[] = [];
@@ -388,7 +388,7 @@ function navigate(runtime: Runtime, { base, prefetch: policy, manifest }: Client
   };
 
   // ponytail: WebKit 26.6 sometimes restores no position for an intercepted back or forward
-  // navigation, so HTMLKit records where each entry was left. Other scrolling stays native.
+  // navigation, so MarkupKit records where each entry was left. Other scrolling stays native.
   const positions = new Map<string, readonly [x: number, y: number]>();
   // While a navigation renders in place: data-hk-navigating on <html>, and on a submitting form,
   // data-hk-submitting and aria-busy. Only the latest navigation clears <html>'s.
@@ -418,10 +418,10 @@ function navigate(runtime: Runtime, { base, prefetch: policy, manifest }: Client
       }
     } });
   });
-  // The entry the document moved to before HTMLKit started renders now, as a traversal to it would:
+  // The entry the document moved to before MarkupKit started renders now, as a traversal to it would:
   // in place, or as a document when its page conflicts with this document's definitions.
-  // ponytail: an entry a script pushed before HTMLKit started looks the same as one traversed to, and
-  // renders its URL's page too. HTMLKit leaves later pushes alone.
+  // ponytail: an entry a script pushed before MarkupKit started looks the same as one traversed to, and
+  // renders its URL's page too. MarkupKit leaves later pushes alone.
   if (rendered !== location.pathname + location.search) void navigation.navigate(location.href, { history: "replace" });
 }
 

@@ -1,6 +1,6 @@
 # Request-time server rendering design
 
-HTMLKit renders a page at build time or on each request through one render kernel, so a page's
+MarkupKit renders a page at build time or on each request through one render kernel, so a page's
 authored files don't change when it moves between the two. Route matching, layout selection,
 `hk:page` selection, the loader result contract, head merging, and the HTML Next rendering and
 adoption path are the same in both. A page's `hk:render` metadata chooses: `prerender`, the default,
@@ -27,7 +27,7 @@ or `server`. This is a tooling implementation design, not a component-language s
 - `createNavigation` answers `navigation()`, `navigationTree()`, `breadcrumbs()`, and `pager()` from
   routes and the concrete page URLs.
 
-Private component readers reuse this pipeline at `POST <base>_htmlkit/read`, after middleware and
+Private component readers reuse this pipeline at `POST <base>_markupkit/read`, after middleware and
 the existing same-origin check. The application registry maps an opaque source revision and tag to
 the component definition, common module and private reader module. The handler validates a transferred
 declaration frame, recomputes common selectors and validates the result before returning it. This
@@ -56,17 +56,17 @@ Request
 - `createApplication` (development, `application.fetch`) loads loaders, endpoints, and middleware
   through Vite's module runner and each route's component graph through `loadNodeComponents`. A
   prerendered page renders at its canonical `origin` URL, as the build renders it.
-- The build writes `_htmlkit/server/entry.js`, whose default export is `serverApplication`'s result.
+- The build writes `_markupkit/server/entry.js`, whose default export is `serverApplication`'s result.
   Its `create(options)` export makes an independently owned application; `startApplication` uses it
   for each listener and closes that application's renderer when the listener closes.
   The entry carries the server data as JSON: path-free routes, the navigation catalog, head scripts,
   redirects, and each server route's component definitions, head metadata, and browser assets. Vite
   builds the server-rendered pages' loaders, the endpoints, and the middleware to
-  `_htmlkit/server/<id>.js` in a production worker, with packages left as imports; the entry imports
+  `_markupkit/server/<id>.js` in a production worker, with packages left as imports; the entry imports
   each on first use. Prerendered pages and assets are served from the output's files, and
-  `_htmlkit/server/` itself never is.
+  `_markupkit/server/` itself never is.
 
-`startApplication` (`htmlkit start`) adapts `node:http` to `Request` and `Response`: the method, the
+`startApplication` (`markupkit start`) adapts `node:http` to `Request` and `Response`: the method, the
 URL from the `Host` header, raw headers, a streamed body for other methods, and an abort signal for
 a closed response. It writes `getSetCookie()`'s values as separate headers and streams the body.
 Deno and Bun take the entry's `fetch` as it is. CI runs the built entry on Node, Deno, and Bun from
@@ -82,9 +82,9 @@ requests with different cookies at once and checks neither sees the other's.
 
 ### Render workers
 
-Each HTMLKit application owns an HTML Next `createRenderer()` pool of long-lived workers, the number
+Each MarkupKit application owns an HTML Next `createRenderer()` pool of long-lived workers, the number
 of available CPUs up to 8 unless `setRenderWorkers(count)` sets another before construction
-(`htmlkit --render-workers`, or `startApplication({ renderWorkers })`). Each worker renders one request at a time and the others
+(`markupkit --render-workers`, or `startApplication({ renderWorkers })`). Each worker renders one request at a time and the others
 wait in a queue. Every render gets:
 
 - its own JSDOM window and document, created for the render and closed after it;
@@ -105,7 +105,7 @@ the next render starts a new worker. An idle worker doesn't keep the process ali
 Each page is one render of the layers' invocations, with the application document's own head
 (`renderComponents`' `head` option: the viewport meta, and an alias page's canonical link). HTML
 Next reconciles every rendered component's head declarations into it, deepest first, and returns the
-head HTML that the document assembler writes after the charset and head scripts. HTMLKit's `hk:`
+head HTML that the document assembler writes after the charset and head scripts. MarkupKit's `hk:`
 settings are left out of the definitions before they render or compile.
 
 Loaders, endpoints, and middleware are trusted application code that runs in the server's process,
@@ -120,7 +120,7 @@ browser modules, never server loaders or their imports.
 
 ### Component provider preparation
 
-HTMLKit discovers named `props`/`create` exports without evaluating behavior-only modules. Vite
+MarkupKit discovers named `props`/`create` exports without evaluating behavior-only modules. Vite
 bundles eligible common modules under its cache for development and prerendering, and into the
 private server output for request-time rendering. Native package imports resolve from the application.
 The application closes its renderer before removing its own temporary bundles; it leaves Vite's
@@ -131,7 +131,7 @@ abort signal, and `flush()` to drain the existing reactive renderer. Tag-specifi
 components that share one native root. The adapter calls the binding library's `prepare()` in build
 or request phase and never calls browser `connect`. Additional component roots revealed by prepared
 data are prepared in turn. Typed values, input status and state travel in HTML Next continuation
-records. HTMLKit adds only source revisions and selected-read identities for matching browser adoption.
+records. MarkupKit adds only source revisions and selected-read identities for matching browser adoption.
 
 Prepared pages use a rendered-form navigation payload so a fresh navigation adopts the prepared
 baseline, just as an initial document does. Pages without automatic providers keep the factory
@@ -147,7 +147,7 @@ rejected, including transitive imports and raw/URL imports.
 
 ## Cost
 
-`pnpm --filter @threadlabs/htmlkit measure:server` builds a small site and loads `htmlkit start` with
+`pnpm --filter @threadlabs/markupkit measure:server` builds a small site and loads `markupkit start` with
 keep-alive clients. A render in a warm worker takes a few milliseconds to create its document and a
 few more to render and serialize a small page; starting a worker and importing jsdom takes 0.4 to
 0.9 s, which each worker pays once. With 16 connections on a shared machine (load average about 22):
@@ -164,7 +164,7 @@ The same pool and single render make builds faster: building the examples and th
 ## Native mechanisms and the remaining gap
 
 Native `URL`, `Request`, `Response`, `Headers`, `fetch`, and `AbortSignal` cover URL parsing, HTTP
-values, cookies (the `Cookie` and `Set-Cookie` headers), network reads, and cancellation; HTMLKit
+values, cookies (the `Cookie` and `Set-Cookie` headers), network reads, and cancellation; MarkupKit
 adds a parsed cookie map and nothing else. Native anchors and the Navigation API carry routing;
 client navigation renders each page from its module and data payload, whose URL carries the page's
 query, or its server document ([client-navigation.md](./client-navigation.md)). HTML Next provides

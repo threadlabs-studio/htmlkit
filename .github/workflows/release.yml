@@ -33,9 +33,9 @@ jobs:
       - name: Publish through npm trusted publishing
         run: |
           version=$(node -p 'require("./package.json").version')
-          if npm view "@threadlabs/htmlkit@$version" version >/dev/null 2>&1; then
-            echo "@threadlabs/htmlkit@$version is already published."
+          if npm view "@threadlabs/markupkit@$version" version >/dev/null 2>&1; then
+            echo "@threadlabs/markupkit@$version is already published."
             exit 0
           fi
           pnpm pack --pack-destination .release
-          npm publish ".release/threadlabs-htmlkit-$version.tgz" --access public --tag latest --provenance
+          npm publish ".release/threadlabs-markupkit-$version.tgz" --access public --tag latest --provenance

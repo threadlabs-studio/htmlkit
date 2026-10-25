@@ -1,6 +1,6 @@
 /**
  * The bytes a navigation tree adds to each page: an 81-page site with a <hk-nav> of its
- * navigationTree() in the default layout, built by `htmlkit build`. Reports one page's document and
+ * navigationTree() in the default layout, built by `markupkit build`. Reports one page's document and
  * its <aside> sidebar, and the JavaScript the page ships, raw and gzip -9. The site and its output go
  * to `.measure/`, which git ignores.
  */

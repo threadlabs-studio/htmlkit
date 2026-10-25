@@ -16,28 +16,28 @@ it("keeps built private readers on the server while serving browser reads for pr
     return (context.phase === "build" ? "Build" : context.cookies.get("user") || "Guest") + ":" + query;
   } } };`);
   const { outDir } = await buildApplication({ root });
-  const publicFiles = (await readdir(join(outDir, "_htmlkit"))).filter(file => file.endsWith(".js"));
+  const publicFiles = (await readdir(join(outDir, "_markupkit"))).filter(file => file.endsWith(".js"));
   expect(publicFiles.length).toBeGreaterThan(0);
-  for (const file of publicFiles) expect(await readFile(join(outDir, "_htmlkit", file), "utf8")).not.toContain("PRIVATE_READER_SERVER_CODE");
-  const serverFiles = (await readdir(join(outDir, "_htmlkit/server"))).filter(file => file.endsWith(".js"));
-  const privateFiles = await Promise.all(serverFiles.map(async file => [file, await readFile(join(outDir, "_htmlkit/server", file), "utf8")] as const));
+  for (const file of publicFiles) expect(await readFile(join(outDir, "_markupkit", file), "utf8")).not.toContain("PRIVATE_READER_SERVER_CODE");
+  const serverFiles = (await readdir(join(outDir, "_markupkit/server"))).filter(file => file.endsWith(".js"));
+  const privateFiles = await Promise.all(serverFiles.map(async file => [file, await readFile(join(outDir, "_markupkit/server", file), "utf8")] as const));
   const privateFile = privateFiles.find(([, source]) => source.includes("PRIVATE_READER_SERVER_CODE"))?.[0];
   expect(privateFile).toBeDefined();
-  const payload = JSON.parse(await readFile(join(outDir, "_htmlkit/pages/payload.json"), "utf8"));
+  const payload = JSON.parse(await readFile(join(outDir, "_markupkit/pages/payload.json"), "utf8"));
   const rendered = await readFile(join(outDir, "index.html"), "utf8");
   expect(rendered).toContain("Build:A");
-  const escaped = /data-htmlkit-bindings="([^"]+)"/.exec(rendered)![1]!.replaceAll("&quot;", '"').replaceAll("&amp;", "&");
+  const escaped = /data-markupkit-bindings="([^"]+)"/.exec(rendered)![1]!.replaceAll("&quot;", '"').replaceAll("&amp;", "&");
   const source = JSON.parse(escaped)["client-page"].source as string;
   expect(JSON.stringify(payload)).not.toContain("PRIVATE_READER_SERVER_CODE");
   const server = await startApplication({ outDir, port: 0 });
   try {
-    const response = await fetch(server.url + "_htmlkit/read", { method: "POST", headers: { "content-type": "application/json", cookie: "user=Ada" }, body: JSON.stringify({
+    const response = await fetch(server.url + "_markupkit/read", { method: "POST", headers: { "content-type": "application/json", cookie: "user=Ada" }, body: JSON.stringify({
       version: 1, source, tag: "client-page", name: "label", url: server.url,
       inputs: ["json", { props: {}, state: { query: "B" } }],
     }) });
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ value: ["value", "Ada:B"] });
-    expect((await fetch(server.url + "_htmlkit/server/" + privateFile)).status).toBe(404);
+    expect((await fetch(server.url + "_markupkit/server/" + privateFile)).status).toBe(404);
   } finally { await server.close(); }
 }, 120_000);
 
@@ -172,7 +172,7 @@ async function answersRequests(answer: Answer, host: string): Promise<void> {
   expect(html).toContain('<p class="page">2</p>');
   // Middleware runs first, and the loader reads the request it passed on.
   expect(html).toContain('<p class="trace">middleware</p>');
-  expect(html).toContain("<header>HTMLKit</header>");
+  expect(html).toContain("<header>MarkupKit</header>");
   expect((await answer("/account/?teapot", signedIn)).status).toBe(418);
   // redirect() answers 303 and keeps the cookie set before it.
   const anonymous = await answer("/account/");
@@ -189,10 +189,10 @@ async function answersRequests(answer: Answer, host: string): Promise<void> {
   expect([admin.status, await admin.text()]).toEqual([401, "Members only"]);
   expect(await (await answer("/old-account/?page=3", signedIn)).text()).toContain('<p class="page">3</p>');
   // The payload renders the same page for client navigation, query and cookies included.
-  const payload = await answer("/_htmlkit/pages/account/payload.json?page=5", signedIn);
+  const payload = await answer("/_markupkit/pages/account/payload.json?page=5", signedIn);
   expect([payload.status, payload.headers.get("content-type")]).toEqual([200, "application/json"]);
   expect((await payload.json()).layers[1]).toMatchObject({ component: "account-page", attributes: { user: "ada", page: "5", trace: "middleware" } });
-  expect((await answer("/_htmlkit/pages/account/payload.json")).status).toBe(404);
+  expect((await answer("/_markupkit/pages/account/payload.json")).status).toBe(404);
   // Two requests at once keep their own cookies.
   const [first, second] = await Promise.all(["ada", "bob"].map(async user => (await answer("/account/", { headers: { cookie: `user=${user}` } })).text()));
   expect([first!.includes("<h1>ada</h1>") && !first!.includes("bob"), second!.includes("<h1>bob</h1>") && !second!.includes("ada")]).toEqual([true, true]);
@@ -212,7 +212,7 @@ async function answersRequests(answer: Answer, host: string): Promise<void> {
   const form = await invalid.text();
   expect([invalid.status, /<input name="title"[^>]* value="ab"/.test(form), form.includes("Use at least 3 characters."), form.includes('class="parent"')]).toEqual([422, true, true, true]);
   // Loaders run after the action and keep their props; layouts render as on GET.
-  expect([form.includes(">kit</p>"), form.includes("<header>HTMLKit</header>")]).toEqual([true, true]);
+  expect([form.includes(">kit</p>"), form.includes("<header>MarkupKit</header>")]).toEqual([true, true]);
   // A multipart body, as an enhanced submission sends, reads the same.
   const multipart = new FormData();
   multipart.set("title", "ok");
@@ -256,7 +256,7 @@ async function answersRequests(answer: Answer, host: string): Promise<void> {
   const failing = vi.spyOn(console, "error").mockImplementation(() => {});
   const failure = await answer("/api/fail");
   const trouble = await failure.text();
-  expect([failure.status, trouble.includes("<h1>500</h1><p>Internal Server Error</p>"), trouble.includes("<header>HTMLKit</header>"), trouble.includes("secret")]).toEqual([500, true, true, false]);
+  expect([failure.status, trouble.includes("<h1>500</h1><p>Internal Server Error</p>"), trouble.includes("<header>MarkupKit</header>"), trouble.includes("secret")]).toEqual([500, true, true, false]);
   failing.mockRestore();
   // Middleware sets headers on any response next() answers, Response.redirect()'s included.
   const go = await answer("/api/go", { redirect: "manual" });
@@ -278,15 +278,15 @@ describe("request-time rendering", () => {
     } finally { await application.close(); }
   }, 120_000);
 
-  it("builds a server entry that htmlkit start serves over HTTP, with prerendered pages from files", async () => {
+  it("builds a server entry that markupkit start serves over HTTP, with prerendered pages from files", async () => {
     const root = await serverApp();
     const { outDir, routes } = await buildApplication({ root });
     // Per-route mode: server-rendered pages have no file, and prerendered pages have theirs.
     expect(routes).toEqual(["/", "/items/one/", "/items/two/", "/login/"]);
     expect((await readManifest(outDir)).routes).toEqual(routes);
     for (const path of ["account", "users", "admin", "api"]) expect(existsSync(join(outDir, path))).toBe(false);
-    for (const path of ["index.html", "login/index.html", "404.html", "_htmlkit/server/entry.js", "_htmlkit/server/middleware.js"]) expect(existsSync(join(outDir, path))).toBe(true);
-    const entry = await readFile(join(outDir, "_htmlkit/server/entry.js"), "utf8");
+    for (const path of ["index.html", "login/index.html", "404.html", "_markupkit/server/entry.js", "_markupkit/server/middleware.js"]) expect(existsSync(join(outDir, path))).toBe(true);
+    const entry = await readFile(join(outDir, "_markupkit/server/entry.js"), "utf8");
     // Diagnostics name loader files relative to the root, which the server need not have.
     expect(entry).toContain('origin\\":\\"app/pages/account.server.ts');
     expect(entry).not.toContain(join(root, "app/pages/account.server.ts"));
@@ -303,8 +303,8 @@ describe("request-time rendering", () => {
       // Files answer before middleware; the server's own code is never served.
       const mark = await fetch(`${url}/mark.svg`);
       expect([mark.status, mark.headers.get("content-type"), mark.headers.get("x-middleware")]).toEqual([200, "image/svg+xml", null]);
-      expect((await fetch(`${url}/_htmlkit/server/entry.js`)).status).toBe(404);
-      expect((await fetch(`${url}/_htmlkit/manifest.json`)).headers.get("cache-control")).toBeNull();
+      expect((await fetch(`${url}/_markupkit/server/entry.js`)).status).toBe(404);
+      expect((await fetch(`${url}/_markupkit/manifest.json`)).headers.get("cache-control")).toBeNull();
       const notFound = await fetch(`${url}/nowhere/`);
       expect([notFound.status, notFound.headers.get("x-middleware")]).toEqual([404, "after"]);
       expect(await notFound.text()).toBe(await readFile(join(outDir, "404.html"), "utf8"));
@@ -336,12 +336,12 @@ describe("request-time rendering", () => {
     roots.push(root);
     const { outDir } = await buildApplication({ root, redirects: { "/old/": "/items/one/" } });
     // No loader, endpoint, or middleware runs at request time, so the server holds no application code.
-    expect(await readdir(join(outDir, "_htmlkit/server"))).toEqual(["entry.js"]);
+    expect(await readdir(join(outDir, "_markupkit/server"))).toEqual(["entry.js"]);
     const server = await startApplication({ outDir, port: 0 });
     try {
       const url = server.url.slice(0, -1);
       expect(await (await fetch(`${url}/`)).text()).toBe(await readFile(join(outDir, "index.html"), "utf8"));
-      expect(await (await fetch(`${url}/_htmlkit/pages/items/one/payload.json`)).json()).toMatchObject({ version: 1 });
+      expect(await (await fetch(`${url}/_markupkit/pages/items/one/payload.json`)).json()).toMatchObject({ version: 1 });
       // A redirect page's URL answers with the redirect itself.
       const old = await fetch(`${url}/old/`, { redirect: "manual" });
       expect([old.status, old.headers.get("location")]).toEqual([308, "/items/one/"]);

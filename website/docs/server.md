@@ -9,7 +9,7 @@ description: app/api · GET and POST · middleware · cookies and headers
 An endpoint is a file in `app/api` that answers HTTP requests with a standard `Response`, such as JSON
 for a page's scripts. Middleware is one file, `app/middleware.server.ts`, that sees every page and
 endpoint request first. Both run on the server, in development and under
-[`htmlkit start`](/deployment#the-node-server), and use the web's own `Request`, `Response`,
+[`markupkit start`](/deployment#the-node-server), and use the web's own `Request`, `Response`,
 `Headers`, and `URL`.
 
 ## Endpoints
@@ -30,7 +30,7 @@ A file exports a function for each HTTP method it answers: `GET`, `POST`, `PUT`,
 
 ```ts
 // app/api/todos.server.ts
-import type { EndpointHandler } from '@threadlabs/htmlkit';
+import type { EndpointHandler } from '@threadlabs/markupkit';
 import { db } from '@/lib/db.ts';
 
 export const GET: EndpointHandler = async request => {
@@ -46,7 +46,7 @@ export const POST: EndpointHandler = async request => {
 
 ```ts
 // app/api/todos/[id].server.ts
-import type { EndpointHandler } from '@threadlabs/htmlkit';
+import type { EndpointHandler } from '@threadlabs/markupkit';
 import { db } from '@/lib/db.ts';
 
 export const DELETE: EndpointHandler = async (request, { params }) => {
@@ -60,7 +60,7 @@ export const DELETE: EndpointHandler = async (request, { params }) => {
 - Parameters follow [page parameters](/routes#dynamic-pages): `[id]` is a segment, and
   `[...path]` and `[[...path]]` are lists of segments.
 - A component's browser reader or connection hook reads an endpoint with `fetch('/api/todos')`.
-- A static build has no server, so endpoints answer only under `htmlkit dev` and `htmlkit start`.
+- A static build has no server, so endpoints answer only under `markupkit dev` and `markupkit start`.
 
 ## Middleware
 
@@ -69,7 +69,7 @@ the request as the application would, and returns a `Response`:
 
 ```ts
 // app/middleware.server.ts
-import type { Middleware } from '@threadlabs/htmlkit';
+import type { Middleware } from '@threadlabs/markupkit';
 
 const middleware: Middleware = async (request, next) => {
   const url = new URL(request.url);
@@ -100,10 +100,10 @@ export default middleware;
 | Set headers or cookies | `const response = await next()`, then `response.headers.set(…)` or `.append('set-cookie', …)` |
 
 Middleware runs before every page, prerendered or server-rendered, before every endpoint, and before
-missing paths. Files, such as `public/` assets and HTMLKit's bundles, are served without it. When client
+missing paths. Files, such as `public/` assets and MarkupKit's bundles, are served without it. When client
 navigation loads a page's data, middleware sees the page's own URL, so a rule for `/account/` covers
 moving to it in place too. A static host serves files as they are, so middleware runs only under
-`htmlkit dev` and `htmlkit start`.
+`markupkit dev` and `markupkit start`.
 
 ## Cookies and headers
 

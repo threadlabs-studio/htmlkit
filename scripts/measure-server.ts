@@ -1,10 +1,10 @@
 /**
- * Request throughput and latency of a built server under `htmlkit start`: a prerendered page, a
+ * Request throughput and latency of a built server under `markupkit start`: a prerendered page, a
  * server-rendered page, and an endpoint. Build the package first (`pnpm build`); the server runs
  * from dist without Vite. The application builds into `.measure/`, which git ignores, inside this
- * package, so its server entry resolves @threadlabs/htmlkit/server by the package's own name.
+ * package, so its server entry resolves @threadlabs/markupkit/server by the package's own name.
  *
- *   pnpm --filter @threadlabs/htmlkit measure:server [--seconds 10] [--connections 16]
+ *   pnpm --filter @threadlabs/markupkit measure:server [--seconds 10] [--connections 16]
  */
 import { spawn } from "node:child_process";
 import { Agent, request } from "node:http";
@@ -36,8 +36,8 @@ await buildApplication({ root });
 const server = spawn(process.execPath, [fileURLToPath(new URL("../dist/cli.js", import.meta.url)), "start", root, "--port", "0"], { stdio: ["ignore", "pipe", "inherit"] });
 const origin = await new Promise<string>((done, reject) => {
   let output = "";
-  server.stdout.on("data", (chunk: Buffer) => { output += chunk; const match = /HTMLKit start: (http:\/\/[^/]+)/.exec(output); if (match) done(match[1]!); });
-  server.once("exit", code => reject(new Error(`htmlkit start exited (${code}): ${output}`)));
+  server.stdout.on("data", (chunk: Buffer) => { output += chunk; const match = /MarkupKit start: (http:\/\/[^/]+)/.exec(output); if (match) done(match[1]!); });
+  server.once("exit", code => reject(new Error(`markupkit start exited (${code}): ${output}`)));
 });
 
 /** `connections` keep-alive clients, each sending its next request when the last one answers. */

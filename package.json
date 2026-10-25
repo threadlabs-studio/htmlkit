@@ -1,5 +1,5 @@
 {
-  "name": "@threadlabs/htmlkit",
+  "name": "@threadlabs/markupkit",
   "version": "0.1.0",
   "description": "Build applications with HTML, CSS, and JavaScript, powered by HTML Next.",
   "license": "MIT",
@@ -14,7 +14,11 @@
       "types": "./dist/server.d.ts",
       "import": "./dist/server.js"
     },
-    "./components/*": "./components/*"
+    "./components/*": "./components/*",
+    "./description": {
+      "types": "./dist/description.d.ts",
+      "import": "./dist/description.js"
+    }
   },
   "files": [
     "dist",
@@ -65,14 +69,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/threadlabs-studio/htmlkit.git"
+    "url": "git+https://github.com/threadlabs-studio/markupkit.git"
   },
   "bin": {
-    "htmlkit": "./dist/cli.js"
+    "markupkit": "./dist/cli.js"
   },
   "packageManager": "pnpm@12.9.1",
-  "homepage": "https://threadlabs-studio.github.io/htmlkit/",
+  "homepage": "https://threadlabs-studio.github.io/markupkit/",
   "bugs": {
-    "url": "https://github.com/threadlabs-studio/htmlkit/issues"
+    "url": "https://github.com/threadlabs-studio/markupkit/issues"
   }
 }

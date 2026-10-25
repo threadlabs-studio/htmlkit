@@ -10,7 +10,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { serializePropTarget, serializeTypedValue, type ComponentDefinition } from "@nextwebwg/html-next";
 import { createRenderer, renderComponents, setRenderWorkers, type ServerRenderer } from "@nextwebwg/html-next/server";
 
-import { HtmlKitError, within } from "./config.js";
+import { MarkupKitError, within } from "./config.js";
 import { policyHeader } from "./csp.js";
 import { authoredHead, documentHTML, escapeHTML, pagePayload, redirectPage, type PageAssets } from "./document.js";
 import { matchRoute, parameter, redirectLocation, redirectStatuses } from "./routes.js";
@@ -32,7 +32,7 @@ type Params = Readonly<Record<string, RouteParam>>;
 export function createNavigation(base: string, routes: readonly NavigationRoute[], concrete: () => Promise<ReadonlyMap<string, NavigationRoute>>) {
   const checkedFrom = (from = "/"): string => {
     if (!/^\/(?:[^/]+\/)*$/.test(from) || from.includes("[") || from.includes("?") || from.includes("#")) {
-      throw new HtmlKitError("Navigation from requires a concrete application-relative directory prefix.", from);
+      throw new MarkupKitError("Navigation from requires a concrete application-relative directory prefix.", from);
     }
     return from;
   };
@@ -153,7 +153,7 @@ class NotFound { readonly status = 404; }
 function invocationAttributes(definition: ComponentDefinition, result: LoaderResult, deferred?: string[]): Record<string, string> {
   const props = result.props ?? {};
   for (const name of Object.keys(props)) {
-    if (!Object.hasOwn(definition.contract.props, name)) throw new HtmlKitError(`Undeclared prop ${name}.`, definition.source.file);
+    if (!Object.hasOwn(definition.contract.props, name)) throw new MarkupKitError(`Undeclared prop ${name}.`, definition.source.file);
   }
   const attributes: Record<string, string> = {};
   for (const [name, contract] of Object.entries(definition.contract.props)) {
@@ -260,7 +260,7 @@ export async function renderRoute(input: RenderInput): Promise<Rendered> {
   const current = route.canonical === undefined ? url.pathname : at(route.canonical);
   const contextOf = (layer: RenderLayer): LoadContext => {
     const prerendering = (name: string): never => {
-      throw new HtmlKitError(`${name} is unavailable while prerendering; <meta name="hk:render" content="server"> renders the page on each request.`, layer.origin);
+      throw new MarkupKitError(`${name} is unavailable while prerendering; <meta name="hk:render" content="server"> renders the page on each request.`, layer.origin);
     };
     return { phase: request === undefined ? "prerender" : "request", url: new URL(url), base, params, parent,
       propNames: Object.freeze(Object.keys(layer.definition.contract.props)),
@@ -270,7 +270,7 @@ export async function renderRoute(input: RenderInput): Promise<Rendered> {
       breadcrumbs: query => navigation.breadcrumbs({ current, ...query }),
       pager: query => navigation.pager({ current, ...query }),
       redirect(location: string, status: RedirectStatus = 303): never {
-        if (!redirectStatuses.includes(status)) throw new HtmlKitError(`Redirect status ${String(status)} must be 301, 302, 303, 307, or 308.`, layer.origin);
+        if (!redirectStatuses.includes(status)) throw new MarkupKitError(`Redirect status ${String(status)} must be 301, 302, 303, 307, or 308.`, layer.origin);
         throw new Redirect(redirectLocation(base, location, layer.origin), status);
       },
       notFound(): never { throw new NotFound(); },
@@ -298,7 +298,7 @@ export async function renderRoute(input: RenderInput): Promise<Rendered> {
       return { kind: "redirect", location: location.pathname + location.search, status: 303, headers: response.headers };
     }
     if (result === null || typeof result !== "object" || Array.isArray(result)) {
-      throw new HtmlKitError("An action returns nothing, which redirects to its page, or an object of the page's props.", page.origin);
+      throw new MarkupKitError("An action returns nothing, which redirects to its page, or an object of the page's props.", page.origin);
     }
     submitted = result as Readonly<Record<string, unknown>>;
   }
@@ -313,10 +313,10 @@ export async function renderRoute(input: RenderInput): Promise<Rendered> {
       .filter(([name]) => Object.hasOwn(layer.definition.contract.props, name))) };
     try { result = loaded.load === undefined ? supplied : await loaded.load(context); }
     catch (error) { return stopped(error); }
-    if (result === null || typeof result !== "object" || Array.isArray(result)) throw new HtmlKitError("load() must return a LoaderResult object.", layer.origin);
+    if (result === null || typeof result !== "object" || Array.isArray(result)) throw new MarkupKitError("load() must return a LoaderResult object.", layer.origin);
     if (result.head !== undefined) {
       if (Object.keys(result.head).some(name => name !== "lang")) {
-        throw new HtmlKitError("A loader's head sets only lang; a page or layout declares its <title> and <meta> in <defs>, bound to props its loader returns.", layer.origin);
+        throw new MarkupKitError("A loader's head sets only lang; a page or layout declares its <title> and <meta> in <defs>, bound to props its loader returns.", layer.origin);
       }
       lang = result.head.lang ?? lang;
     }
@@ -408,7 +408,7 @@ const methods = ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE"] as const;
 /** Answer a request: its payload URL becomes the page's, then middleware, then redirects, endpoints, and pages. */
 export async function respond<Route extends NavigationRoute>(app: Pipeline<Route>, request: Request): Promise<Response> {
   const url = new URL(request.url);
-  const pages = app.base + "_htmlkit/pages/";
+  const pages = app.base + "_markupkit/pages/";
   let payload = false;
   const page = url.pathname.startsWith(pages) ? /^(.*\/)?payload\.json$/.exec(url.pathname.slice(pages.length)) : null;
   if (page !== null) {
@@ -426,7 +426,7 @@ export async function respond<Route extends NavigationRoute>(app: Pipeline<Route
     return new Response(answered.body, answered);
   };
   const response: unknown = await middleware(request, next);
-  if (!(response instanceof Response)) throw new HtmlKitError("Middleware must return a Response, such as next()'s.");
+  if (!(response instanceof Response)) throw new MarkupKitError("Middleware must return a Response, such as next()'s.");
   return response;
 }
 
@@ -435,7 +435,7 @@ async function route<Route extends NavigationRoute>(app: Pipeline<Route>, reques
   const { pathname } = url;
   // A path starting with // would name another origin; no page lives there.
   if (!pathname.startsWith(app.base) || pathname.startsWith("//")) return app.notFound(request, payload);
-  if (!payload && pathname === app.base + "_htmlkit/read" && app.read !== undefined) {
+  if (!payload && pathname === app.base + "_markupkit/read" && app.read !== undefined) {
     if (request.method !== "POST") return new Response(null, { status: 405, headers: { allow: "POST" } });
     if (!sameOrigin(request)) return new Response("Cross-origin component reads are refused.", { status: 403 });
     return app.read(request);
@@ -485,8 +485,8 @@ export function pageAction(module: ServerModule, url: URL): PageAction | Respons
 }
 
 /** The build error for actions on a page that prerenders. */
-export function prerenderedActions(pattern: string, origin: string): HtmlKitError {
-  return new HtmlKitError(`The page ${pattern} has actions, which answer requests; <meta name="hk:render" content="server"> renders it on each request.`, origin);
+export function prerenderedActions(pattern: string, origin: string): MarkupKitError {
+  return new MarkupKitError(`The page ${pattern} has actions, which answer requests; <meta name="hk:render" content="server"> renders it on each request.`, origin);
 }
 
 async function answerEndpoint<Route extends NavigationRoute>(app: Pipeline<Route>, endpoint: EndpointRoute, params: Params, request: Request): Promise<Response> {
@@ -499,11 +499,11 @@ async function answerEndpoint<Route extends NavigationRoute>(app: Pipeline<Route
     return new Response(null, { status: 405, headers: { allow: allow.join(", ") } });
   }
   const response: unknown = await handler(request, { params });
-  if (!(response instanceof Response)) throw new HtmlKitError(`${method!} must return a Response.`, endpoint.file);
+  if (!(response instanceof Response)) throw new MarkupKitError(`${method!} must return a Response.`, endpoint.file);
   return method === "HEAD" && module.HEAD === undefined ? new Response(null, response) : response;
 }
 
-/** A build's request server data, which the build writes into _htmlkit/server/entry.js. */
+/** A build's request server data, which the build writes into _markupkit/server/entry.js. */
 export interface ServerData {
   readonly readers?: Readonly<Record<string, { readonly definition: ComponentDefinition; readonly common: string; readonly server: string }>>;
   readonly version: 2 | 3;
@@ -573,7 +573,7 @@ export async function outputPath(output: string, base: string, pathname: string)
  * output directory two levels above the entry. Prerendered pages and assets come from the output's files.
  */
 export async function serverApplication(entry: string, data: ServerData, modules: Readonly<Record<string, () => Promise<unknown>>>, options: { readonly renderWorkers?: number; readonly services?: unknown } = {}): Promise<ServerApplication> {
-  if (data.version !== 2 && data.version !== 3) throw new HtmlKitError(`Unsupported server entry version ${String(data.version)}; rebuild with this HTMLKit.`, entry);
+  if (data.version !== 2 && data.version !== 3) throw new MarkupKitError(`Unsupported server entry version ${String(data.version)}; rebuild with this MarkupKit.`, entry);
   const output = await realpath(fileURLToPath(new URL("../../", entry)));
   const renderer = createRenderer(options.renderWorkers === undefined ? {} : { workers: options.renderWorkers });
   const privateLifetime = new AbortController();
@@ -586,7 +586,7 @@ export async function serverApplication(entry: string, data: ServerData, modules
   const catalog = new Map(data.catalog.map(([path, index]) => [path, routes[index]!]));
   const navigation = createNavigation(base, routes, () => Promise.resolve(catalog));
   // Files that are never served: the server's own code, and payloads, which answer through their pages.
-  const reserved = [join(output, "_htmlkit/server"), join(output, "_htmlkit/pages")];
+  const reserved = [join(output, "_markupkit/server"), join(output, "_markupkit/pages")];
   // A prerendered page's file carries the site's policy as a header too, which may hold header-only directives.
   const types = new Map((data.files ?? []).map(file => [join(output, decodeURIComponent(file.pathname.slice(base.length))), file.type]));
   const file = async (path: string, request: Request, status = 200, init?: Headers, page = false) => {
@@ -594,7 +594,7 @@ export async function serverApplication(entry: string, data: ServerData, modules
     headers.set("content-type", types.get(path) ?? mime[extname(path)] ?? "application/octet-stream");
     if (page && data.policy !== undefined) headers.set(policyHeader(data.policy), data.policy.header);
     // Hashed bundles beside the manifest never change.
-    if (/^_htmlkit\/[^/]+$/.test(path.slice(output.length + 1).replaceAll("\\", "/")) && !path.endsWith("manifest.json")) headers.set("cache-control", "public, max-age=31536000, immutable");
+    if (/^_markupkit\/[^/]+$/.test(path.slice(output.length + 1).replaceAll("\\", "/")) && !path.endsWith("manifest.json")) headers.set("cache-control", "public, max-age=31536000, immutable");
     return new Response(request.method === "HEAD" ? null : await readFile(path), { status, headers });
   };
   const missing = (request: Request, headers?: Headers) => file(join(output, "404.html"), request, 404, headers, true);
@@ -615,7 +615,7 @@ export async function serverApplication(entry: string, data: ServerData, modules
     if (!request.signal.aborted) console.error(error);
     const { pathname } = new URL(request.url);
     // A failed page has no payload, so the browser loads its document, the error page.
-    if (pathname.startsWith(base + "_htmlkit/pages/")) return new Response(null, { status: 500 });
+    if (pathname.startsWith(base + "_markupkit/pages/")) return new Response(null, { status: 500 });
     const builtin = () => pageResponse({ ...failurePage(serverFailure, data.scripts, data.policy), layers: [] }, request, false);
     if (data.error === undefined || pathname.startsWith("//")) return builtin();
     try {
@@ -650,7 +650,7 @@ export async function serverApplication(entry: string, data: ServerData, modules
       }
       if (server === undefined) {
         // A prerendered page: its document or payload, if the build wrote one for this URL.
-        const found = await outputPath(output, base, payload ? `${base}_htmlkit/pages/${url.pathname.slice(base.length)}payload.json` : url.pathname);
+        const found = await outputPath(output, base, payload ? `${base}_markupkit/pages/${url.pathname.slice(base.length)}payload.json` : url.pathname);
         if (typeof found === "object") return file(found.file, request, 200, undefined, !payload);
         return payload ? new Response(null, { status: 404 }) : missing(request);
       }
@@ -712,18 +712,18 @@ export async function listen(server: Server, options: { readonly host?: string; 
   const host = options.host ?? "127.0.0.1";
   await new Promise<void>((done, reject) => { server.once("error", reject); server.listen(options.port ?? 3000, host, done); });
   const address = server.address();
-  if (address === null || typeof address === "string") throw new HtmlKitError("Server did not obtain a TCP port.");
+  if (address === null || typeof address === "string") throw new MarkupKitError("Server did not obtain a TCP port.");
   let closing: Promise<void> | undefined;
   return { url: `http://${host.includes(":") ? `[${host}]` : host}:${address.port}${base}`,
     close: () => closing ??= new Promise<void>((done, reject) => { server.close(error => error ? reject(error) : done()); server.closeIdleConnections(); }) };
 }
 
-/** Serve a build's server entry on Node: `htmlkit start`. */
+/** Serve a build's server entry on Node: `markupkit start`. */
 export async function startApplication(options: StartOptions = {}): Promise<ApplicationServer> {
   if (options.renderWorkers !== undefined) setRenderWorkers(options.renderWorkers);
-  const entry = pathToFileURL(resolve(options.outDir ?? "dist", "_htmlkit/server/entry.js"));
+  const entry = pathToFileURL(resolve(options.outDir ?? "dist", "_markupkit/server/entry.js"));
   try { await stat(entry); }
-  catch { throw new HtmlKitError("No server entry; run htmlkit build first.", fileURLToPath(entry)); }
+  catch { throw new MarkupKitError("No server entry; run markupkit build first.", fileURLToPath(entry)); }
   const loaded = await import(entry.href) as { default: ServerApplication; create?: (options: { readonly renderWorkers?: number; readonly services?: unknown }) => Promise<ServerApplication> };
   const application = loaded.create === undefined ? loaded.default : await loaded.create(options);
   const server = createHTTPServer((incoming, outgoing) => {

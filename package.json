@@ -21,7 +21,7 @@
     "components"
   ],
   "engines": {
-    "node": ">=22.22.2 <23 || >=24.15 <25"
+    "node": ">=22.22.2 <23 || >=24.15"
   },
   "scripts": {
     "build": "pnpm clean && tsc -p tsconfig.build.json",

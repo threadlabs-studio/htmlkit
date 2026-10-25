@@ -1,3 +1,8 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/threadlabs-studio/htmlkit/main/website/public/logo-dark.svg">
+  <img src="https://raw.githubusercontent.com/threadlabs-studio/htmlkit/main/website/public/logo.svg" alt="HTMLKit logo" width="80" height="80">
+</picture>
+
 # HTMLKit
 
 Build with HTML again.

@@ -1,10 +1,9 @@
 # HTMLKit
 
-Forget React. Forget Vue. Forget Svelte.
+Build with HTML again.
 
-Build with HTML, CSS, and JavaScript like you used to, with the next generation of HTML.
-HTMLKit gives you components, pages, layouts, typed data, and server rendering while keeping your
-application in the languages of the web.
+The HTML, CSS, and JavaScript you know, with components, routing, and server rendering powered by
+the next generation of HTML. HTMLKit also provides shared layouts and typed data for your application.
 
 HTMLKit is a Threadlabs product, built on [HTML Next](https://github.com/nextwebwg/html-next),
 the implementation of the Next Web Working Group's declarative components proposal.

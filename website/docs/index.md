@@ -4,11 +4,9 @@ title: HTMLKit
 description: Build with HTML, CSS, and JavaScript again. Components, routing, and server rendering, powered by the next generation of HTML.
 ---
 
-# Forget React. Forget Vue. Forget Svelte.
+# Build with HTML again.
 
-Use HTML, CSS, and JavaScript like you did in the old days, with the next generation of HTML.
-
-HTMLKit brings components, routing, and server rendering to the languages you already know.
+The HTML, CSS, and JavaScript you know, with components, routing, and server rendering powered by the next generation of HTML.
 
 ![](/htmlkit-lockup.svg)
 

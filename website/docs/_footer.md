@@ -2,7 +2,6 @@
 
 - [Get started](/getting-started/)
 - [Configuration](/configuration/)
-- [Migration](/migration/)
 
 ## Made by Threadlabs
 

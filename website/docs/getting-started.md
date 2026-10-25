@@ -5,8 +5,6 @@ description: Install HTMLKit and build your first HTML page.
 
 # Get back to building with HTML.
 
-> The Threadlabs package is awaiting its first npm publication. Until it is available, install `@nextwebwg/htmlkit@1.0.0-alpha.69` and use `@nextwebwg/htmlkit` wherever these guides show `@threadlabs/htmlkit`.
-
 Write your pages in HTML, your styles in CSS, and your behavior in JavaScript. HTMLKit turns a folder of [HTML Next](https://nextwebwg.org/html-next/) components into a website. Each file in
 `app/pages` is a page and layouts wrap pages. Components receive typed props from ordinary values,
 shared providers, browser readers, or private server readers. Pages render at
@@ -19,7 +17,7 @@ reads use only public sources can also deploy to a static host.
 Use Node 22 (22.22.2 or later) or Node 24 (24.15 or later). Install HTMLKit and add its commands to `package.json`:
 
 ```sh
-npm install @nextwebwg/htmlkit@1.0.0-alpha.69
+npm install @threadlabs/htmlkit
 ```
 
 ```json

@@ -19,8 +19,6 @@ request, which `htmlkit start` runs on Node and Deno and Bun run through its `fe
 Use Node `>=22.22.2 <23 || >=24.15 <25`. Install `@threadlabs/htmlkit` and add its commands to your
 `package.json` scripts:
 
-The first Threadlabs npm publication is pending. Until it is available, install `@nextwebwg/htmlkit@1.0.0-alpha.69` and use its package name in imports. The [migration guide](./website/docs/migration.md) covers the transition.
-
 ```json
 {
   "scripts": {
@@ -57,10 +55,4 @@ reference, code display, heading anchors, search navigation, a theme, and an int
 Its Markdown dependency and theme live in the consumer, outside the platform runtime and published
 package. Its input is trusted, checked-in author content; it does not sanitize arbitrary Markdown.
 
-Larger documentation migrations must qualify their routes, examples, visuals, and browser behavior
-against reviewed references before switching deployment. This initial proof exercises the platform;
-it does not replace an existing documentation site's production output.
-
-HTMLKit is MIT-licensed and releases independently of HTML Next. The existing Next Web Working Group copyright notice is retained. It is configured for public npm
-publication; creating its npm name once and configuring its trusted publisher are release setup,
-not development build steps.
+HTMLKit is MIT-licensed.

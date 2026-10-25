@@ -5,6 +5,7 @@
 - HTML Next remains a Next Web Working Group proposal and runtime dependency. Use its public package exports; never reach into its repository or maintain a second component parser or runtime.
 - HTMLKit owns application routing, rendering, data delivery, and browser adoption. Markupress builds documentation on HTMLKit and owns Markdown, documentation versions, and its theme.
 - The website has its own product styling and retains the original HTMLKit logo. Keep implementation claims accurate and link proposal semantics to https://nextwebwg.org/declarative-components/.
+- Public product copy describes current capabilities. Keep internal work, package renaming history, and publication status out of it. Do not add migration guides for these alpha package changes.
 - Use strict ESM TypeScript, Corepack pnpm, Oxlint, and project-owned CSS. Do not add Prettier or Tailwind.
 - Preserve unrelated work and shared Git history. Use a single agent by default; cross-model review is off. Do not use `codex/` branch names.
 - Audit native browser mechanisms before adding runtime behavior. Keep independent regression coverage for platform defects exposed by consumers.

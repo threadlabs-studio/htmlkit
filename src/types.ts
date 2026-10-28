@@ -18,7 +18,7 @@ export interface ApplicationOptions {
   /** Named layout, or a layout a plugin supplies; default.html is automatic when present. false disables it. */
   readonly layout?: string | false | RouteLayer;
   /**
-   * Named layouts beside app/layouts, such as { home: { component, server: { load } } }. hk:layout,
+   * Named layouts beside app/layouts, such as { home: { component, server: { load } } }. mk:layout,
    * layout, layoutDefaults, and a page directory's layout name them. A name resolves to an entry here,
    * then app/layouts/<name>.html, then a plugin's layouts entry, earliest plugin first.
    */
@@ -28,7 +28,7 @@ export interface ApplicationOptions {
   readonly plugins?: readonly MarkupKitPlugin[];
   /**
    * Global stylesheets on every page, relative to the root or starting with @/. Unlike component
-   * styles they are not scoped, so they can style built-in components such as <hk-nav>.
+   * styles they are not scoped, so they can style built-in components such as <mk-nav>.
    */
   readonly css?: readonly string[];
   /** A classic script inlined with app/head.js, before it, so it runs before first paint; plugins may set it. */
@@ -36,7 +36,7 @@ export interface ApplicationOptions {
   /**
    * What links prefetch before a click: "interaction" (default) fetches a page's payload and module
    * when its link is hovered, focused, or touched; "visible" also does so for links on screen; "none"
-   * prefetches nothing. A link or its ancestor overrides it with data-hk-prefetch.
+   * prefetches nothing. A link or its ancestor overrides it with data-mk-prefetch.
    */
   readonly prefetch?: PrefetchPolicy;
   /**
@@ -234,7 +234,7 @@ export interface LoaderResult {
 }
 
 export interface LoadContext {
-  /** "request" for a page with hk:render="server", which renders on each request; "prerender" at build time. */
+  /** "request" for a page with mk:render="server", which renders on each request; "prerender" at build time. */
   readonly phase: "prerender" | "request";
   /** The page URL: the request's, query included, or for prerendering, the page path under the configured origin. */
   readonly url: URL;
@@ -248,11 +248,11 @@ export interface LoadContext {
   readonly signal: AbortSignal;
   /** Ordered concrete routes. from is an application-relative directory prefix. */
   readonly navigation: (options?: NavigationQuery) => Promise<readonly NavigationItem[]>;
-  /** The same pages as navigation(), nested by folder and (group) folder, for <hk-nav>. */
+  /** The same pages as navigation(), nested by folder and (group) folder, for <mk-nav>. */
   readonly navigationTree: (options?: NavigationQuery) => Promise<readonly NavigationNode[]>;
-  /** Each existing page from `from` (default /) down to the current page, for <hk-breadcrumbs>. */
+  /** Each existing page from `from` (default /) down to the current page, for <mk-breadcrumbs>. */
   readonly breadcrumbs: (options?: NavigationQuery) => Promise<readonly NavigationItem[]>;
-  /** The pages before and after the current one in navigation order, for <hk-pager>. */
+  /** The pages before and after the current one in navigation order, for <mk-pager>. */
   readonly pager: (options?: NavigationQuery) => Promise<PagerLinks>;
   /**
    * Stop loading and redirect to an application path or an http(s) URL, with status 303 unless
@@ -335,13 +335,13 @@ export interface ApplicationRoute extends RouteLayer {
   readonly segments: readonly string[];
   readonly params: readonly string[];
   readonly layouts: readonly RouteLayer[];
-  /** From the page's hk:label metadata; navigation otherwise labels the last URL segment. */
+  /** From the page's mk:label metadata; navigation otherwise labels the last URL segment. */
   readonly label?: string;
-  /** The page's static <title>, which labels its folder in a navigation tree when hk:label is absent. */
+  /** The page's static <title>, which labels its folder in a navigation tree when mk:label is absent. */
   readonly title?: string;
-  /** hk:navigation="hidden" metadata leaves the page out of navigation. */
+  /** mk:navigation="hidden" metadata leaves the page out of navigation. */
   readonly hidden?: boolean;
-  /** For an hk:alias route, the pattern of the page's own route, which navigation marks current. */
+  /** For an mk:alias route, the pattern of the page's own route, which navigation marks current. */
   readonly canonical?: string;
   /** For a page in an alias page directory, the pattern of the same page under its directory's own prefix, which its canonical link names. */
   readonly aliasOf?: string;
@@ -349,7 +349,7 @@ export interface ApplicationRoute extends RouteLayer {
   readonly order?: readonly (string | null)[];
   /** The (group) folders the page is in, outermost first. */
   readonly groups?: readonly RouteGroup[];
-  /** From the page's hk:render metadata: "server" renders it on each request instead of at build time. */
+  /** From the page's mk:render metadata: "server" renders it on each request instead of at build time. */
   readonly render?: "server";
 }
 /** A (group) folder: it orders and labels its pages and adds no URL segment. */
@@ -385,7 +385,7 @@ export interface NavigationItem {
  * an index page is that page's node, with the folder's pages as children.
  */
 export interface NavigationNode {
-  /** A page's label; a folder's index page's hk:label, then its <title>, then the folder name; a group's parentheses. */
+  /** A page's label; a folder's index page's mk:label, then its <title>, then the folder name; a group's parentheses. */
   readonly label: string;
   /** The page URL, for a page or a folder with an index page. */
   readonly href?: string;
@@ -395,7 +395,7 @@ export interface NavigationNode {
   readonly open: boolean;
   /** The nesting level, 0 at the top of the tree. */
   readonly depth: number;
-  /** The number-and-dot or hk:order rank, or null when the node has none. */
+  /** The number-and-dot or mk:order rank, or null when the node has none. */
   readonly order: string | null;
   readonly children: readonly NavigationNode[];
 }

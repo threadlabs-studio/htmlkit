@@ -9,7 +9,7 @@ import { titleOf, write } from "./fixture.js";
 const roots: string[] = [];
 afterEach(async () => { await Promise.all(roots.splice(0).map(root => rm(root, { recursive: true, force: true }))); });
 async function site() {
-  const root = await mkdtemp(join(tmpdir(), "hk-nav-")); roots.push(root);
+  const root = await mkdtemp(join(tmpdir(), "mk-nav-")); roots.push(root);
   await write(root, "package.json", '{"type":"module"}');
   for (const [file, name] of [["01.index", "home"], ["01.guide/02.install", "install"], ["01.guide/10.next", "next"], ["01.guide/01.index", "guide"], ["02.api", "api"], ["about", "about"]]) {
     await write(root, `app/pages/${file}.html`, `<template component="page-${name}"><h1>${name}</h1></template>`);
@@ -43,9 +43,9 @@ it("queries ordered concrete navigation with base URLs, aliases, depth, and curr
   const root = await site();
   await write(root, "app/pages/01.guide/[slug].html", '<template component="page-dynamic"><h1>Dynamic</h1></template>');
   await write(root, "app/pages/01.guide/[slug].server.ts", 'export const entries = () => [{ slug: "z" }, { slug: "a" }];');
-  // <hk-nav> is built in; no component link is needed.
+  // <mk-nav> is built in; no component link is needed.
   await write(root, "app/layouts/default.html", `<template component="navigation-shell"><defs><prop name="navigation" type="list(object({ href: string, label: string, current: string, depth: number, pageName: string }))" required>Links</prop></defs>
-    <main><hk-nav from:items="$navigation"></hk-nav><slot name="page"></slot></main></template>`);
+    <main><mk-nav from:items="$navigation"></mk-nav><slot name="page"></slot></main></template>`);
   await write(root, "app/layouts/default.server.ts", 'export const load = async ({ navigation }) => ({ props: { navigation: await navigation({ from: "/guide/" }) } });');
   const application = await createApplication({ root, base: "/kit/", routes: [{ pattern: "/alias/", component: "app/pages/02.api.html" }] });
   try {
@@ -69,7 +69,7 @@ it("orders and labels (group) folders in navigation without adding a URL segment
   // A group's _layout.html wraps its pages like any folder's.
   await write(root, "app/pages/docs/01.(Getting started)/_layout.html", '<template component="start-shell"><section><slot name="page"></slot></section></template>');
   await write(root, "app/layouts/default.html", `<template component="group-shell"><defs><prop name="pages" type="list(object({ href: string, label: string, current: string, depth: number, pageName: string, ... }))" required>Links</prop></defs>
-    <main><hk-nav from:items="$pages"></hk-nav><slot name="page"></slot></main></template>`);
+    <main><mk-nav from:items="$pages"></mk-nav><slot name="page"></slot></main></template>`);
   await write(root, "app/layouts/default.server.ts", 'export const load = async ({ navigation }) => ({ props: { pages: await navigation({ from: "/docs/" }) } });');
   const application = await createApplication({ root });
   try {
@@ -82,7 +82,7 @@ it("orders and labels (group) folders in navigation without adding a URL segment
     expect(Object.keys(items[0]!)).not.toContain("group");
     const { body } = await application.render("/docs/intro/");
     expect(body).toContain('data-component="start-shell"');
-    // <hk-nav> labels each group where its pages start.
+    // <mk-nav> labels each group where its pages start.
     expect([...body.matchAll(/<li data-group[^>]*>([^<]+)<\/li>/g)].map(match => match[1])).toEqual(["Getting started", "Advanced", "Reference"]);
     expect(body.replace(/<!--[^>]*-->/g, "").replace(/>\s+</g, "><")).toContain('<li data-group="" data-depth="1">Getting started</li><li data-depth="1"><a href="/docs/intro/" aria-current="page">intro</a></li>');
     expect((await application.render("/docs/faq/")).body).not.toContain("start-shell");
@@ -91,33 +91,33 @@ it("orders and labels (group) folders in navigation without adding a URL segment
   await expect(discoverRoutes(root)).rejects.toThrow(/route group needs a label/);
 });
 
-it("orders a page by hk:order in place of its number-and-dot prefix", async () => {
+it("orders a page by mk:order in place of its number-and-dot prefix", async () => {
   const root = await site();
-  // 10.next.html would follow 02.install.html; hk:order 1 puts it first, and about joins the numbered pages.
-  await write(root, "app/pages/01.guide/10.next.html", '<template component="page-next"><defs><meta name="hk:order" content="1"></defs><h1>next</h1></template>');
-  await write(root, "app/pages/about.html", '<template component="page-about"><defs><meta name="hk:order" content="3"></defs><h1>about</h1></template>');
+  // 10.next.html would follow 02.install.html; mk:order 1 puts it first, and about joins the numbered pages.
+  await write(root, "app/pages/01.guide/10.next.html", '<template component="page-next"><defs><meta name="mk:order" content="1"></defs><h1>next</h1></template>');
+  await write(root, "app/pages/about.html", '<template component="page-about"><defs><meta name="mk:order" content="3"></defs><h1>about</h1></template>');
   const application = await createApplication({ root });
   try {
     expect((await application.navigation()).map(item => item.href)).toEqual(["/", "/guide/", "/guide/next/", "/guide/install/", "/api/", "/about/"]);
     expect(application.routes.find(route => route.pageName === "page-next")!.order).toEqual(["01", "1"]);
   } finally { await application.close(); }
-  await write(root, "app/pages/about.html", '<template component="page-about"><defs><meta name="hk:order" content="first"></defs><h1>about</h1></template>');
-  await expect(discoverRoutes(root)).rejects.toThrow(/hk:order needs a whole number/);
+  await write(root, "app/pages/about.html", '<template component="page-about"><defs><meta name="mk:order" content="first"></defs><h1>about</h1></template>');
+  await expect(discoverRoutes(root)).rejects.toThrow(/mk:order needs a whole number/);
   await write(root, "app/pages/about.html", '<template component="page-about"><h1>about</h1></template>');
-  // On a folder's index page, hk:order orders the folder, with its pages, among its neighbours.
-  await write(root, "app/pages/01.guide/01.index.html", '<template component="page-guide"><defs><meta name="hk:order" content="5"></defs><h1>guide</h1></template>');
+  // On a folder's index page, mk:order orders the folder, with its pages, among its neighbours.
+  await write(root, "app/pages/01.guide/01.index.html", '<template component="page-guide"><defs><meta name="mk:order" content="5"></defs><h1>guide</h1></template>');
   const reordered = await createApplication({ root });
   try {
     expect((await reordered.navigation()).map(item => item.href)).toEqual(["/", "/api/", "/guide/", "/guide/next/", "/guide/install/", "/about/"]);
     expect((await reordered.navigationTree()).map(node => [node.href, node.order])).toEqual([["/", null], ["/api/", "02"], ["/guide/", "5"], ["/about/", null]]);
   } finally { await reordered.close(); }
-  await write(root, "app/pages/01.index.html", '<template component="page-home"><defs><meta name="hk:order" content="2"></defs><h1>home</h1></template>');
-  await expect(discoverRoutes(root)).rejects.toThrow(/01\.index\.html: hk:order on the site's home page has no folder to order/);
+  await write(root, "app/pages/01.index.html", '<template component="page-home"><defs><meta name="mk:order" content="2"></defs><h1>home</h1></template>');
+  await expect(discoverRoutes(root)).rejects.toThrow(/01\.index\.html: mk:order on the site's home page has no folder to order/);
 });
 
-it("nests navigation by folder and group, labels folders from their index pages, and renders <details> in <hk-nav>", async () => {
+it("nests navigation by folder and group, labels folders from their index pages, and renders <details> in <mk-nav>", async () => {
   const root = await site();
-  // A folder's index page labels it by hk:label, then by its <title>.
+  // A folder's index page labels it by mk:label, then by its <title>.
   await write(root, "app/pages/01.guide/01.index.html", '<template component="page-guide"><defs><title>The guide</title></defs><h1>guide</h1></template>');
   await write(root, "app/pages/01.guide/20.(Advanced)/tuning.html", '<template component="page-tuning"><h1>tuning</h1></template>');
   await write(root, "app/pages/01.guide/deep/more.html", '<template component="page-more"><h1>more</h1></template>');
@@ -125,7 +125,7 @@ it("nests navigation by folder and group, labels folders from their index pages,
     <prop name="tree" type="list(object({ label: string, current: string, depth: number, ... }))" required>Tree</prop>
     <prop name="previous" type="object({ href: string, label: string, current: string, depth: number, pageName: string, ... })">Previous</prop>
     <prop name="next" type="object({ href: string, label: string, current: string, depth: number, pageName: string, ... })">Next</prop></defs>
-    <main><hk-nav from:items="$tree"></hk-nav><slot name="page"></slot><hk-pager from:previous="$previous" from:next="$next"></hk-pager></main></template>`);
+    <main><mk-nav from:items="$tree"></mk-nav><slot name="page"></slot><mk-pager from:previous="$previous" from:next="$next"></mk-pager></main></template>`);
   await write(root, "app/layouts/default.server.ts", 'export const load = async ({ navigationTree, pager }) => ({ props: { tree: await navigationTree(), ...await pager() } });');
   const application = await createApplication({ root });
   try {
@@ -150,21 +150,21 @@ it("nests navigation by folder and group, labels folders from their index pages,
   } finally { await application.close(); }
 });
 
-it("renders a tree's first three levels inline in <hk-nav>, and deeper levels through <hk-nav-items>", async () => {
+it("renders a tree's first three levels inline in <mk-nav>, and deeper levels through <mk-nav-items>", async () => {
   const root = await site();
   await write(root, "app/pages/a/b/c/d/e/leaf.html", '<template component="page-leaf"><h1>leaf</h1></template>');
   await write(root, "app/layouts/default.html", `<template component="tree-shell"><defs>
     <prop name="tree" type="list(object({ label: string, current: string, depth: number, ... }))" required>Tree</prop></defs>
-    <main><hk-nav from:items="$tree"></hk-nav><slot name="page"></slot></main></template>`);
+    <main><mk-nav from:items="$tree"></mk-nav><slot name="page"></slot></main></template>`);
   await write(root, "app/layouts/default.server.ts", 'export const load = async ({ navigationTree }) => ({ props: { tree: await navigationTree() } });');
   const application = await createApplication({ root });
   try {
     const body = (await application.render("/a/b/c/d/e/leaf/")).body.replace(/<!--[^>]*-->/g, "").replace(/>\s+</g, "><");
-    const nav = /<nav [^>]*data-component="hk-nav"[^>]*>([\s\S]*?)<\/nav>/.exec(body)![1]!;
-    expect([...nav.matchAll(/<details open=""><summary><span>(\w)<\/span><\/summary><ul( data-component="hk-nav-items")?/g)].map(match => [match[1], match[2] !== undefined]))
+    const nav = /<nav [^>]*data-component="mk-nav"[^>]*>([\s\S]*?)<\/nav>/.exec(body)![1]!;
+    expect([...nav.matchAll(/<details open=""><summary><span>(\w)<\/span><\/summary><ul( data-component="mk-nav-items")?/g)].map(match => [match[1], match[2] !== undefined]))
       .toEqual([["a", false], ["b", false], ["c", true], ["d", true], ["e", true]]);
     expect(nav).toContain('<a href="/a/b/c/d/e/leaf/" aria-current="page">leaf</a>');
-    // The tree reaches the page in <hk-nav>'s props, and each deeper instance holds only its own levels.
+    // The tree reaches the page in <mk-nav>'s props, and each deeper instance holds only its own levels.
     expect(nav.match(/data-html-next-instance/g)).toHaveLength(3);
   } finally { await application.close(); }
 });
@@ -179,10 +179,10 @@ it("omits unenumerated dynamic patterns from navigation while static builds diag
   } finally { await application.close(); }
 });
 
-it("names the hk: spelling for metadata written with the old htmlkit: prefix", async () => {
+it("names the mk: spelling for metadata written with the old htmlkit: prefix", async () => {
   const root = await site();
   await write(root, "app/pages/about.html", '<template component="page-about"><defs><meta name="htmlkit:label" content="About"></defs><h1>about</h1></template>');
-  await expect(discoverRoutes(root)).rejects.toThrow(/write hk:label instead of htmlkit:label/);
+  await expect(discoverRoutes(root)).rejects.toThrow(/write mk:label instead of htmlkit:label/);
 });
 
 it("renders built-in breadcrumbs and previous/next links from navigation order", async () => {
@@ -192,7 +192,7 @@ it("renders built-in breadcrumbs and previous/next links from navigation order",
     <prop name="crumbs" type="list(${item})" required>Trail</prop>
     <prop name="previous" type="${item}">Previous page</prop>
     <prop name="next" type="${item}">Next page</prop></defs>
-    <main><hk-breadcrumbs from:items="$crumbs"></hk-breadcrumbs><slot name="page"></slot><hk-pager from:previous="$previous" from:next="$next"></hk-pager></main></template>`);
+    <main><mk-breadcrumbs from:items="$crumbs"></mk-breadcrumbs><slot name="page"></slot><mk-pager from:previous="$previous" from:next="$next"></mk-pager></main></template>`);
   await write(root, "app/layouts/default.server.ts", 'export const load = async ({ breadcrumbs, pager }) => ({ props: { crumbs: await breadcrumbs(), ...await pager() } });');
   await write(root, "app/pages/blog/[slug].html", '<template component="page-post"><p>Post</p></template>');
   const application = await createApplication({ root, base: "/kit/" });
@@ -218,7 +218,7 @@ it("names the layout whose loader's prop fails its declared type, not the head i
   // A closed object type, which a group item's extra group field does not satisfy.
   await write(root, "app/layouts/default.html", `<template component="trail-shell"><defs>
     <prop name="crumbs" type="list(object({ href: string, label: string, current: string, depth: number, pageName: string }))" required>Trail</prop><title>Docs</title></defs>
-    <main><hk-breadcrumbs from:items="$crumbs"></hk-breadcrumbs><slot name="page"></slot></main></template>`);
+    <main><mk-breadcrumbs from:items="$crumbs"></mk-breadcrumbs><slot name="page"></slot></main></template>`);
   await write(root, "app/layouts/default.server.ts", "export const load = async ({ breadcrumbs }) => ({ props: { crumbs: await breadcrumbs() } });");
   const application = await createApplication({ root });
   try {

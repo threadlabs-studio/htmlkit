@@ -123,7 +123,7 @@ export function createNavigation(base: string, routes: readonly NavigationRoute[
     const finish = (draft: Draft, depth: number): NavigationNode => {
       const children = draft.children.map(child => finish(child, depth + 1));
       const { item, route } = draft;
-      // A folder's index page labels the folder, by hk:label, then its <title>.
+      // A folder's index page labels the folder, by mk:label, then its <title>.
       const label = item === undefined ? draft.label : children.length > 0 && route!.label === undefined ? route!.title ?? draft.label : item.label;
       const current = item?.current ?? "false";
       return Object.freeze({ label, ...(item === undefined ? {} : { href: item.href, pageName: item.pageName }), current,
@@ -170,7 +170,7 @@ function invocationAttributes(definition: ComponentDefinition, result: LoaderRes
 
 /** The browser builds the same invocation from a page payload (client.ts). */
 function invocation(tag: string, attributes: Readonly<Record<string, string>>, index: number, child: string, nested: boolean): string {
-  return `<${tag}${Object.hasOwn(attributes, "id") ? "" : ` id="hk-layer-${index}"`} data-hk-layer="${index}"${nested ? ' slot="page"' : ""}${Object.entries(attributes).map(([name, value]) => ` ${name}="${escapeHTML(value)}"`).join("")}>${child}</${tag}>`;
+  return `<${tag}${Object.hasOwn(attributes, "id") ? "" : ` id="mk-layer-${index}"`} data-mk-layer="${index}"${nested ? ' slot="page"' : ""}${Object.entries(attributes).map(([name, value]) => ` ${name}="${escapeHTML(value)}"`).join("")}>${child}</${tag}>`;
 }
 
 /** The request's cookies by name; the first of a repeated name wins, as the most specific path comes first. */
@@ -260,7 +260,7 @@ export async function renderRoute(input: RenderInput): Promise<Rendered> {
   const current = route.canonical === undefined ? url.pathname : at(route.canonical);
   const contextOf = (layer: RenderLayer): LoadContext => {
     const prerendering = (name: string): never => {
-      throw new MarkupKitError(`${name} is unavailable while prerendering; <meta name="hk:render" content="server"> renders the page on each request.`, layer.origin);
+      throw new MarkupKitError(`${name} is unavailable while prerendering; <meta name="mk:render" content="server"> renders the page on each request.`, layer.origin);
     };
     return { phase: request === undefined ? "prerender" : "request", url: new URL(url), base, params, parent,
       propNames: Object.freeze(Object.keys(layer.definition.contract.props)),
@@ -328,7 +328,7 @@ export async function renderRoute(input: RenderInput): Promise<Rendered> {
     const client = input.clientModules?.includes(layer.definition.contract.tag) ?? false;
     const names: string[] | undefined = input.providers?.[layer.definition.contract.tag] === undefined && !client ? undefined : [];
     attributes.push(invocationAttributes(layer.definition, result, names));
-    if (!client && names !== undefined && names.length > 0) required.push({ tag: layer.definition.contract.tag, selector: `[data-hk-layer="${index}"]`, names });
+    if (!client && names !== undefined && names.length > 0) required.push({ tag: layer.definition.contract.tag, selector: `[data-mk-layer="${index}"]`, names });
   }
   const state: Record<string, Readonly<Record<string, unknown>>> = {};
   const props: Record<string, Readonly<Record<string, unknown>>> = {};
@@ -337,7 +337,7 @@ export async function renderRoute(input: RenderInput): Promise<Rendered> {
     ...(results[i]!.state === undefined ? {} : { state: results[i]!.state }) }));
   let body = "";
   for (let i = layers.length - 1; i >= 0; i--) {
-    const selector = `[data-hk-layer="${i}"]`;
+    const selector = `[data-mk-layer="${i}"]`;
     const layer = rendered[i]!;
     if (layer.state !== undefined) state[selector] = layer.state;
     props[selector] = Object.fromEntries(Object.keys(layers[i]!.definition.contract.props).map(name => [name, layer.props![name]]));
@@ -486,7 +486,7 @@ export function pageAction(module: ServerModule, url: URL): PageAction | Respons
 
 /** The build error for actions on a page that prerenders. */
 export function prerenderedActions(pattern: string, origin: string): MarkupKitError {
-  return new MarkupKitError(`The page ${pattern} has actions, which answer requests; <meta name="hk:render" content="server"> renders it on each request.`, origin);
+  return new MarkupKitError(`The page ${pattern} has actions, which answer requests; <meta name="mk:render" content="server"> renders it on each request.`, origin);
 }
 
 async function answerEndpoint<Route extends NavigationRoute>(app: Pipeline<Route>, endpoint: EndpointRoute, params: Params, request: Request): Promise<Response> {

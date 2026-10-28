@@ -1,5 +1,5 @@
 /**
- * The bytes a navigation tree adds to each page: an 81-page site with a <hk-nav> of its
+ * The bytes a navigation tree adds to each page: an 81-page site with a <mk-nav> of its
  * navigationTree() in the default layout, built by `markupkit build`. Reports one page's document and
  * its <aside> sidebar, and the JavaScript the page ships, raw and gzip -9. The site and its output go
  * to `.measure/`, which git ignores.
@@ -27,7 +27,7 @@ for (let group = 1; group <= 4; group++) for (let folder = 1; folder <= 2; folde
 }
 await write("app/layouts/default.html", `<template component="tree-shell"><defs>
   <prop name="tree" type="list(object({ label: string, current: string, depth: number, ... }))" required>Tree</prop></defs>
-  <main><aside><hk-nav from:items="$tree"></hk-nav></aside><slot name="page"></slot></main></template>`);
+  <main><aside><mk-nav from:items="$tree"></mk-nav></aside><slot name="page"></slot></main></template>`);
 await write("app/layouts/default.server.ts", "export const load = async ({ navigationTree }) => ({ props: { tree: await navigationTree() } });");
 
 const outDir = join(root, "dist");

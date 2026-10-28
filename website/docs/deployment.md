@@ -15,13 +15,13 @@ on Deno or Bun.
 ## Prerendered and server pages
 
 Every page is prerendered unless it says otherwise: the build runs its loader once and writes its
-HTML. A page with `<meta name="hk:render" content="server">` renders on each request instead, so its
+HTML. A page with `<meta name="mk:render" content="server">` renders on each request instead, so its
 loader can read the [request](/loaders#rendering-on-each-request):
 
 ```html
 <!-- app/pages/account.html -->
 <template component="page-account">
-  <defs><meta name="hk:render" content="server"></defs>
+  <defs><meta name="mk:render" content="server"></defs>
   …
 </template>
 ```
@@ -30,7 +30,7 @@ loader can read the [request](/loaders#rendering-on-each-request):
 
 - -
   - Prerendered (default)
-  - `hk:render` `server`
+  - `mk:render` `server`
 
 - - Loader runs
   - once, at build time

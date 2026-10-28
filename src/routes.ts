@@ -228,13 +228,13 @@ export async function discover(root: string, options: DiscoveryOptions) {
     const metadata = resource.components.get(pageDefinition(resource, route.component).contract.tag)!;
     for (const from of metadata.redirectsFrom) {
       if (!/^\/(?:[^/]+\/)*$/.test(from) || !from.slice(1, -1).split("/").filter(Boolean).every(validSegment)) {
-        throw new MarkupKitError("hk:redirect-from needs a route path with leading and trailing slashes.", route.component);
+        throw new MarkupKitError("mk:redirect-from needs a route path with leading and trailing slashes.", route.component);
       }
-      if (route.params.length > 0) throw new MarkupKitError(`hk:redirect-from redirects to one URL, and ${route.pattern} has parameters.`, route.component);
+      if (route.params.length > 0) throw new MarkupKitError(`mk:redirect-from redirects to one URL, and ${route.pattern} has parameters.`, route.component);
       redirects.push({ from: route.prefix + from.slice(1), to: route.pattern, component: route.component });
     }
     for (const alias of metadata.aliases) {
-      if (!/^\/(?:[^/]+\/)*$/.test(alias)) throw new MarkupKitError("hk:alias needs a route path with leading and trailing slashes.", route.component);
+      if (!/^\/(?:[^/]+\/)*$/.test(alias)) throw new MarkupKitError("mk:alias needs a route path with leading and trailing slashes.", route.component);
       add({ component: route.component, ...(route.server === undefined ? {} : { server: route.server }), layouts: route.layouts,
         pattern: route.prefix + alias.slice(1), canonical: route.pattern, ...(route.aliasOf === undefined ? {} : { aliasOf: route.aliasOf }) }, route.prefix, undefined, route.directoryLayout, route.folderLayouts);
     }
@@ -252,9 +252,9 @@ export async function discover(root: string, options: DiscoveryOptions) {
   const redirected = new Map<string, string>();
   for (const { from, component } of redirects) {
     const page = routes.find(route => !route.error && !route.notFound && route.pattern.toLowerCase() === from.toLowerCase());
-    if (page !== undefined) throw new MarkupKitError(`hk:redirect-from ${from} is ${page.component === component ? "this page's own URL" : `the URL of ${page.component}`}.`, component);
+    if (page !== undefined) throw new MarkupKitError(`mk:redirect-from ${from} is ${page.component === component ? "this page's own URL" : `the URL of ${page.component}`}.`, component);
     const other = redirected.get(from);
-    if (other !== undefined) throw new MarkupKitError(`hk:redirect-from ${from} is declared by ${other} and ${component}.`, component);
+    if (other !== undefined) throw new MarkupKitError(`mk:redirect-from ${from} is declared by ${other} and ${component}.`, component);
     redirected.set(from, component);
   }
   const pageNames = new Map<string, { component: string; pattern: string; identity: string }>();
@@ -311,26 +311,26 @@ export async function discover(root: string, options: DiscoveryOptions) {
     }
     // The selected layout is outermost and folder layouts nest inside it; none drops them all.
     if (selected !== false && selected !== "none") layouts = [...layouts, ...folderLayouts];
-    // hk:order takes the place of the number-and-dot prefix on the page's own last segment.
-    // hk:order takes the place of the number-and-dot prefix on the page's own last segment; on a
+    // mk:order takes the place of the number-and-dot prefix on the page's own last segment.
+    // mk:order takes the place of the number-and-dot prefix on the page's own last segment; on a
     // folder's index page, that segment is the folder's, so it orders the folder (below).
     let order = route.order;
     if (metadata.order !== undefined && route.canonical === undefined && !isNotFound && !isError) {
-      if (route.segments.length === 0) throw new MarkupKitError("hk:order on the site's home page has no folder to order; it orders a page among its folder's pages.", route.component);
+      if (route.segments.length === 0) throw new MarkupKitError("mk:order on the site's home page has no folder to order; it orders a page among its folder's pages.", route.component);
       order = [...route.segments.slice(0, -1).map((_, i) => route.order?.[i] ?? null), metadata.order];
       if (index) folderOrders.push({ segments: route.segments, rank: metadata.order });
     }
-    // A static <title> labels the page's folder in navigation trees when hk:label doesn't.
+    // A static <title> labels the page's folder in navigation trees when mk:label doesn't.
     const title = metadata.title;
-    // The not-found page is prerendered as 404.html, and the error page renders as a build would; neither takes hk:render.
-    if ((isNotFound || isError) && metadata.render !== undefined) throw new MarkupKitError(`The ${isNotFound ? "not-found" : "error"} page takes no hk:render.`, route.component);
+    // The not-found page is prerendered as 404.html, and the error page renders as a build would; neither takes mk:render.
+    if ((isNotFound || isError) && metadata.render !== undefined) throw new MarkupKitError(`The ${isNotFound ? "not-found" : "error"} page takes no mk:render.`, route.component);
     const discoveredRoute = { ...route, layouts, pageName, ...(order === undefined ? {} : { order }), ...(metadata.label === undefined ? {} : { label: metadata.label }),
       ...(title ? { title } : {}), ...(metadata.hidden ? { hidden: true } : {}), ...(metadata.render === "server" ? { render: "server" as const } : {}) };
     if (isNotFound) notFound = discoveredRoute;
     else if (isError) error = discoveredRoute;
     else discovered.push(discoveredRoute);
   }
-  // Every page in a folder whose index page sets hk:order takes that rank for the folder's segment.
+  // Every page in a folder whose index page sets mk:order takes that rank for the folder's segment.
   for (const { segments, rank } of folderOrders) {
     for (const [i, route] of discovered.entries()) {
       if (route.canonical !== undefined || route.segments.length < segments.length || segments.some((segment, j) => route.segments[j] !== segment)) continue;
@@ -419,13 +419,13 @@ export async function discoverApplication(input: ApplicationOptions = {}) {
   const option = redirectTable(config.base, options.redirects);
   const discovery = await discover(config.root, { ...options, base: config.base });
   const { routes, redirects: declared } = discovery;
-  // Pages' hk:redirect-from entries join the redirects option's, rediscovered with the pages.
+  // Pages' mk:redirect-from entries join the redirects option's, rediscovered with the pages.
   const redirects = new Map(option);
   // Each page redirect's deployment path, for the declaring page's diagnostics.
   const pageRedirects = new Map<string, { readonly from: string; readonly component: string }>();
   for (const { from, to, component } of declared) {
     const path = new URL(config.base + from.slice(1), "http://localhost").pathname;
-    if (option.has(path)) throw new MarkupKitError(`hk:redirect-from ${from} is also a key of the redirects option.`, component);
+    if (option.has(path)) throw new MarkupKitError(`mk:redirect-from ${from} is also a key of the redirects option.`, component);
     redirects.set(path, config.base + to.slice(1));
     pageRedirects.set(path, { from, component });
   }

@@ -8,7 +8,7 @@ import { write } from "./fixture.js";
 const roots: string[] = [];
 afterEach(async () => { await Promise.all(roots.splice(0).map(root => rm(root, { recursive: true, force: true }))); });
 async function site(pages: Readonly<Record<string, string>>) {
-  const root = await mkdtemp(join(tmpdir(), "hk-routing-")); roots.push(root);
+  const root = await mkdtemp(join(tmpdir(), "mk-routing-")); roots.push(root);
   await write(root, "package.json", '{"type":"module"}');
   await write(root, "app/pages/index.html", '<template component="page-home"><h1>Home</h1></template>');
   for (const [file, contents] of Object.entries(pages)) await write(root, `app/pages/${file}`, contents);
@@ -140,11 +140,11 @@ it("writes a redirect page at each old URL and lists redirects in the manifest",
   await expect(buildApplication({ root, redirects: { "/docs/static/": "/" } })).rejects.toThrow(/also redirects \/docs\/static\/, which is this page's URL/);
 }, 60_000);
 
-it("redirects each page's hk:redirect-from paths to it, relative to its page directory, in fetch, development and the build", async () => {
+it("redirects each page's mk:redirect-from paths to it, relative to its page directory, in fetch, development and the build", async () => {
   const moved = (from: string) => `<template component="page-moved"><defs><title>Moved</title>${from}</defs><h1>Moved</h1></template>`;
-  const root = await site({ "guide/moved.html": moved('<meta name="hk:redirect-from" content="/old/"><meta name="hk:redirect-from" content="/older/path/">') });
-  await write(root, "docs/page.html", '<template component="docs-page"><defs><title>Doc</title><meta name="hk:redirect-from" content="/before/"></defs><h1>Doc</h1></template>');
-  // A further mount of a directory redirects under its own prefix too, to the page under that prefix, as hk:alias routes there.
+  const root = await site({ "guide/moved.html": moved('<meta name="mk:redirect-from" content="/old/"><meta name="mk:redirect-from" content="/older/path/">') });
+  await write(root, "docs/page.html", '<template component="docs-page"><defs><title>Doc</title><meta name="mk:redirect-from" content="/before/"></defs><h1>Doc</h1></template>');
+  // A further mount of a directory redirects under its own prefix too, to the page under that prefix, as mk:alias routes there.
   const pages = [{ dir: "app/pages" }, { dir: "docs", prefix: "/docs/" }, { dir: "docs", prefix: "/v/current/", alias: true }];
   const application = await createApplication({ root, base: "/kit/", pages });
   try {
@@ -170,22 +170,22 @@ it("redirects each page's hk:redirect-from paths to it, relative to its page dir
   try {
     const status = async (path: string) => { const response = await fetch(server.url + path, { redirect: "manual" }); return [response.status, response.headers.get("location")]; };
     expect(await status("old/")).toEqual([308, "/guide/moved/"]);
-    await write(root, "app/pages/guide/moved.html", moved('<meta name="hk:redirect-from" content="/renamed/">'));
+    await write(root, "app/pages/guide/moved.html", moved('<meta name="mk:redirect-from" content="/renamed/">'));
     await expect.poll(() => status("renamed/"), { timeout: 10_000 }).toEqual([308, "/guide/moved/"]);
     expect((await status("old/"))[0]).toBe(404);
   } finally { await server.close(); }
 }, 60_000);
 
-it("rejects an hk:redirect-from path that a page, an alias, the redirects option or another page also claims", async () => {
-  const redirecting = (name: string, from: string, extra = "") => `<template component="${name}"><defs><title>${name}</title><meta name="hk:redirect-from" content="${from}">${extra}</defs><h1>${name}</h1></template>`;
+it("rejects an mk:redirect-from path that a page, an alias, the redirects option or another page also claims", async () => {
+  const redirecting = (name: string, from: string, extra = "") => `<template component="${name}"><defs><title>${name}</title><meta name="mk:redirect-from" content="${from}">${extra}</defs><h1>${name}</h1></template>`;
   const cases: [Readonly<Record<string, string>>, Readonly<Record<string, string>> | undefined, RegExp][] = [
-    [{ "a.html": redirecting("page-a", "/a/") }, undefined, /hk:redirect-from \/a\/ is this page's own URL/],
-    [{ "a.html": redirecting("page-a", "/start/", '<meta name="hk:alias" content="/start/">') }, undefined, /hk:redirect-from \/start\/ is this page's own URL/],
-    [{ "a.html": redirecting("page-a", "/b/"), "b.html": echo("page-b") }, undefined, /hk:redirect-from \/b\/ is the URL of .*b\.html/],
-    [{ "a.html": redirecting("page-a", "/old/"), "b.html": redirecting("page-b", "/old/") }, undefined, /hk:redirect-from \/old\/ is declared by .*a\.html and .*b\.html/],
-    [{ "a.html": redirecting("page-a", "/old/") }, { "/old/": "/" }, /hk:redirect-from \/old\/ is also a key of the redirects option/],
-    [{ "a.html": redirecting("page-a", "old") }, undefined, /hk:redirect-from needs a route path with leading and trailing slashes/],
-    [{ "[id].html": redirecting("page-id", "/old/") }, undefined, /hk:redirect-from redirects to one URL, and \/\[id\]\/ has parameters/],
+    [{ "a.html": redirecting("page-a", "/a/") }, undefined, /mk:redirect-from \/a\/ is this page's own URL/],
+    [{ "a.html": redirecting("page-a", "/start/", '<meta name="mk:alias" content="/start/">') }, undefined, /mk:redirect-from \/start\/ is this page's own URL/],
+    [{ "a.html": redirecting("page-a", "/b/"), "b.html": echo("page-b") }, undefined, /mk:redirect-from \/b\/ is the URL of .*b\.html/],
+    [{ "a.html": redirecting("page-a", "/old/"), "b.html": redirecting("page-b", "/old/") }, undefined, /mk:redirect-from \/old\/ is declared by .*a\.html and .*b\.html/],
+    [{ "a.html": redirecting("page-a", "/old/") }, { "/old/": "/" }, /mk:redirect-from \/old\/ is also a key of the redirects option/],
+    [{ "a.html": redirecting("page-a", "old") }, undefined, /mk:redirect-from needs a route path with leading and trailing slashes/],
+    [{ "[id].html": redirecting("page-id", "/old/") }, undefined, /mk:redirect-from redirects to one URL, and \/\[id\]\/ has parameters/],
   ];
   for (const [pages, redirects, message] of cases) {
     const root = await site(pages);
@@ -194,7 +194,7 @@ it("rejects an hk:redirect-from path that a page, an alias, the redirects option
   // A dynamic page's listed URL is checked when entries() lists it, against the page that declares the redirect.
   const root = await site({ "a.html": redirecting("page-a", "/docs/x/"), "docs/[id].html": echo("page-id"), "docs/[id].server.ts": echoLoader('[{ id: "x" }]') });
   const application = await createApplication({ root });
-  try { await expect(application.entries()).rejects.toThrow(new RegExp(`${join(root, "app/pages/a.html")}: The page redirect hk:redirect-from /docs/x/ is the URL of .*\\[id\\]\\.html`)); }
+  try { await expect(application.entries()).rejects.toThrow(new RegExp(`${join(root, "app/pages/a.html")}: The page redirect mk:redirect-from /docs/x/ is the URL of .*\\[id\\]\\.html`)); }
   finally { await application.close(); }
 }, 60_000);
 

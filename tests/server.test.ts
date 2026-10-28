@@ -96,7 +96,7 @@ async function serverApp(): Promise<string> {
   const root = await fixture();
   roots.push(root);
   await write(root, "app/pages/account.html", `<template component="account-page"><defs>
-    <prop name="user" type="string" required>User</prop><prop name="page" type="string" required>Page</prop><prop name="trace" type="string" required>Trace</prop><meta name="hk:render" content="server"><title>Account</title></defs>
+    <prop name="user" type="string" required>User</prop><prop name="page" type="string" required>Page</prop><prop name="trace" type="string" required>Trace</prop><meta name="mk:render" content="server"><title>Account</title></defs>
     <section><h1>{$user}</h1><p class="page">{$page}</p><p class="trace">{$trace}</p></section></template>`);
   await write(root, "app/pages/account.server.ts", `export function load({ phase, url, cookies, request, response, redirect, notFound }) {
     if (phase !== "request") throw new Error("Rendered at build time");
@@ -112,9 +112,9 @@ async function serverApp(): Promise<string> {
   // The build's link check counts server-rendered pages and endpoints, which have no file, as whole.
   await write(root, "app/pages/login.html", '<template component="login-page"><defs><title>Log in</title></defs><p>Log in, then see <a href="/account/">your account</a>, <a href="/users/grace/">Grace</a>, or <a href="/api/todos">the API</a>.</p></template>');
   await write(root, "app/pages/users/[id].html", `<template component="user-page"><defs>
-    <prop name="name" type="string" required>Name</prop><meta name="hk:render" content="server"></defs><p class="user">{$name}</p></template>`);
+    <prop name="name" type="string" required>Name</prop><meta name="mk:render" content="server"></defs><p class="user">{$name}</p></template>`);
   await write(root, "app/pages/users/[id].server.ts", 'export const load = ({ params, notFound }) => params.id === "ghost" ? notFound() : { props: { name: params.id } };');
-  await write(root, "app/pages/admin.html", '<template component="admin-page"><defs><meta name="hk:render" content="server"></defs><p>Admin</p></template>');
+  await write(root, "app/pages/admin.html", '<template component="admin-page"><defs><meta name="mk:render" content="server"></defs><p>Admin</p></template>');
   await write(root, "app/pages/admin.server.ts", 'export const load = () => { throw new Error("The admin loader ran"); };');
   await write(root, "app/middleware.server.ts", `export default async function middleware(request, next) {
     const url = new URL(request.url);
@@ -137,7 +137,7 @@ async function serverApp(): Promise<string> {
   await write(root, "app/pages/todos.html", `<template component="todos-page"><defs>
     <prop name="todos" type="list(string)" required>Todos</prop><prop name="parent" type="string" default="">Parent data</prop>
     <prop name="errors" type="object({ title?: string })" default="{}">Field errors</prop><prop name="values" type="object({ title?: string })" default="{}">Submitted values</prop>
-    <meta name="hk:render" content="server"><title>Todos</title></defs><section>
+    <meta name="mk:render" content="server"><title>Todos</title></defs><section>
     <form method="post" action="?/create"><input name="title" from:value="$values.title"><p class="error" $if="$errors.title">{$errors.title}</p><button>Add</button></form>
     <ul><li $each="todo of $todos">{$todo}</li></ul><p class="parent">{$parent}</p></section></template>`);
   await write(root, "app/pages/todos.server.ts", `const todos = ["Write"];
@@ -315,7 +315,7 @@ describe("request-time rendering", () => {
   it("answers with the error page when a render worker ends mid-render, and renders the next request on a new one", async () => {
     const root = await fixture();
     roots.push(root);
-    await write(root, "app/pages/live.html", '<template component="live-page"><defs><meta name="hk:render" content="server"><title>Live</title><prop name="label" type="string">Label.</prop><state name="query" type="string" value="Live"></state></defs><section><p $await="$label">{$label}</p></section></template>');
+    await write(root, "app/pages/live.html", '<template component="live-page"><defs><meta name="mk:render" content="server"><title>Live</title><prop name="label" type="string">Label.</prop><state name="query" type="string" value="Live"></state></defs><section><p $await="$label">{$label}</p></section></template>');
     await write(root, "app/pages/live.server.ts", 'export const load = ({ url }) => ({ state: { query: url.searchParams.has("crash") ? "crash" : "Live" } });');
     await write(root, "app/pages/live.ts", 'export const props = { label: { input: (_, { state }) => state.query, load: (query, { phase }) => { if (phase === "request" && query === "crash") process.exit(1); return query; } } };');
     const { outDir } = await buildApplication({ root });
@@ -353,12 +353,12 @@ describe("request-time rendering", () => {
     const root = await fixture();
     roots.push(root);
     await write(root, "app/pages/index.server.ts", "export const load = ({ cookies }) => ({ props: { asset: cookies.get('a') } });");
-    await expect(buildApplication({ root })).rejects.toThrow(/index\.server\.ts: cookies is unavailable while prerendering; <meta name="hk:render" content="server">/);
+    await expect(buildApplication({ root })).rejects.toThrow(/index\.server\.ts: cookies is unavailable while prerendering; <meta name="mk:render" content="server">/);
     await write(root, "app/pages/index.server.ts", "export const load = ({ response }) => { response.status = 201; return {}; };");
     await expect(buildApplication({ root })).rejects.toThrow(/response is unavailable while prerendering/);
     // Actions answer requests, so a prerendered page has none, in a build and in development.
     await write(root, "app/pages/index.server.ts", "export const load = () => ({ props: { asset: '/mark.svg' } }); export const actions = { default() {} };");
-    await expect(buildApplication({ root })).rejects.toThrow(/index\.server\.ts: The page \/ has actions, which answer requests; <meta name="hk:render" content="server">/);
+    await expect(buildApplication({ root })).rejects.toThrow(/index\.server\.ts: The page \/ has actions, which answer requests; <meta name="mk:render" content="server">/);
     const prerendered = await createApplication({ root });
     const reported = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
@@ -371,11 +371,11 @@ describe("request-time rendering", () => {
     const { outDir, routes } = await buildApplication({ root });
     expect(routes).toEqual(["/", "/items/one/"]);
     expect(existsSync(join(outDir, "items/gone"))).toBe(false);
-    await write(root, "app/pages/404.html", '<template component="missing-page"><defs><meta name="hk:render" content="server"></defs><p>Gone</p></template>');
-    await expect(createApplication({ root })).rejects.toThrow(/not-found page takes no hk:render/);
+    await write(root, "app/pages/404.html", '<template component="missing-page"><defs><meta name="mk:render" content="server"></defs><p>Gone</p></template>');
+    await expect(createApplication({ root })).rejects.toThrow(/not-found page takes no mk:render/);
     await rm(join(root, "app/pages/404.html"));
-    await write(root, "app/pages/login.html", '<template component="login-page"><defs><meta name="hk:render" content="sometimes"></defs><p>Log in</p></template>');
-    await expect(createApplication({ root })).rejects.toThrow(/hk:render accepts content="prerender" or content="server"/);
+    await write(root, "app/pages/login.html", '<template component="login-page"><defs><meta name="mk:render" content="sometimes"></defs><p>Log in</p></template>');
+    await expect(createApplication({ root })).rejects.toThrow(/mk:render accepts content="prerender" or content="server"/);
     await rm(join(root, "app/pages/login.html"));
     await write(root, "app/middleware.server.js", "export default (request, next) => next();");
     await write(root, "app/middleware.server.ts", "export default (request, next) => next();");

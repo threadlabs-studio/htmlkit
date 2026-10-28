@@ -69,7 +69,7 @@ components.
 If a file declares more than one component, say which one is the page:
 
 ```html
-<meta name="hk:page" content="page-about">
+<meta name="mk:page" content="page-about">
 <template component="team-card">…</template>
 <template component="page-about">…</template>
 ```
@@ -193,7 +193,7 @@ To use another layout for one page, name it; `content="none"` uses no layout:
 
 ```html
 <template component="page-dashboard">
-  <defs><meta name="hk:layout" content="admin"></defs>   <!-- app/layouts/admin.html -->
+  <defs><meta name="mk:layout" content="admin"></defs>   <!-- app/layouts/admin.html -->
   <h1>Dashboard</h1>
 </template>
 ```
@@ -235,7 +235,7 @@ The layout a page selects only replaces the outermost one, and folder layouts al
 - - None selected, without `default.html`
   - `docs` → `guide` → page
 
-- - `hk:layout="admin"`, or `admin` from a `pages` entry's `layout`, `layoutDefaults`, or the `layout` option
+- - `mk:layout="admin"`, or `admin` from a `pages` entry's `layout`, `layoutDefaults`, or the `layout` option
   - `admin` → `docs` → `guide` → page
 
 - - `none` or `false`, from any of these
@@ -243,7 +243,7 @@ The layout a page selects only replaces the outermost one, and folder layouts al
 
 :::
 
-The outermost layout is chosen in this order: `hk:layout`, then the `pages` entry's `layout`, then
+The outermost layout is chosen in this order: `mk:layout`, then the `pages` entry's `layout`, then
 `layoutDefaults`, then the `layout` option, then `app/layouts/default.html`. Pages added through the
 `routes` option are outside the page tree, so they take only their own `layouts`.
 
@@ -315,7 +315,7 @@ itself goes to the server's console, so its message and stack stay out of the pa
 :::
 
 Like the not-found page, it is not a route: no URL serves it, and navigation doesn't list it. It
-takes its layout as a page does, from `hk:layout`, the `layout` option, or `default.html`, and it
+takes its layout as a page does, from `mk:layout`, the `layout` option, or `default.html`, and it
 has no loader of its own. When the layout's loader is what fails, or when there is no
 `app/error.html`, MarkupKit answers with a plain "Internal Server Error" page.
 
@@ -346,27 +346,27 @@ canonical, and links to it for readers who stay on the page:
 <p>This page is now at <a href="/docs/intro/">/docs/intro/</a>.</p>
 ```
 
-A page can also declare the old URLs that lead to it, with `hk:redirect-from` in its `<defs>`, once
+A page can also declare the old URLs that lead to it, with `mk:redirect-from` in its `<defs>`, once
 per URL:
 
 ```html
 <template component="install-page"><defs>
 <title>Installation</title>
-<meta name="hk:redirect-from" content="/getting-started/">
-<meta name="hk:redirect-from" content="/setup/">
+<meta name="mk:redirect-from" content="/getting-started/">
+<meta name="mk:redirect-from" content="/setup/">
 </defs>…</template>
 ```
 
-Each path is relative to the page's page folder, as an `hk:alias` path is: in a folder served at
+Each path is relative to the page's page folder, as an `mk:alias` path is: in a folder served at
 `/docs/`, `content="/setup/"` redirects `/docs/setup/` to the page. A page in an
 [alias page folder](/configuration#page-folders) redirects under that folder's prefix too,
 to its page there. These redirects answer and build exactly as the option's do, with a 308 and a
 redirect page, and the development server reads them again after each edit. The page they lead to
 has no parameters.
 
-A redirect from a page's own URL is an error that names the page. So is an `hk:redirect-from` path
-that is a page's URL or `hk:alias`, a key of the `redirects` option, or another page's
-`hk:redirect-from` path. The build lists every redirect in
+A redirect from a page's own URL is an error that names the page. So is an `mk:redirect-from` path
+that is a page's URL or `mk:alias`, a key of the `redirects` option, or another page's
+`mk:redirect-from` path. The build lists every redirect in
 the manifest's
 [`redirects`](/configuration#build-manifest). To redirect from a loader, for example after
 checking data, use [`redirect()`](/loaders#redirecting).
@@ -436,33 +436,33 @@ map resolves. `$stripe.pending`, `$stripe.ok`, and `$stripe.error` read its stat
 connection hook waits for `host.scripts.stripe.ready`
 ([declared scripts](https://nextwebwg.org/declarative-components/components#declared-scripts)).
 
-Settings that start with `hk:` configure MarkupKit. They are `<meta>` entries in the component's
+Settings that start with `mk:` configure MarkupKit. They are `<meta>` entries in the component's
 `<defs>`, and MarkupKit leaves them out of the document head:
 
 ::: table
 
-- Metadata: `hk:page`
+- Metadata: `mk:page`
   Does: Chooses the page component in a file with several components. It describes the file, so it goes outside the components.
 
-- Metadata: `hk:layout`
+- Metadata: `mk:layout`
   Does: Chooses a layout, or `none`.
 
-- Metadata: `hk:label`
+- Metadata: `mk:label`
   Does: Sets the page's label in [navigation](/navigation).
 
-- Metadata: `hk:order`
+- Metadata: `mk:order`
   Does: Sets the page's place in [navigation](/navigation#ordering-pages), in place of its file name's number.
 
-- Metadata: `hk:navigation`
+- Metadata: `mk:navigation`
   Does: `content="hidden"` keeps the page out of navigation.
 
-- Metadata: `hk:alias`
+- Metadata: `mk:alias`
   Does: Adds another URL for the page, such as `content="/start/"`. Its page has a canonical link to the page's own URL, unless the page sets one, and [`sitemap.xml`](/configuration#search-engines) lists only the page's own URL.
 
-- Metadata: `hk:redirect-from`
+- Metadata: `mk:redirect-from`
   Does: Redirects an old URL to the page, such as `content="/getting-started/"` ([details](#redirects)).
 
-- Metadata: `hk:render`
+- Metadata: `mk:render`
   Does: `content="server"` renders the page on each request instead of at build time ([details](/loaders#rendering-on-each-request)).
 
 :::

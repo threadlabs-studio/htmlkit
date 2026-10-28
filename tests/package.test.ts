@@ -30,9 +30,9 @@ describe("standalone package contract", () => {
     writeFileSync(join(consumer, "package.json"), JSON.stringify({ name: "markupkit-consumer", private: true, type: "module" }));
     execFileSync("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund", pack()], { cwd: consumer, shell: useCommandShell });
     writeFileSync(join(consumer, "markupkit.config.ts"), 'import { defineConfig } from "@threadlabs/markupkit"; export default defineConfig({ base: "/packed/" });');
-    writeFileSync(join(consumer, "app/layouts/default.html"), '<link rel="component" href="@threadlabs/markupkit/components/nav.html"><template component="packed-shell"><defs><prop name="navigation" type="list(object({ href: string, label: string, current: string, depth: number, pageName: string }))" required>Links</prop><title>Layout default</title></defs><main><hk-nav from:items="$navigation"></hk-nav><slot name="page"></slot></main></template>');
+    writeFileSync(join(consumer, "app/layouts/default.html"), '<link rel="component" href="@threadlabs/markupkit/components/nav.html"><template component="packed-shell"><defs><prop name="navigation" type="list(object({ href: string, label: string, current: string, depth: number, pageName: string }))" required>Links</prop><title>Layout default</title></defs><main><mk-nav from:items="$navigation"></mk-nav><slot name="page"></slot></main></template>');
     writeFileSync(join(consumer, "app/layouts/default.server.ts"), 'export const load = async ({ navigation }) => ({ props: { navigation: await navigation() } });');
-    writeFileSync(join(consumer, "app/pages/01.index.html"), '<meta name="hk:page" content="packed-page"><template component="packed-label"><strong>Packaged helper</strong></template><template component="packed-page"><defs><prop name="label" type="string" required>Label</prop><title>{$label}</title></defs><section><h1 $value="$label"></h1><packed-label></packed-label></section></template>');
+    writeFileSync(join(consumer, "app/pages/01.index.html"), '<meta name="mk:page" content="packed-page"><template component="packed-label"><strong>Packaged helper</strong></template><template component="packed-page"><defs><prop name="label" type="string" required>Label</prop><title>{$label}</title></defs><section><h1 $value="$label"></h1><packed-label></packed-label></section></template>');
     writeFileSync(join(consumer, "app/pages/01.index.server.ts"), 'export const load = () => ({ props: { label: "Installed platform" } });');
     const installed = join(consumer, "node_modules/@threadlabs/markupkit");
     const output = runBin(consumer, "markupkit", ["build"]);
@@ -52,7 +52,7 @@ describe("standalone package contract", () => {
     execFileSync("corepack", ["pnpm", "exec", "tsc", "--ignoreConfig", "--noEmit", "--strict", "--skipLibCheck", "--target", "ES2023", "--module", "NodeNext", "--moduleResolution", "NodeNext", entry], { cwd: root, shell: useCommandShell });
 
     // The built server runs on Node from the installed packages; a resolve hook fails if anything loads Vite.
-    writeFileSync(join(consumer, "app/pages/account.html"), '<template component="packed-account"><defs><prop name="user" type="string" required>User</prop><meta name="hk:render" content="server"></defs><p>Hello {$user}</p></template>');
+    writeFileSync(join(consumer, "app/pages/account.html"), '<template component="packed-account"><defs><prop name="user" type="string" required>User</prop><meta name="mk:render" content="server"></defs><p>Hello {$user}</p></template>');
     writeFileSync(join(consumer, "app/pages/account.server.ts"), 'export const load = ({ cookies }) => ({ props: { user: cookies.get("user") ?? "guest" } });');
     mkdirSync(join(consumer, "app/api"));
     writeFileSync(join(consumer, "app/api/time.server.ts"), 'export const GET = () => Response.json({ ok: true });');

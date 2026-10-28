@@ -329,7 +329,7 @@ layout kept between pages. Passing ordinary fixture values uses the same typed p
   Value: The site's pages, for [navigation](/navigation).
 
 - Field: `navigationTree(query)`
-  Value: The same pages nested by folder and group, for [`<hk-nav>`](/navigation#a-navigation-tree).
+  Value: The same pages nested by folder and group, for [`<mk-nav>`](/navigation#a-navigation-tree).
 
 - Field: `redirect(location, status)`
   Value: Stops loading and sends the reader to `location` instead ([below](#redirecting)).
@@ -353,7 +353,7 @@ or `response` is an error that names the loader.
 
 ## Rendering on each request
 
-`<meta name="hk:render" content="server">` in a page renders it on each request, under
+`<meta name="mk:render" content="server">` in a page renders it on each request, under
 `markupkit dev` and [`markupkit start`](/deployment#the-node-server). Its loaders, and its
 layouts' loaders, then read the request and shape the response:
 
@@ -362,7 +362,7 @@ layouts' loaders, then read the request and shape the response:
 <template component="page-orders">
   <defs>
     <prop name="orders" type="list(object({ id: string, total: string }))" required>Orders</prop>
-    <meta name="hk:render" content="server">
+    <meta name="mk:render" content="server">
     <title>Orders</title>
   </defs>
   <ul><li $each="order of $orders">{$order.id}: {$order.total}</li></ul>
@@ -471,5 +471,5 @@ only the HTML Next code its components use. After that, links to other pages ren
 - Component styles become regular stylesheets that load before the page is shown.
 - Files in `public/` are copied unchanged, and a symbolic link there is an error. `_markupkit/` and `404.html` are reserved names, and so is
   `robots.txt` when the [`robots` option](/configuration#search-engines) is set.
-- `document` fires `hk:ready` once the page's components have taken over its HTML.
+- `document` fires `mk:ready` once the page's components have taken over its HTML.
 - After any change in development, open pages reload.

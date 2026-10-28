@@ -89,10 +89,10 @@ export function page(runtime: Runtime, options: ClientOptions, pageComponents: R
   // ponytail: links stay document navigations without NavigateEvent.sourceElement (Chrome 135, Firefox 147,
   // Safari 26.2), which carries the per-link opt-outs; earlier Navigation API versions would skip them.
   if ("navigation" in window && "sourceElement" in NavigateEvent.prototype) navigate(runtime, options);
-  document.dispatchEvent(new Event("hk:ready"));
+  document.dispatchEvent(new Event("mk:ready"));
 }
 
-const layer = (root: Document, index: number) => root.querySelector(`[data-hk-layer="${index}"]`) ?? root.getElementById(`hk-layer-${index}`);
+const layer = (root: Document, index: number) => root.querySelector(`[data-mk-layer="${index}"]`) ?? root.getElementById(`mk-layer-${index}`);
 const fresh = (time: number) => performance.now() - time < 30_000;
 const loaded = async (url: string, signal?: AbortSignal): Promise<Response> => {
   const response = await fetch(url, signal === undefined ? {} : { signal });
@@ -139,7 +139,7 @@ async function render(runtime: Runtime, payload: Payload): Promise<Rendered> {
     const { component: tag, attributes: authored, props, state } = payload.layers[index]!;
     const component = components.get(tag);
     if (component === undefined) throw new Error(`MarkupKit cannot render <${tag}>: no page module defines it.`);
-    const attributes: Record<string, string> = { id: `hk-layer-${index}`, "data-hk-layer": String(index), ...index === 0 ? {} : { slot: "page" } };
+    const attributes: Record<string, string> = { id: `mk-layer-${index}`, "data-mk-layer": String(index), ...index === 0 ? {} : { slot: "page" } };
     const html: Record<string, string> = {};
     for (const [name, value] of Object.entries(authored)) {
       const prop = component[1][name];
@@ -175,7 +175,7 @@ function navigate(runtime: Runtime, { base, prefetch: policy, manifest }: Client
   const shell = (head: HTMLHeadElement) => [...head.querySelectorAll("link:not([data-component-head])")];
   let owned: Element[] = shell(document.head);
   const announcer = document.createElement("div");
-  announcer.id = "hk-announcer";
+  announcer.id = "mk-announcer";
   announcer.setAttribute("aria-live", "polite");
   announcer.setAttribute("aria-atomic", "true");
   announcer.style.cssText = "position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap";
@@ -186,7 +186,7 @@ function navigate(runtime: Runtime, { base, prefetch: policy, manifest }: Client
    * Firefox 155 follows a download link's navigate event with a second one that has no downloadRequest.
    */
   const local = (url: URL, source: Element | null) => url.origin === location.origin && url.pathname.startsWith(base) &&
-    url.pathname.endsWith("/") && !source?.closest("[data-hk-reload]") && !source?.hasAttribute("download");
+    url.pathname.endsWith("/") && !source?.closest("[data-mk-reload]") && !source?.hasAttribute("download");
   const payloadURL = (url: URL) => `${base}_markupkit/pages/${url.pathname.slice(base.length)}payload.json${url.search}`;
 
   // Prefetching never runs anything: payloads are data, and modules and stylesheets are only hinted.
@@ -226,9 +226,9 @@ function navigate(runtime: Runtime, { base, prefetch: policy, manifest }: Client
       .catch(() => new Map());
     void chunks.then(map => { for (const src of map.get(url.pathname) ?? []) hint("modulepreload", src); });
   };
-  /** A link's policy: its own or an ancestor's data-hk-prefetch, else the site's. */
+  /** A link's policy: its own or an ancestor's data-mk-prefetch, else the site's. */
   const mode = (anchor: Element): Prefetch => {
-    const value = anchor.closest("[data-hk-prefetch]")?.getAttribute("data-hk-prefetch");
+    const value = anchor.closest("[data-mk-prefetch]")?.getAttribute("data-mk-prefetch");
     return value === "interaction" || value === "visible" || value === "none" ? value : policy;
   };
   // Intent: touch at once; a link that keeps the pointer or focus briefly, so sweeping across a menu
@@ -390,8 +390,8 @@ function navigate(runtime: Runtime, { base, prefetch: policy, manifest }: Client
   // ponytail: WebKit 26.6 sometimes restores no position for an intercepted back or forward
   // navigation, so MarkupKit records where each entry was left. Other scrolling stays native.
   const positions = new Map<string, readonly [x: number, y: number]>();
-  // While a navigation renders in place: data-hk-navigating on <html>, and on a submitting form,
-  // data-hk-submitting and aria-busy. Only the latest navigation clears <html>'s.
+  // While a navigation renders in place: data-mk-navigating on <html>, and on a submitting form,
+  // data-mk-submitting and aria-busy. Only the latest navigation clears <html>'s.
   let latest = 0;
   navigation.addEventListener("navigate", event => {
     if (navigation.currentEntry !== null) positions.set(navigation.currentEntry.key, [scrollX, scrollY]);
@@ -407,14 +407,14 @@ function navigate(runtime: Runtime, { base, prefetch: policy, manifest }: Client
     // where the entry was left, and focus resets as after a document load.
     event.intercept({ scroll: "manual", async handler() {
       const id = ++latest;
-      document.documentElement.setAttribute("data-hk-navigating", "");
-      form?.setAttribute("data-hk-submitting", "");
+      document.documentElement.setAttribute("data-mk-navigating", "");
+      form?.setAttribute("data-mk-submitting", "");
       form?.setAttribute("aria-busy", "true");
       try { await visit(url, event, form); }
       finally {
-        form?.removeAttribute("data-hk-submitting");
+        form?.removeAttribute("data-mk-submitting");
         form?.removeAttribute("aria-busy");
-        if (id === latest) document.documentElement.removeAttribute("data-hk-navigating");
+        if (id === latest) document.documentElement.removeAttribute("data-mk-navigating");
       }
     } });
   });

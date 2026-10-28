@@ -22,8 +22,8 @@ import type { Application, ApplicationOptions, ContentSecurityPolicyOptions, End
 
 // Built-in components need no link: a resource that uses one gets it added after its content, so
 // diagnostics keep their line numbers. The import map below resolves it from this package.
-const builtins = [["hk-nav", "@threadlabs/markupkit/components/nav.html"], ["hk-breadcrumbs", "@threadlabs/markupkit/components/breadcrumbs.html"],
-  ["hk-pager", "@threadlabs/markupkit/components/pager.html"]] as const;
+const builtins = [["mk-nav", "@threadlabs/markupkit/components/nav.html"], ["mk-breadcrumbs", "@threadlabs/markupkit/components/breadcrumbs.html"],
+  ["mk-pager", "@threadlabs/markupkit/components/pager.html"]] as const;
 
 /** MarkupKit's import map: @/ is the project root, as in Nuxt, and built-ins resolve from this package. */
 function importMap(root: string) {
@@ -135,7 +135,7 @@ export async function createApplicationInternals(input: ApplicationOptions = {},
         const path = config.base + (segments.length === 0 ? "" : segments.join("/") + "/");
         if (paths.has(path)) throw new MarkupKitError(`Static route collision at ${path}.`, route.component);
         const page = pageRedirects.get(path);
-        if (page !== undefined) throw new MarkupKitError(`The page redirect hk:redirect-from ${page.from} is the URL of ${route.component}.`, page.component);
+        if (page !== undefined) throw new MarkupKitError(`The page redirect mk:redirect-from ${page.from} is the URL of ${route.component}.`, page.component);
         if (redirects.has(path)) throw new MarkupKitError(`The redirects option also redirects ${path}, which is this page's URL.`, route.component);
         const matched = matchRoute(routes, path, config.base);
         if (matched?.route !== route) throw new MarkupKitError(`Static route collision with ${matched?.route.pattern} at ${path}.`, route.component);

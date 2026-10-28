@@ -19,7 +19,7 @@ export async function fixture(): Promise<string> {
   await write(root, "app/layouts/default.server.ts", `export function load() {
     return { props: { brand: 'MarkupKit' }, data: { owner: 'kit' } };
   }`);
-  await write(root, "app/pages/index.html", `<meta name="hk:page" content="home-page">
+  await write(root, "app/pages/index.html", `<meta name="mk:page" content="home-page">
     <template component="home-button"><defs><prop name="count" type="number" default="0">Count</prop></defs><button type="button"><slot></slot><span>{$count}</span></button></template>
     <template component="home-label"><strong>Shared-file helper</strong><style>:host { color: rgb(90, 80, 70); }</style></template>
     <template component="home-page" controller="./home.js"><defs>
@@ -50,7 +50,7 @@ export async function fixture(): Promise<string> {
   await write(root, "app/pages/items/[slug].html", `<template component="item-page"><defs>
     <prop name="label" type="string" required>Label</prop>
     <prop name="tags" type="list(string)" required>Tags</prop>
-    <prop name="slug" type="string" required>Slug</prop><title>{$slug}</title><meta name="hk:layout" content="items"></defs>
+    <prop name="slug" type="string" required>Slug</prop><title>{$slug}</title><meta name="mk:layout" content="items"></defs>
     <section><h1>{$label}</h1><p $each="tag of $tags">{$tag}</p></section></template>`);
   await write(root, "app/pages/items/[slug].server.ts", `export const entries = () => [{ slug: 'one' }, { slug: 'two' }];
     export function load({ params, parent }) {
@@ -113,11 +113,11 @@ export async function universalFixture(): Promise<string> {
   const root = await mkdtemp(join(tmpdir(), "markupkit-universal-"));
   await write(root, "package.json", '{"name":"markupkit-universal-fixture","private":true,"type":"module"}');
   for (const [file, tag, settings] of [["index", "universal-page", ""], ["fixture", "universal-fixture", ""],
-    ["live", "universal-live", '<meta name="hk:render" content="server">'], ["delegated", "universal-delegated", ""], ["deferred", "universal-deferred", ""]]) {
+    ["live", "universal-live", '<meta name="mk:render" content="server">'], ["delegated", "universal-delegated", ""], ["deferred", "universal-deferred", ""]]) {
     const rootTag = file === "delegated" ? "universal-shell" : "main";
     await write(root, `app/pages/${file}.html`, `<link rel="component" href="../components/browser-only.html"><link rel="component" href="../components/details.html">
       ${file === "delegated" ? '<link rel="component" href="../components/shell.html">' : ""}
-      <template component="${tag}" module="./${file === "deferred" ? "deferred" : "index"}.ts"><defs><meta name="hk:layout" content="none">${settings}
+      <template component="${tag}" module="./${file === "deferred" ? "deferred" : "index"}.ts"><defs><meta name="mk:layout" content="none">${settings}
       <prop name="product" type="object({ name: string })" required>Product.</prop>
       <state name="query" type="string" value="A"></state><state name="draft" type="string" from="$product.name"></state>
       <handler name="next"><set name="query" value="B"></set></handler><title>Product {$product.name}</title></defs>
@@ -178,8 +178,8 @@ export async function environmentFixture(): Promise<string> {
   await write(root, "node_modules/@example/browser-only/browser.js", 'export const doc = document; export const marker = "CLIENT_GRAPH_ONLY";');
   for (const [file, tag, module, settings] of [["index", "client-page", "", ""], ["only", "client-only-page", "", ""],
     ["mixed", "mixed-page", "", ""], ["fixture", "client-fixture-page", ' module="./index.ts"', ""],
-    ["live", "client-live-page", ' module="./index.ts"', '<meta name="hk:render" content="server">']]) {
-    await write(root, `app/pages/${file}.html`, `<template component="${tag}"${module}><defs><meta name="hk:layout" content="none">${settings}
+    ["live", "client-live-page", ' module="./index.ts"', '<meta name="mk:render" content="server">']]) {
+    await write(root, `app/pages/${file}.html`, `<template component="${tag}"${module}><defs><meta name="mk:layout" content="none">${settings}
       <prop name="label" type="string" required>Label.</prop><state name="query" type="string" value="A"></state>
       <state name="draft" type="string" from="$label"></state><handler name="next"><set name="query" value="B"></set></handler></defs>
       <main><h1 $await="$label">{$label}</h1><p $error="problem">{$problem.message}</p><p $else>Waiting.</p>
@@ -251,9 +251,9 @@ export async function retainedProviderFixture(delegated = false): Promise<string
       <retained-provider-shell from:id="$id"><div slot="page"><slot name="page"></slot></div></retained-provider-shell></template>`);
     await write(root, "app/layouts/default.server.ts", loader);
   }
-  await write(root, "app/pages/index.html", '<template component="retained-first"><article><h1>First</h1><a href="/second/" data-hk-prefetch="none">Second</a><a href="/same/" data-hk-prefetch="none">Same input</a></article></template>');
-  await write(root, "app/pages/second.html", '<template component="retained-second"><article><h1>Second</h1><a href="/" data-hk-prefetch="none">First</a></article></template>');
-  await write(root, "app/pages/same.html", '<template component="retained-same"><article><h1>Same input</h1><a href="/" data-hk-prefetch="none">First</a></article></template>');
+  await write(root, "app/pages/index.html", '<template component="retained-first"><article><h1>First</h1><a href="/second/" data-mk-prefetch="none">Second</a><a href="/same/" data-mk-prefetch="none">Same input</a></article></template>');
+  await write(root, "app/pages/second.html", '<template component="retained-second"><article><h1>Second</h1><a href="/" data-mk-prefetch="none">First</a></article></template>');
+  await write(root, "app/pages/same.html", '<template component="retained-same"><article><h1>Same input</h1><a href="/" data-mk-prefetch="none">First</a></article></template>');
   return root;
 }
 

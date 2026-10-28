@@ -1,6 +1,6 @@
 {
   "name": "@threadlabs/markupkit",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Build applications with HTML, CSS, and JavaScript, powered by HTML Next.",
   "license": "MIT",
   "type": "module",

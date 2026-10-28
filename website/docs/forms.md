@@ -15,7 +15,7 @@ the page has loaded, MarkupKit submits it in place.
 <template component="todos-page">
   <defs>
     <prop name="todos" type="list(string)" required>Todos</prop>
-    <meta name="hk:render" content="server">
+    <meta name="mk:render" content="server">
     <title>Todos</title>
   </defs>
   <section>
@@ -91,7 +91,7 @@ Return the errors and the submitted values as props the page declares, and the p
     <prop name="todos" type="list(string)" required>Todos</prop>
     <prop name="errors" type="object({ title?: string })" default="{}">Field errors</prop>
     <prop name="values" type="object({ title?: string })" default="{}">Submitted values</prop>
-    <meta name="hk:render" content="server">
+    <meta name="mk:render" content="server">
     <title>Todos</title>
   </defs>
   <section>
@@ -179,12 +179,12 @@ MarkupKit swaps in the answer the way [client navigation](/client-navigation) sw
 :::
 
 Without JavaScript, or in a browser without the Navigation API, the form submits as a document
-does, with the same result. Put `data-hk-reload` on a form, or an element around it, to always
+does, with the same result. Put `data-mk-reload` on a form, or an element around it, to always
 submit it as a document. A form that posts to an [endpoint](/server), another site, or
 another window submits as a document too.
 
-While a form submits in place, it has `data-hk-submitting` and `aria-busy="true"`, and `<html>`
-has `data-hk-navigating`. See [showing that a page is loading](/client-navigation#showing-that-a-page-is-loading).
+While a form submits in place, it has `data-mk-submitting` and `aria-busy="true"`, and `<html>`
+has `data-mk-navigating`. See [showing that a page is loading](/client-navigation#showing-that-a-page-is-loading).
 
 ## Cross-site submissions
 

@@ -16,14 +16,14 @@ async function site(): Promise<string> {
     <prop name="navigation" type="${navigationItems}" required>Links</prop>
     <state name="open" type="boolean" value="false"></state></defs>
     <div class="shell"><button type="button" $ref="menu" from:aria-expanded="$open">Menu</button>
-      <hk-nav from:items="$navigation" label="Site"></hk-nav>
+      <mk-nav from:items="$navigation" label="Site"></mk-nav>
       <p class="links"><a id="external" href="https://external.test/">External</a> <a id="download" href="/kit/guide/" download>Download</a>
-        <a id="blank" href="/kit/guide/" target="_blank">Blank</a> <a id="reload" href="/kit/guide/" data-hk-reload>Reload</a>
+        <a id="blank" href="/kit/guide/" target="_blank">Blank</a> <a id="reload" href="/kit/guide/" data-mk-reload>Reload</a>
         <a id="outside" href="/elsewhere/">Outside</a> <a id="hash" href="#top">Hash</a> <a id="to-deep" href="/kit/guide/install/#deep">Deep</a>
         <a id="items" href="/kit/items/one/">Items</a> <a id="broken" href="/kit/items/two/">Broken</a>
         <a id="conflict" href="/kit/conflict/">Conflict</a> <a id="missing" href="/kit/missing/">Missing</a> <a id="pay" href="/kit/pay/">Pay</a>
-        <span data-hk-prefetch="none"><a id="quiet" href="/kit/guide/install/">Quiet</a></span>
-        <a id="counter" href="/kit/counter/" data-hk-prefetch="visible">Counter</a></p>
+        <span data-mk-prefetch="none"><a id="quiet" href="/kit/guide/install/">Quiet</a></span>
+        <a id="counter" href="/kit/counter/" data-mk-prefetch="visible">Counter</a></p>
       <slot name="page"></slot></div>
     <style>:host { color: rgb(1, 2, 3); }</style></template>`);
   await write(root, "app/layouts/default.server.ts", "export const load = async ({ navigation }) => ({ props: { navigation: await navigation() } });");
@@ -34,39 +34,39 @@ async function site(): Promise<string> {
     return () => host.refs.menu.removeEventListener('click', toggle);
   }`);
   await write(root, "app/layouts/items.html", '<template component="items-shell"><main class="items"><slot name="page"></slot></main></template>');
-  await write(root, "app/pages/index.html", `<meta name="hk:page" content="home-page">
+  await write(root, "app/pages/index.html", `<meta name="mk:page" content="home-page">
     <template component="shared-badge"><b>home badge</b></template>
-    <template component="home-page" controller="./home.ts"><defs><title>Home</title><meta name="description" content="Home page"><meta name="hk:label" content="Home"></defs><article><h1>Home</h1><shared-badge></shared-badge></article></template>`);
+    <template component="home-page" controller="./home.ts"><defs><title>Home</title><meta name="description" content="Home page"><meta name="mk:label" content="Home"></defs><article><h1>Home</h1><shared-badge></shared-badge></article></template>`);
   // A global rule only the home page links; leaving home must drop it, as a document load would.
   await write(root, "app/pages/home.ts", "import './home.css'; export default function(host) { host.root.dataset.ready = 'home'; }");
   await write(root, "app/pages/home.css", "body { background-color: rgb(9, 9, 9); }");
   // Shared stylesheet imports put each page's graph in one stylesheet, which client navigation loads.
   await write(root, "app/styles/heading.css", "h1 { border-bottom: 2px solid rgb(7, 8, 9); }");
-  await write(root, "app/pages/guide/index.html", `<template component="guide-page" controller="./guide.ts"><defs><title>Guide</title><meta name="description" content="Guide page"><meta name="hk:label" content="Guide">
+  await write(root, "app/pages/guide/index.html", `<template component="guide-page" controller="./guide.ts"><defs><title>Guide</title><meta name="description" content="Guide page"><meta name="mk:label" content="Guide">
       <script type="application/ld+json">{"@type":"WebPage","name":"Guide"}</script><script src="/kit/widget.js"></script></defs>
     <article><h1>Guide</h1></article><style>@import "@/app/styles/heading.css"; :host { color: rgb(4, 5, 6); }</style></template>`);
   // A declared script runs once per document, however often its page connects.
   await write(root, "public/widget.js", "window.widgetRuns = (window.widgetRuns ?? 0) + 1;");
   await write(root, "app/pages/guide/guide.ts", "export default function(host) { host.root.dataset.ready = 'guide'; }");
-  await write(root, "app/pages/guide/install.html", `<template component="install-page"><defs><title>Install</title><meta name="hk:label" content="Install"></defs>
+  await write(root, "app/pages/guide/install.html", `<template component="install-page"><defs><title>Install</title><meta name="mk:label" content="Install"></defs>
     <article><h1>Install</h1><div class="spacer"></div><h2 id="deep">Deep</h2><div class="spacer"></div></article><style>@import "@/app/styles/heading.css"; .spacer { height: 3000px; }</style></template>`);
-  await write(root, "app/pages/items/[slug].html", `<template component="item-page"><defs><prop name="slug" type="string" required>Slug</prop><meta name="hk:layout" content="items"><title>{$slug}</title></defs><article><h1 $value="$slug"></h1><a id="home" href="/kit/">Home</a></article></template>`);
+  await write(root, "app/pages/items/[slug].html", `<template component="item-page"><defs><prop name="slug" type="string" required>Slug</prop><meta name="mk:layout" content="items"><title>{$slug}</title></defs><article><h1 $value="$slug"></h1><a id="home" href="/kit/">Home</a></article></template>`);
   await write(root, "app/pages/items/[slug].server.ts", "export const entries = () => [{ slug: 'one' }, { slug: 'two' }]; export const load = ({ params }) => ({ props: { slug: params.slug } });");
   // A page with a third-party declared script, whose origin the site's one policy allows on every page.
-  await write(root, "app/pages/pay.html", `<template component="pay-page"><defs><title>Pay</title><meta name="hk:navigation" content="hidden">
+  await write(root, "app/pages/pay.html", `<template component="pay-page"><defs><title>Pay</title><meta name="mk:navigation" content="hidden">
     <script src="https://pay.example/v3/" loading="lazy"></script></defs><article><h1>Pay</h1></article></template>`);
   // Another <shared-badge> cannot join a document that already defines one (HR001).
-  await write(root, "app/pages/conflict.html", `<meta name="hk:page" content="conflict-page"><template component="shared-badge"><i>conflict badge</i></template>
-    <template component="conflict-page"><defs><title>Conflict</title><meta name="hk:navigation" content="hidden"></defs><article><h1><shared-badge></shared-badge></h1></article></template>`);
+  await write(root, "app/pages/conflict.html", `<meta name="mk:page" content="conflict-page"><template component="shared-badge"><i>conflict badge</i></template>
+    <template component="conflict-page"><defs><title>Conflict</title><meta name="mk:navigation" content="hidden"></defs><article><h1><shared-badge></shared-badge></h1></article></template>`);
   // Loader state, typed props, a nested component, a form control, a declared read, and a controller.
-  await write(root, "app/pages/counter.html", `<meta name="hk:page" content="counter-page">
+  await write(root, "app/pages/counter.html", `<meta name="mk:page" content="counter-page">
     <template component="count-badge"><defs><prop name="count" type="number" default="0">Count</prop></defs><b from:data-count="$count">{$count}</b></template>
     <template component="counter-page" controller="./counter.ts"><defs>
       <prop name="label" type="string" required>Label</prop>
       <prop name="tags" type="list(string)" default="[]">Tags</prop>
       <state name="count" type="number" value="0"></state>
       <state name="text" type="string" value="initial"></state>
-      <data name="result" src="./data.json"></data><title>Counter</title><meta name="hk:navigation" content="hidden"></defs>
+      <data name="result" src="./data.json"></data><title>Counter</title><meta name="mk:navigation" content="hidden"></defs>
       <article><h1>{$label}</h1><output>{$count}</output><count-badge from:count="$count"></count-badge><input bind:value="text">
         <p $if="$result.pending">Loading</p><p $if="$result.ok">{$result.value.label}</p>
         <ul><li $each="tag of $tags">{$tag}</li></ul><button type="button" $ref="add">Add</button></article></template>`);
@@ -128,13 +128,13 @@ async function scenario(browser: Browser, url: string, built: boolean): Promise<
     await page.waitForFunction(() => document.querySelector('[data-component="site-shell"]')?.getAttribute("data-connections") === "1");
     await mark(page);
     await page.getByRole("button", { name: "Menu" }).click();
-    await page.evaluate(() => { (window as unknown as { shell: Element }).shell = document.getElementById("hk-layer-0")!; });
+    await page.evaluate(() => { (window as unknown as { shell: Element }).shell = document.getElementById("mk-layer-0")!; });
     expect(await page.locator('nav a[href="/kit/"]').getAttribute("aria-current")).toBe("page");
     expect(await head(page)).toEqual({ titles: 1, descriptions: ["Home page"], schema: [], widgets: 0, runs: 0 });
     if (built) expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe("rgb(9, 9, 9)");
 
     // Links on screen prefetch shared code only (from the build's manifest), except a link marked
-    // data-hk-prefetch="visible", which prefetches its page's payload and module.
+    // data-mk-prefetch="visible", which prefetches its page's payload and module.
     const payloads = () => requests.filter(request => request.path.includes("/_markupkit/pages/")).map(request => request.path);
     const pageModules = () => requests.filter(request => Object.values(modules).includes(request.path) && request.path !== modules[""]).map(request => request.path);
     await poll(() => [payloads(), pageModules()]).toEqual([[payloadPath("counter/")], [modules["counter/"]]]);
@@ -142,7 +142,7 @@ async function scenario(browser: Browser, url: string, built: boolean): Promise<
     expect([payloads(), pageModules()]).toEqual([[payloadPath("counter/")], [modules["counter/"]]]);
     expect(count("/kit/_markupkit/manifest.json")).toBe(built ? 1 : 0);
 
-    // Sweeping across links prefetches nothing, nor does hovering a data-hk-prefetch="none" link.
+    // Sweeping across links prefetches nothing, nor does hovering a data-mk-prefetch="none" link.
     const links = await page.locator("nav a").evaluateAll(anchors => anchors.map(anchor => {
       const box = anchor.getBoundingClientRect();
       return [box.x + box.width / 2, box.y + box.height / 2] as const;
@@ -165,13 +165,13 @@ async function scenario(browser: Browser, url: string, built: boolean): Promise<
     expect(await marked(page)).toBe(true);
     expect(page.url()).toBe(url + "guide/");
     expect(await page.evaluate(() => {
-      const shell = document.getElementById("hk-layer-0")!;
+      const shell = document.getElementById("mk-layer-0")!;
       return { kept: shell === (window as unknown as { shell: Element }).shell, connections: shell.dataset.connections,
-        expanded: shell.querySelector("button")!.getAttribute("aria-expanded"), page: document.getElementById("hk-layer-1")!.dataset.component,
-        ready: document.getElementById("hk-layer-1")!.dataset.ready, color: getComputedStyle(document.getElementById("hk-layer-1")!).color,
-        shared: getComputedStyle(document.querySelector("#hk-layer-1 h1")!).borderBottomColor,
+        expanded: shell.querySelector("button")!.getAttribute("aria-expanded"), page: document.getElementById("mk-layer-1")!.dataset.component,
+        ready: document.getElementById("mk-layer-1")!.dataset.ready, color: getComputedStyle(document.getElementById("mk-layer-1")!).color,
+        shared: getComputedStyle(document.querySelector("#mk-layer-1 h1")!).borderBottomColor,
         current: [...document.querySelectorAll("nav a")].map(link => [link.getAttribute("href"), link.getAttribute("aria-current")]),
-        description: document.querySelector('meta[name="description"]')?.getAttribute("content"), announced: document.getElementById("hk-announcer")!.textContent,
+        description: document.querySelector('meta[name="description"]')?.getAttribute("content"), announced: document.getElementById("mk-announcer")!.textContent,
         focus: document.activeElement === document.body, background: getComputedStyle(document.body).backgroundColor };
     })).toEqual({ kept: true, connections: "1", expanded: "true", page: "guide-page", ready: "guide", color: "rgb(4, 5, 6)", shared: "rgb(7, 8, 9)",
       current: [["/kit/", "false"], ["/kit/guide/", "page"], ["/kit/guide/install/", "false"], ["/kit/items/one/", "false"], ["/kit/items/two/", "false"]],
@@ -191,7 +191,7 @@ async function scenario(browser: Browser, url: string, built: boolean): Promise<
     expect([await marked(page), count("/kit/guide/install/", "fetch")]).toEqual([true, 1]);
     expect(page.url()).toBe(url + "guide/install/#deep");
     expect(await head(page)).toEqual({ titles: 1, descriptions: [], schema: [], widgets: 1, runs: 1 });
-    expect(await page.locator("#hk-layer-1 h1").evaluate(heading => getComputedStyle(heading).borderBottomColor)).toBe("rgb(7, 8, 9)");
+    expect(await page.locator("#mk-layer-1 h1").evaluate(heading => getComputedStyle(heading).borderBottomColor)).toBe("rgb(7, 8, 9)");
     await poll(() => page.evaluate(() => [Math.abs(Math.round(document.getElementById("deep")!.getBoundingClientRect().top)), scrollY > 2000])).toEqual([0, true]);
     await page.evaluate(() => scrollTo(0, 1234));
     await page.evaluate(() => document.querySelector<HTMLAnchorElement>('nav a[href="/kit/guide/"]')!.click());
@@ -210,12 +210,12 @@ async function scenario(browser: Browser, url: string, built: boolean): Promise<
     await page.locator("#items").click();
     await settled(page, "one");
     expect(count(payloadPath("items/one/"))).toBe(1);
-    expect(await page.evaluate(() => [document.getElementById("hk-layer-0")!.dataset.component, document.getElementById("hk-layer-0") === (window as unknown as { shell: Element }).shell]))
+    expect(await page.evaluate(() => [document.getElementById("mk-layer-0")!.dataset.component, document.getElementById("mk-layer-0") === (window as unknown as { shell: Element }).shell]))
       .toEqual(["items-shell", false]);
     await page.locator("#home").click();
     await settled(page, "Home");
-    expect(await page.evaluate(() => [document.getElementById("hk-layer-0")!.dataset.component, document.querySelector(".shell button")!.getAttribute("aria-expanded"),
-      document.getElementById("hk-layer-1")!.dataset.ready])).toEqual(["site-shell", "false", "home"]);
+    expect(await page.evaluate(() => [document.getElementById("mk-layer-0")!.dataset.component, document.querySelector(".shell button")!.getAttribute("aria-expanded"),
+      document.getElementById("mk-layer-1")!.dataset.ready])).toEqual(["site-shell", "false", "home"]);
     expect(await marked(page)).toBe(true);
 
     // Native behavior: fragments, downloads, other browsing contexts, and modified clicks.
@@ -312,7 +312,7 @@ async function layers(page: Page) {
   await page.getByText("Loaded data", { exact: true }).waitFor();
   return page.evaluate(() => ({
     markup: [0, 1].map(index => {
-      const copy = document.getElementById(`hk-layer-${index}`)!.cloneNode(true) as Element;
+      const copy = document.getElementById(`mk-layer-${index}`)!.cloneNode(true) as Element;
       for (const element of [copy, ...copy.querySelectorAll("*")]) {
         const attributes = [...element.attributes].map(({ name, value }) => [name, value] as const).sort(([a], [b]) => a < b ? -1 : 1);
         for (const [name] of attributes) element.removeAttribute(name);
@@ -320,7 +320,7 @@ async function layers(page: Page) {
       }
       return copy.outerHTML.replace(/ data-html-next-instance="[^"]*"/g, "");
     }),
-    connections: document.getElementById("hk-layer-1")!.dataset.connections, value: document.querySelector("input")!.value,
+    connections: document.getElementById("mk-layer-1")!.dataset.connections, value: document.querySelector("input")!.value,
   }));
 }
 
@@ -417,7 +417,7 @@ describe.skipIf(process.env.HTMLNEXT_BROWSER_TEST !== "1")("client navigation th
     // A navigation tree, whose folders open around the current page as client navigation moves.
     await write(root, "app/layouts/default.html", `<template component="site-shell"><defs>
       <prop name="tree" type="list(object({ label: string, current: string, depth: number, ... }))" required>Tree</prop></defs>
-      <div class="site"><hk-nav from:items="$tree"></hk-nav><slot name="page"></slot></div></template>`);
+      <div class="site"><mk-nav from:items="$tree"></mk-nav><slot name="page"></slot></div></template>`);
     await write(root, "app/layouts/default.server.ts", "export const load = async ({ navigationTree }) => ({ props: { tree: await navigationTree() } });");
     await write(root, "app/pages/index.html", '<template component="home-page"><defs><title>Home</title></defs><article><a id="to-a" href="/docs/a/">A</a></article></template>');
     await write(root, "app/pages/docs/_layout.html", `<template component="docs-shell" controller="./shell.ts"><defs><prop name="section" type="string" required>Section</prop></defs>
@@ -426,7 +426,7 @@ describe.skipIf(process.env.HTMLNEXT_BROWSER_TEST !== "1")("client navigation th
     await write(root, "app/pages/docs/shell.ts", "export default function(host) { host.root.dataset.connections = String(Number(host.root.dataset.connections || 0) + 1); }");
     await write(root, "app/pages/docs/a.html", '<template component="a-page"><defs><title>A</title></defs><article><a id="to-b" href="/docs/b/">B</a></article></template>');
     await write(root, "app/pages/docs/b.html", '<template component="b-page"><defs><title>B</title></defs><article><a id="to-deep" href="/docs/x/y/z/deep/">Deep</a></article></template>');
-    // Below <hk-nav>'s three inline levels, in its <hk-nav-items> instances.
+    // Below <mk-nav>'s three inline levels, in its <mk-nav-items> instances.
     await write(root, "app/pages/docs/x/y/z/deep.html", '<template component="deep-page"><defs><title>Deep</title></defs><article><a id="to-home" href="/">Home</a></article></template>');
     await buildApplication({ root });
     preview = await previewApplication({ root, port: 0 });
@@ -442,15 +442,15 @@ describe.skipIf(process.env.HTMLNEXT_BROWSER_TEST !== "1")("client navigation th
       try {
         const { page, errors } = await open(await browser.newContext());
         await page.goto(preview.url + "docs/a/");
-        await page.waitForFunction(() => document.getElementById("hk-layer-1")?.dataset.connections === "1");
+        await page.waitForFunction(() => document.getElementById("mk-layer-1")?.dataset.connections === "1");
         await mark(page);
-        await page.evaluate(() => { (window as unknown as { docs: Element }).docs = document.getElementById("hk-layer-1")!; });
+        await page.evaluate(() => { (window as unknown as { docs: Element }).docs = document.getElementById("mk-layer-1")!; });
         await page.locator("#to-b").click();
         await settled(page, "B");
         expect(await page.evaluate(() => {
-          const docs = document.getElementById("hk-layer-1")!;
+          const docs = document.getElementById("mk-layer-1")!;
           return [docs === (window as unknown as { docs: Element }).docs, docs.dataset.connections, docs.querySelector("aside")!.dataset.section,
-            document.getElementById("hk-layer-2")!.dataset.component];
+            document.getElementById("mk-layer-2")!.dataset.component];
         })).toEqual([true, "1", "/docs/b/", "b-page"]);
         const tree = () => page.evaluate(() => [document.querySelector<HTMLDetailsElement>("nav details")!.open, document.querySelector("nav summary")!.textContent,
           document.querySelector('nav a[aria-current="page"]')?.textContent ?? null]);
@@ -462,7 +462,7 @@ describe.skipIf(process.env.HTMLNEXT_BROWSER_TEST !== "1")("client navigation th
         // Leaving the folder drops its layout, and its folder closes in the tree.
         await page.locator("#to-home").click();
         await settled(page, "Home");
-        expect(await page.evaluate(() => [document.getElementById("hk-layer-1")!.dataset.component, document.getElementById("hk-layer-2")])).toEqual(["home-page", null]);
+        expect(await page.evaluate(() => [document.getElementById("mk-layer-1")!.dataset.component, document.getElementById("mk-layer-2")])).toEqual(["home-page", null]);
         expect(await tree()).toEqual([false, "docs", "Home"]);
         expect([await marked(page), errors]).toEqual([true, []]);
       } finally { await browser.close(); }
@@ -579,7 +579,7 @@ describe.skipIf(process.env.HTMLNEXT_BROWSER_TEST !== "1")("client navigation to
       <a id="three" href="/list/?page=3">Three</a><slot name="page"></slot></div></template>`);
     await write(root, "app/pages/index.html", '<template component="home-page"><defs><title>Home</title></defs><h1>Home</h1></template>');
     await write(root, "app/pages/list.html", `<template component="list-page"><defs>
-      <prop name="title" type="string" required>Title</prop><prop name="reader" type="string" required>Reader</prop><meta name="hk:render" content="server"><title>{$title}</title></defs><article><h1>{$title}</h1><p class="reader">{$reader}</p></article></template>`);
+      <prop name="title" type="string" required>Title</prop><prop name="reader" type="string" required>Reader</prop><meta name="mk:render" content="server"><title>{$title}</title></defs><article><h1>{$title}</h1><p class="reader">{$reader}</p></article></template>`);
     await write(root, "app/pages/list.server.ts", 'export const load = ({ url, cookies }) => ({ props: { title: "Page " + (url.searchParams.get("page") ?? "1"), reader: cookies.get("reader") ?? "nobody" } });');
     const { outDir } = await buildApplication({ root });
     server = await startApplication({ outDir, port: 0 });
@@ -623,13 +623,13 @@ describe.skipIf(process.env.HTMLNEXT_BROWSER_TEST !== "1")("form actions", () =>
     await write(root, "app/layouts/default.html", `<template component="form-shell"><div class="shell"><a id="slow" href="/slow/">Slow</a> <a id="todos" href="/todos/">Todos</a>
       <slot name="page"></slot></div><style>:host { display: block; }</style></template>`);
     await write(root, "app/pages/index.html", '<template component="home-page"><defs><title>Home</title></defs><h1>Home</h1></template>');
-    await write(root, "app/pages/slow.html", '<template component="slow-page"><defs><meta name="hk:render" content="server"><title>Slow</title></defs><h1>Slow</h1></template>');
+    await write(root, "app/pages/slow.html", '<template component="slow-page"><defs><meta name="mk:render" content="server"><title>Slow</title></defs><h1>Slow</h1></template>');
     await write(root, "app/pages/slow.server.ts", "export const load = async () => { await new Promise(done => setTimeout(done, 400)); return {}; };");
     // The first invalid field takes autofocus, which a page load and a submission in place both focus.
     await write(root, "app/pages/todos.html", `<template component="todos-page"><defs>
       <prop name="todos" type="list(string)" required>Todos</prop>
       <prop name="errors" type="object({ title?: string })" default="{}">Field errors</prop><prop name="values" type="object({ title?: string })" default="{}">Submitted values</prop>
-      <meta name="hk:render" content="server"><title>Todos</title></defs><section>
+      <meta name="mk:render" content="server"><title>Todos</title></defs><section>
       <form method="post" action="?/create"><label>Title <input name="title" from:value="$values.title" from:autofocus="$errors.title"
         from:aria-invalid="$errors.title ? 'true' : 'false'"></label>
         <p class="error" $if="$errors.title">{$errors.title}</p><button>Add</button></form>
@@ -665,7 +665,7 @@ describe.skipIf(process.env.HTMLNEXT_BROWSER_TEST !== "1")("form actions", () =>
           const log: string[] = (window as unknown as { log: string[] }).log = [];
           new MutationObserver(records => { for (const { target, attributeName } of records) {
             log.push(`${(target as Element).localName} ${attributeName} ${(target as Element).hasAttribute(attributeName!) ? "on" : "off"}`);
-          } }).observe(document.documentElement, { subtree: true, attributeFilter: ["data-hk-navigating", "data-hk-submitting", "aria-busy"] });
+          } }).observe(document.documentElement, { subtree: true, attributeFilter: ["data-mk-navigating", "data-mk-submitting", "aria-busy"] });
         });
         const log = () => page.evaluate(() => (window as unknown as { log: string[] }).log.splice(0));
         const title = page.getByRole("textbox", { name: "Title" });
@@ -676,7 +676,7 @@ describe.skipIf(process.env.HTMLNEXT_BROWSER_TEST !== "1")("form actions", () =>
         // A validation error renders in place at the action's URL, as a document POST would, with the field focused.
         expect([new URL(page.url()).search, await title.inputValue(), await title.getAttribute("aria-invalid"), await page.evaluate(() => (document.activeElement as HTMLInputElement | null)?.name)])
           .toEqual(["?/create", "ab", "true", "title"]);
-        expect(await log()).toEqual(["html data-hk-navigating on", "form data-hk-submitting on", "form aria-busy on", "html data-hk-navigating off"]);
+        expect(await log()).toEqual(["html data-mk-navigating on", "form data-mk-submitting on", "form aria-busy on", "html data-mk-navigating off"]);
         // Success redirects to the page, which replaces the submission's entry; the form is busy meanwhile.
         const entries = await page.evaluate(() => navigation.entries().length);
         await title.fill(`${name} task`);
@@ -686,12 +686,12 @@ describe.skipIf(process.env.HTMLNEXT_BROWSER_TEST !== "1")("form actions", () =>
         await settled(page, "Todos");
         expect([new URL(page.url()).search, await page.locator(".error").count(), await page.evaluate(() => navigation.entries().length)]).toEqual(["", 0, entries + 1]);
         // The redirect's navigation continues the submission's pending state, which ends once.
-        expect((await log()).filter(entry => entry.startsWith("html"))).toEqual(["html data-hk-navigating on", "html data-hk-navigating on", "html data-hk-navigating off"]);
+        expect((await log()).filter(entry => entry.startsWith("html"))).toEqual(["html data-mk-navigating on", "html data-mk-navigating on", "html data-mk-navigating off"]);
         // Link navigation is pending too, until the next page renders.
         await page.locator("#slow").click();
-        await page.waitForFunction(() => document.documentElement.hasAttribute("data-hk-navigating"));
+        await page.waitForFunction(() => document.documentElement.hasAttribute("data-mk-navigating"));
         await settled(page, "Slow");
-        expect(await page.evaluate(() => document.documentElement.hasAttribute("data-hk-navigating"))).toBe(false);
+        expect(await page.evaluate(() => document.documentElement.hasAttribute("data-mk-navigating"))).toBe(false);
         // Both submissions were fetches from this document, which never reloaded, under the site's policy; the
         // redirect's page rendered from the submission's response, the third fetch, with no payload request.
         expect([count("/todos/", "document"), count("/todos/", "fetch"), count(payloadPath("todos/", "/")), await marked(page), errors]).toEqual([1, 3, 0, true, []]);

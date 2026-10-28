@@ -32,7 +32,7 @@ describe("standalone package contract", () => {
     writeFileSync(join(consumer, "markupkit.config.ts"), 'import { defineConfig, type MarkupKitPlugin, type PageSource } from "@threadlabs/markupkit"; const notes: MarkupKitPlugin = { name: "notes", pages: { extensions: [".note"], compile(_source, page) { const sources: readonly PageSource[] = page.pages; return `<template component="packed-note"><main>${sources.map(source => source.href).join(",")}</main></template>`; } } }; export default defineConfig({ base: "/packed/", plugins: [notes] });');
     writeFileSync(join(consumer, "app/layouts/default.html"), '<link rel="component" href="@threadlabs/markupkit/components/nav.html"><template component="packed-shell"><defs><prop name="navigation" type="list(object({ href: string, label: string, current: string, depth: number, pageName: string }))" required>Links</prop><title>Layout default</title></defs><main><mk-nav from:items="$navigation"></mk-nav><slot name="page"></slot></main></template>');
     writeFileSync(join(consumer, "app/layouts/default.server.ts"), 'export const load = async ({ navigation }) => ({ props: { navigation: await navigation() } });');
-    writeFileSync(join(consumer, "app/pages/01.index.html"), '<meta name="mk:page" content="packed-page"><template component="packed-label"><strong>Packaged helper</strong></template><template component="packed-page"><defs><prop name="label" type="string" required>Label</prop><title>{$label}</title></defs><section><h1 $value="$label"></h1><packed-label></packed-label></section></template>');
+    writeFileSync(join(consumer, "app/pages/01.index.html"), '<meta name="mk:page" content="packed-page"><template component="packed-label"><strong>Packaged helper</strong></template><template component="packed-page"><defs><prop name="label" type="string" required>Label</prop><title>{$label}</title><link rel="alternate" hreflang="ar" href="https://docs.example/packed/"><link rel="alternate" hreflang="x-default" href="https://docs.example/packed/"></defs><section><h1 $value="$label"></h1><packed-label></packed-label></section></template>');
     writeFileSync(join(consumer, "app/pages/01.index.server.ts"), 'export const load = () => ({ props: { label: "Installed platform" }, head: { lang: "ar", dir: "rtl" } });');
     writeFileSync(join(consumer, "app/pages/catalog.note"), "Catalog sources");
     const installed = join(consumer, "node_modules/@threadlabs/markupkit");
@@ -40,6 +40,8 @@ describe("standalone package contract", () => {
     expect(output).toContain("Generated 2 pages");
     const html = readFileSync(join(consumer, "dist/index.html"), "utf8");
     expect(html).toContain("Installed platform");
+    expect(html).toContain('hreflang="ar" href="https://docs.example/packed/"');
+    expect(html).toContain('hreflang="x-default" href="https://docs.example/packed/"');
     expect(readFileSync(join(consumer, "dist/catalog/index.html"), "utf8")).toContain("/packed/catalog/");
     expect(html).toContain('<html lang="ar" dir="rtl">');
     expect(html).toContain(">Installed platform</title>");

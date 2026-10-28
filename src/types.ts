@@ -193,7 +193,21 @@ export interface ManifestPage {
   readonly chunks: readonly string[];
 }
 
+/** A static source mount known before plugins compile page metadata. */
+export interface PageSource {
+  readonly file: string;
+  /** Deployment URL, including the application's base. */
+  readonly href: string;
+  /** For an alias directory mount, the same page's deployment URL under its owning mount. */
+  readonly aliasOf?: string;
+}
 export interface PageContext {
+  /**
+   * Immutable static source mounts, shared by every compilation in this discovery. A new discovery
+   * has a fresh array, including in development, so a WeakMap keyed by it can cache source metadata.
+   * Parameterized routes, error pages, and metadata-defined aliases/redirects are not source mounts.
+   */
+  readonly pages: readonly PageSource[];
   /** The page's absolute source path. Diagnostics and relative references in its resource use it. */
   readonly file: string;
   /** Deployment URL of the page compiled from another absolute source path, in the first directory that serves it. */

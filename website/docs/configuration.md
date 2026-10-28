@@ -183,9 +183,12 @@ MarkupKit routes, orders, watches, renders, and builds `.note` files like `.html
 name the `.note` file. A compiled page is an HTML Next component, so its head content and `mk:`
 settings go in its `<defs>`. While compiling, a plugin can call:
 
+- `page.pages` for immutable static source mounts, each with `file`, `href`, and an optional `aliasOf` for an alias directory;
 - `page.href(file)` for another page's URL;
 - `page.asset(file)` to serve a file the page references, such as an image, and get its URL;
 - `page.watch(file)` for a file the page's output depends on, such as a metadata file beside it.
+
+Every compilation within one discovery receives the same `page.pages` array. Each new discovery gets a fresh array, including after a development edit, so a `WeakMap` keyed by it can cache metadata read from those sources. The catalog is available before the first page compiles. Its URLs include the application's base; `aliasOf` points to the owning mount's URL. It lists source mounts, including pages hidden from navigation, rather than parameterized routes, error pages, or aliases and redirects declared in page metadata.
 
 `markupkit dev` watches the project root, and also each file a plugin passes to `page.watch`, inside the
 root or outside it. When one changes, it recompiles the pages and reloads open pages:

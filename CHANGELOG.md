@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.0
+
+- Expose immutable static page-source mounts to page compilers, including native alias-directory targets and deployment bases. Metadata caches can use the shared catalog identity and refresh on each discovery in development.
+
 ## 0.3.0
 
 - Support native document direction through loader `head.dir`, initial/static HTML, navigation payloads and in-place browser adoption. Pages inherit their layout direction, can override it, and clear a preceding page's direction when no loader sets one.

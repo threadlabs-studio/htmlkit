@@ -79,7 +79,7 @@ Existing `controller` components keep their legacy lifecycle.
 
 ## Browser-only companion modules
 
-Use a `.client.js` or `.client.ts` companion for browser-only imports and readers. HTMLKit imports it
+Use a `.client.js` or `.client.ts` companion for browser-only imports and readers. MarkupKit imports it
 only in the browser graph. A shared module can keep the selector while the client file supplies the
 reader:
 
@@ -109,7 +109,7 @@ The browser reader inherits the shared selector and policy. Without a shared rea
 leaves the authored loading branch in place. A client file can instead define complete providers
 with both `input` and `load`, with no shared module. Supplied props bypass either form.
 
-When both environments have a reader, HTMLKit prepares the common reader on the server and adopts
+When both environments have a reader, MarkupKit prepares the common reader on the server and adopts
 that result in the browser. Later browser reads use the client reader. For a read on every activation,
 set `revalidate: 'activate'` in the client provider.
 
@@ -125,7 +125,7 @@ their explicit entry points.
 
 ## Preparing the same provider on the server
 
-Omit `initial: 'browser'` to prepare the provider before HTMLKit writes the page. Its `load` receives
+Omit `initial: 'browser'` to prepare the provider before MarkupKit writes the page. Its `load` receives
 `phase: 'build'` during prerendering, `'request'` during request-time rendering, and `'browser'` for
 later client reads. Use a data function that works in those environments:
 
@@ -145,7 +145,7 @@ result without repeating the initial read. Changing `productId` starts a browser
 draft state retains its edits. A failed read renders the component's `$error` branch.
 
 Common module imports and `create()` must work without browser globals. Put browser API calls in
-`connect`; HTMLKit never calls it during server preparation. A module exporting only `connect` is
+`connect`; MarkupKit never calls it during server preparation. A module exporting only `connect` is
 left out of server preparation, including its browser-only imports. `initial: 'browser'` delays a
 provider's read, but its common module still has to load on the server.
 
@@ -157,7 +157,7 @@ A provider may supply a `required` prop, including one deferred with `initial: '
 value is unavailable, `$await` selects its loading or error branch; ordinary constraint validity still
 reports a missing required value. Server preparation diagnoses a missing page or layout input when its
 common module has no provider for it. With a client companion, the browser owns its suppliers and
-constraint validation; HTMLKit does not execute browser code to predict those suppliers on the server.
+constraint validation; MarkupKit does not execute browser code to predict those suppliers on the server.
 
 ## Private component readers
 
@@ -186,8 +186,8 @@ export const props = {
 };
 ```
 
-HTMLKit prepares the private reader before rendering. The browser adopts its result without another
-request. When the selector changes, HTMLKit sends the selected declarations to its request server;
+MarkupKit prepares the private reader before rendering. The browser adopts its result without another
+request. When the selector changes, MarkupKit sends the selected declarations to its request server;
 that server validates them, reruns the common selector, and calls the private reader with the current
 request. A `.client` reader can override later browser reads while retaining the private SSR result.
 Ordinary supplied props bypass all readers, including private ones.
@@ -200,7 +200,7 @@ reading them during a build throws. Check `phase` before reading or destructurin
 Treat every input from a browser, including page URLs, params, computed values, and sampled fields,
 as untrusted. Authorize each private read using the real request and server-owned information. A
 component input or `when` condition is not an authorization check. Middleware runs for the read's
-`_htmlkit/read` request; it does not run a second time for the page URL carried by that request.
+`_markupkit/read` request; it does not run a second time for the page URL carried by that request.
 
 Private `props` exports contain `{ load }` readers. Put `input`, `when`, `sample`, and scheduling
 policy in the common module. Common selectors run synchronously and should depend on the declared
@@ -217,16 +217,16 @@ asset or imported by browser modules.
 A thrown `Response` with status 400 or above deliberately exposes its text to the component's error
 branch. Other failures are logged on the server and expose only a generic message. Private reads
 carry cancellation when the selected input changes, the component deactivates, the request ends, or
-its application closes. Readers should pass `signal` to cancellable work. HTMLKit ignores late
+its application closes. Readers should pass `signal` to cancellable work. MarkupKit ignores late
 completion; it cannot forcibly stop arbitrary JavaScript running in an external service.
 
 For application-owned services, pass `services` to `createApplication`, `devApplication`, or
 `buildApplication`, and separately to `startApplication` or a built entry's `create(options)`.
 Functions and service objects stay in the parent process rather than crossing into render workers.
 The caller owns their setup and shutdown. `ServerReader`, `ServerReaders`, and `ServerReadContext`
-are exported types from `@threadlabs/htmlkit` for annotated private modules.
+are exported types from `@threadlabs/markupkit` for annotated private modules.
 
-Pages with private browser reads require the HTMLKit request server even when their HTML is
+Pages with private browser reads require the MarkupKit request server even when their HTML is
 prerendered. A static host can serve the initial result, but cannot answer later private reads;
 use a client reader backed by a public API for that deployment.
 
@@ -307,7 +307,7 @@ or `response` is an error that names the loader.
 ## Rendering on each request
 
 `<meta name="hk:render" content="server">` in a page renders it on each request, under
-`htmlkit dev` and [`htmlkit start`](/deployment#the-node-server). Its loaders, and its
+`markupkit dev` and [`markupkit start`](/deployment#the-node-server). Its loaders, and its
 layouts' loaders, then read the request and shape the response:
 
 ```html
@@ -324,7 +324,7 @@ layouts' loaders, then read the request and shape the response:
 
 ```ts
 // app/pages/orders.server.ts
-import type { LoadContext } from '@threadlabs/htmlkit';
+import type { LoadContext } from '@threadlabs/markupkit';
 import { db } from '@/lib/db.ts';
 
 export async function load({ url, cookies, request, response, redirect, notFound }: LoadContext) {
@@ -390,7 +390,7 @@ export function load({ redirect }) {
 }
 ```
 
-The development server, `htmlkit start`, and `application.fetch` answer with that status and a `Location` header. A
+The development server, `markupkit start`, and `application.fetch` answer with that status and a `Location` header. A
 static build writes a redirect page at the page's URL, as for the
 [`redirects` option](/routes#redirects), and lists it in the manifest's `redirects`.
 
@@ -402,16 +402,16 @@ from the outside in, then the page's. Each receives the `data` of the ones befor
 
 ## In the browser
 
-HTMLKit sends the rendered HTML, then a script per page with the page's components compiled to
+MarkupKit sends the rendered HTML, then a script per page with the page's components compiled to
 direct DOM code. They take over that HTML in place: modules connect and browser data reads
 start, without re-rendering, and whatever a reader typed before the script ran stays. A page ships
 only the HTML Next code its components use. After that, links to other pages render in place; see
 [Moving between pages](/client-navigation).
 
-- A component module can be TypeScript: write `module="./counter.ts"`, and HTMLKit compiles it.
+- A component module can be TypeScript: write `module="./counter.ts"`, and MarkupKit compiles it.
   Export a named `connect` for browser behavior. Run `tsc` separately to check types.
 - Component styles become regular stylesheets that load before the page is shown.
-- Files in `public/` are copied unchanged, and a symbolic link there is an error. `_htmlkit/` and `404.html` are reserved names, and so is
+- Files in `public/` are copied unchanged, and a symbolic link there is an error. `_markupkit/` and `404.html` are reserved names, and so is
   `robots.txt` when the [`robots` option](/configuration#search-engines) is set.
 - `document` fires `hk:ready` once the page's components have taken over its HTML.
 - After any change in development, open pages reload.

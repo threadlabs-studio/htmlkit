@@ -1,4 +1,4 @@
-/* HTMLKit's product palette is independent of the proposal site and Markupress's default theme. */
+/* MarkupKit's product palette is independent of the proposal site and Markupress's default theme. */
 html:root, html [data-theme="light"], html [data-theme="dark"] {
   --ui-surface: light-dark(#f7f3e9, #201f1b);
   --ui-surface-raised: light-dark(#fffcf5, #2b2923);

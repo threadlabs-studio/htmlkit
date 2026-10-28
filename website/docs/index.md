@@ -1,6 +1,6 @@
 ---
 layout: home
-title: HTMLKit
+title: MarkupKit
 description: Build with HTML, CSS, and JavaScript again. Components, routing, and server rendering, powered by the next generation of HTML.
 ---
 
@@ -8,9 +8,9 @@ description: Build with HTML, CSS, and JavaScript again. Components, routing, an
 
 The HTML, CSS, and JavaScript you know, with components, routing, and server rendering powered by the next generation of HTML.
 
-![](/htmlkit-lockup.svg)
+![](/markupkit-lockup.svg)
 
-[Get started](getting-started.md) [Explore the source](https://github.com/threadlabs-studio/htmlkit)
+[Get started](getting-started.md) [Explore the source](https://github.com/threadlabs-studio/markupkit)
 
 ## Write HTML. Style it with CSS.
 
@@ -18,7 +18,7 @@ Your pages are `.html` files. Components declare their props and state in HTML. 
 
 ## Give every page a home.
 
-A folder of pages becomes your routes. Share layouts, load data, and add API endpoints when your application needs them. HTMLKit handles development, builds, and delivery.
+A folder of pages becomes your routes. Share layouts, load data, and add API endpoints when your application needs them. MarkupKit handles development, builds, and delivery.
 
 ## Build for the browser and the server.
 
@@ -26,8 +26,8 @@ Prerender pages for a static host, or render them on each request. HTML Next con
 
 ## Built on the next generation of HTML.
 
-HTMLKit uses [HTML Next](https://nextwebwg.org/html-next/), the implementation of the Next Web Working Group's [declarative components proposal](https://nextwebwg.org/declarative-components/). These proposed capabilities are available through its runtime today.
+MarkupKit uses [HTML Next](https://nextwebwg.org/html-next/), the implementation of the Next Web Working Group's [declarative components proposal](https://nextwebwg.org/declarative-components/). These proposed capabilities are available through its runtime today.
 
 ## From Threadlabs, alongside Markupress.
 
-[Markupress](https://threadlabs-studio.github.io/markupress/) builds documentation on HTMLKit. It powers this site, too. HTMLKit handles the application; Markupress handles Markdown, navigation, and documentation versions.
+[Markupress](https://threadlabs-studio.github.io/markupress/) builds documentation on MarkupKit. It powers this site, too. MarkupKit handles the application; Markupress handles Markdown, navigation, and documentation versions.

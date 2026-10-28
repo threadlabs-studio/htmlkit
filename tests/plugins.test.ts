@@ -4,15 +4,15 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { afterEach, expect, it } from "vitest";
 import { withPlugins } from "../dist/config.js";
-import { buildApplication, createApplication, devApplication, loadConfig, type HtmlKitPlugin, type NavigationItem, type NavigationQuery } from "../dist/index.js";
+import { buildApplication, createApplication, devApplication, loadConfig, type MarkupKitPlugin, type NavigationItem, type NavigationQuery } from "../dist/index.js";
 import { write } from "./fixture.js";
 
 const roots: string[] = [];
 afterEach(async () => { await Promise.all(roots.splice(0).map(root => rm(root, { recursive: true, force: true }))); });
 
 // A minimal page plugin: .note files are HTML Next page bodies whose @href() and @asset() references
-// resolve through HTMLKit. Its config() mounts one directory at two prefixes and supplies the layout.
-function notes(root: string): HtmlKitPlugin {
+// resolve through MarkupKit. Its config() mounts one directory at two prefixes and supplies the layout.
+function notes(root: string): MarkupKitPlugin {
   return {
     name: "notes",
     config: () => ({ headScript: "window.notes = true;", pages: [{ dir: "docs", prefix: "/v/one/", alias: true }, { dir: "docs" }],
@@ -32,7 +32,7 @@ function notes(root: string): HtmlKitPlugin {
 }
 
 async function site() {
-  const root = await mkdtemp(join(tmpdir(), "htmlkit-plugins-")); roots.push(root);
+  const root = await mkdtemp(join(tmpdir(), "markupkit-plugins-")); roots.push(root);
   await write(root, "package.json", '{"type":"module"}');
   await write(root, "plugin/shell.html", '<template component="notes-shell"><defs><prop name="links" type="string" required>Links</prop></defs><main><nav>{$links}</nav><slot name="page"></slot></main></template>');
   await write(root, "docs/01.index.note", '<title>Home</title><meta name="hk:label" content="Home"><article>Home body</article>');
@@ -52,7 +52,7 @@ it("routes plugin pages through page directories, metadata, aliases, and a plugi
     expect(install).toContain("<script>window.notes = true;</script>");
     // Links resolve to the first directory that serves the target; referenced files get stable URLs.
     expect(install).toContain('href="/v/one/"');
-    expect(install).toMatch(/src="\/_htmlkit\/files\/[0-9a-f]{16}-mark\.svg"/);
+    expect(install).toMatch(/src="\/_markupkit\/files\/[0-9a-f]{16}-mark\.svg"/);
     expect([...application.files.values()]).toEqual([await realpath(join(root, "docs/mark.svg"))]);
     // An alias renders its page and marks the page's own navigation entry current.
     const alias = (await application.render("/v/one/start/")).html;
@@ -83,7 +83,7 @@ it("keeps head scripts apart, refuses private files, and lays out an alias like 
 it("serves a page-wide stylesheet from outside the root in development", async () => {
   const root = await site();
   // A plugin's own stylesheet lives in its package, outside the site's root.
-  const outside = await mkdtemp(join(tmpdir(), "htmlkit-theme-")); roots.push(outside);
+  const outside = await mkdtemp(join(tmpdir(), "markupkit-theme-")); roots.push(outside);
   await write(outside, "theme.css", "html { color: rgb(1, 2, 3); }");
   const server = await devApplication({ root, port: 0, plugins: [notes(root)], css: [join(outside, "theme.css")] });
   try {
@@ -109,12 +109,12 @@ it("serves plugin page files and recompiles edited pages in development", async 
 
 it("recompiles a plugin page in development when a file it watches changes, outside the root too", async () => {
   const root = await site();
-  const outside = await mkdtemp(join(tmpdir(), "htmlkit-watched-")); roots.push(outside);
+  const outside = await mkdtemp(join(tmpdir(), "markupkit-watched-")); roots.push(outside);
   const banner = join(outside, "banner.txt");
   await write(outside, "banner.txt", "First banner");
   const plugin = notes(root);
   const compile = plugin.pages!.compile;
-  const watching: HtmlKitPlugin = { ...plugin, pages: { extensions: plugin.pages!.extensions, async compile(source, page) {
+  const watching: MarkupKitPlugin = { ...plugin, pages: { extensions: plugin.pages!.extensions, async compile(source, page) {
     page.watch(banner);
     return (await compile(source, page)).replace("Install body", await readFile(banner, "utf8"));
   } } };
@@ -132,9 +132,9 @@ it("builds plugin pages with the files they reference", async () => {
   const root = await site();
   const result = await buildApplication({ root, plugins: [notes(root)] });
   expect(result.routes).toContain("/v/one/start/");
-  const [file] = await readdir(join(result.outDir, "_htmlkit/files"));
+  const [file] = await readdir(join(result.outDir, "_markupkit/files"));
   expect(file).toMatch(/^[0-9a-f]{16}-mark\.svg$/);
-  expect(await readFile(join(result.outDir, "v/one/install/index.html"), "utf8")).toContain(`/_htmlkit/files/${file}`);
+  expect(await readFile(join(result.outDir, "v/one/install/index.html"), "utf8")).toContain(`/_markupkit/files/${file}`);
 }, 60_000);
 
 it("adds a plugin's page folders, stylesheets, and folder layout to the site's own", async () => {
@@ -142,7 +142,7 @@ it("adds a plugin's page folders, stylesheets, and folder layout to the site's o
   await write(root, "app/pages/about.html", '<template component="page-about"><h1>About</h1></template>');
   await write(root, "app/layouts/default.html", '<template component="site-shell"><main class="site"><slot name="page"></slot></main></template>');
   const shell = { component: join(root, "plugin/shell.html"), server: { load: () => ({ props: { links: "Docs" } }) } };
-  const docs: HtmlKitPlugin = { ...notes(root), config: () => ({ pages: [{ dir: "docs", prefix: "/docs/", layout: shell }], css: ["plugin/docs.css"] }) };
+  const docs: MarkupKitPlugin = { ...notes(root), config: () => ({ pages: [{ dir: "docs", prefix: "/docs/", layout: shell }], css: ["plugin/docs.css"] }) };
   const options = await withPlugins({ root, css: ["@/styles/site.css"], plugins: [docs] });
   expect(options.css).toEqual(["@/styles/site.css", "plugin/docs.css"]);
   expect(options.pages?.map(page => page.dir)).toEqual(["app/pages", "docs"]);
@@ -163,12 +163,12 @@ it("names plugin layouts that hk:layout selects, with their own loaders and decl
   await write(root, "docs/04.landing.note", '<meta name="hk:layout" content="home"><article>Landing body</article>');
   const seen: (readonly string[])[] = [];
   const data = { title: "Welcome", sidebar: "unused by home" };
-  const plugin: HtmlKitPlugin = { name: "home", config: () => ({ layouts: { home: { component: join(root, "plugin/home.html"), server: {
+  const plugin: MarkupKitPlugin = { name: "home", config: () => ({ layouts: { home: { component: join(root, "plugin/home.html"), server: {
     // A loader returns exactly the props its layout declares.
     load: ({ propNames }) => { seen.push(propNames); return { props: Object.fromEntries(Object.entries(data).filter(([name]) => propNames.includes(name))) }; } } } } }) };
   // A later plugin's layout of the same name loses to the earlier one's.
   await write(root, "plugin/later.html", '<template component="later-shell"><main><slot name="page"></slot></main></template>');
-  const later: HtmlKitPlugin = { name: "later", config: () => ({ layouts: { home: { component: join(root, "plugin/later.html") } } }) };
+  const later: MarkupKitPlugin = { name: "later", config: () => ({ layouts: { home: { component: join(root, "plugin/later.html") } } }) };
   const application = await createApplication({ root, plugins: [notes(root), plugin, later] });
   try {
     const { body } = await application.render("/landing/");
@@ -195,13 +195,13 @@ it("names the page and the expected file for a missing named layout", async () =
     .rejects.toThrow(/04\.landing\.note: Layout missing needs .*app\/layouts\/missing\.html or a layouts entry named missing\./);
 });
 
-it("loads htmlkit.config.ts for a wrapping command", async () => {
+it("loads markupkit.config.ts for a wrapping command", async () => {
   const root = await site();
   expect(await loadConfig(root)).toEqual({});
-  await write(root, "htmlkit.config.ts", "const base: string = '/docs/';\nexport default { base };");
+  await write(root, "markupkit.config.ts", "const base: string = '/docs/';\nexport default { base };");
   expect(await loadConfig(root)).toEqual({ base: "/docs/" });
-  await write(root, "htmlkit.config.js", "export default {};");
-  await expect(loadConfig(root)).rejects.toThrow(/Choose one htmlkit\.config\.ts or \.js/);
+  await write(root, "markupkit.config.js", "export default {};");
+  await expect(loadConfig(root)).rejects.toThrow(/Choose one markupkit\.config\.ts or \.js/);
 });
 
 it("makes a page directory's 404 page the not-found page only at /, with that directory's layout", async () => {

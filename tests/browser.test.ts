@@ -30,7 +30,7 @@ for (const delegated of [false, true]) for (const delivery of ["development", "b
         try {
           const page = await browser.newPage(); let reads = 0; const errors: string[] = [];
           page.on("pageerror", error => errors.push(error.message));
-          page.on("request", request => { if (new URL(request.url()).pathname === "/_htmlkit/read") reads += 1; });
+          page.on("request", request => { if (new URL(request.url()).pathname === "/_markupkit/read") reads += 1; });
           expect(await (await fetch(server.url)).text()).toContain(">build:A</h2>");
           await page.goto(server.url);
           await page.waitForLoadState("networkidle");
@@ -106,7 +106,7 @@ for (const delivery of ["development", "built"] as const) {
           await context.addCookies([{ name: "user", value: "Ada", url: server.url }]);
           const page = await context.newPage(); const errors: string[] = []; let requests = 0;
           page.on("pageerror", error => errors.push(error.message));
-          page.on("request", request => { if (new URL(request.url()).pathname.endsWith("/_htmlkit/read")) requests += 1; });
+          page.on("request", request => { if (new URL(request.url()).pathname.endsWith("/_markupkit/read")) requests += 1; });
           await page.goto(server.url);
           await page.waitForFunction(() => document.querySelector("main")?.dataset.commonConnections === "1");
           expect(await page.locator("h1").textContent()).toBe("build:A");
@@ -254,7 +254,7 @@ for (const delivery of ["development", "built"] as const) {
           await page.waitForFunction(() => document.querySelector("main")?.dataset.connections === "1");
           expect(await page.locator("h1").textContent()).toBe("Fixture");
           expect(await page.evaluate(() => Reflect.get(window, "universalReads"))).toBeUndefined();
-          const payload = await (await fetch(server.url + "_htmlkit/pages/payload.json")).json();
+          const payload = await (await fetch(server.url + "_markupkit/pages/payload.json")).json();
           expect(payload.rendered.body).toContain("<h1>build:A</h1>");
           await page.evaluate(() => Reflect.set(window, "universalMarker", true));
           await page.getByRole("link", { name: "Home", exact: true }).click();
@@ -384,7 +384,7 @@ describe.skipIf(process.env.HTMLNEXT_BROWSER_TEST !== "1")("built application ad
         expect(await staticPage.locator("main").evaluate(element => getComputedStyle(element).color)).toBe("rgb(20, 30, 40)");
         expect(await staticPage.locator("button").evaluate(element => getComputedStyle(element).borderTopColor)).toBe("rgb(55, 66, 77)");
         const image = await staticPage.locator("main").evaluate(element => getComputedStyle(element).backgroundImage);
-        expect(image).toContain("/kit/_htmlkit/");
+        expect(image).toContain("/kit/_markupkit/");
         expect((await fetch(image.slice(5, -2))).status).toBe(200);
         await staticPage.goto(server.url + "items/two/");
         expect(await staticPage.locator("h1").textContent()).toBe("kit: two");
@@ -395,7 +395,7 @@ describe.skipIf(process.env.HTMLNEXT_BROWSER_TEST !== "1")("built application ad
         let release!: () => void;
         let released = false;
         const gate = new Promise<void>(done => { release = done; });
-        await page.route("**/_htmlkit/*.js", async route => { if (!released) await gate; await route.continue(); });
+        await page.route("**/_markupkit/*.js", async route => { if (!released) await gate; await route.continue(); });
         await page.goto(server.url, { waitUntil: "commit" });
         await page.locator("input").waitFor();
         await page.evaluate(() => {
@@ -483,7 +483,7 @@ describe.skipIf(process.env.HTMLNEXT_BROWSER_TEST !== "1")("development and docu
   });
 
   it("delivers the documentation theme, search, and live example through the platform", async () => {
-    const root = await mkdtemp(join(tmpdir(), "htmlkit-docs-browser-"));
+    const root = await mkdtemp(join(tmpdir(), "markupkit-docs-browser-"));
     const browser = await chromium.launch({ headless: true });
     let server: ApplicationServer | undefined;
     try {
@@ -518,7 +518,7 @@ describe.skipIf(process.env.HTMLNEXT_BROWSER_TEST !== "1")("development and docu
 
 describe.skipIf(process.env.HTMLNEXT_BROWSER_TEST !== "1")("page-wide stylesheets", () => {
   it("apply on first paint in built and development pages", async () => {
-    const root = await mkdtemp(join(tmpdir(), "htmlkit-page-css-"));
+    const root = await mkdtemp(join(tmpdir(), "markupkit-page-css-"));
     await write(root, "package.json", '{"type":"module"}');
     await write(root, "styles/page.css", "html { background: rgb(1, 2, 3); } body { margin: 0; }");
     await write(root, "app/pages/index.html", '<template component="page-home"><h1>Home</h1></template>');
@@ -552,12 +552,12 @@ describe.skipIf(process.env.HTMLNEXT_BROWSER_TEST !== "1")("the development poli
         const page = await browser.newPage();
         const messages: string[] = [];
         page.on("console", message => { if (message.type() === "warning") messages.push(message.text()); });
-        const line = 'To allow it, add to htmlkit.config.ts: csp: { "script-src": ["https://elsewhere.example"] }';
+        const line = 'To allow it, add to markupkit.config.ts: csp: { "script-src": ["https://elsewhere.example"] }';
         await page.goto(server.url + "tracker/");
         await expect.poll(() => messages.find(message => message.includes(line)), { timeout: 10_000 })
-          .toBe(`HTMLKit: /tracker/ blocked https://elsewhere.example/tracker.js under script-src. ${line}`);
+          .toBe(`MarkupKit: /tracker/ blocked https://elsewhere.example/tracker.js under script-src. ${line}`);
         await expect.poll(() => warned.mock.calls.find(([message]) => String(message).includes(line))?.[0], { timeout: 10_000 })
-          .toBe(`HTMLKit: /tracker/ blocked https://elsewhere.example/tracker.js under script-src. ${line}`);
+          .toBe(`MarkupKit: /tracker/ blocked https://elsewhere.example/tracker.js under script-src. ${line}`);
         // Everything else works under the policy: the page's modules, a controller's imported CSS, and reloading after an edit.
         messages.length = 0;
         await page.goto(server.url);
@@ -568,7 +568,7 @@ describe.skipIf(process.env.HTMLNEXT_BROWSER_TEST !== "1")("the development poli
         await write(root, "app/pages/index.html", source.replace("<h1>Home</h1>", "<h1>Edited home</h1>"));
         await page.waitForFunction(() => !(window as unknown as { previous?: boolean }).previous && document.querySelector("h1")?.textContent === "Edited home",
           undefined, { timeout: 10_000 });
-        expect(messages.filter(message => message.startsWith("HTMLKit:"))).toEqual([]);
+        expect(messages.filter(message => message.startsWith("MarkupKit:"))).toEqual([]);
       } finally { warned.mockRestore(); await browser.close(); await server.close(); await rm(root, { recursive: true, force: true }); }
     }, 60_000);
   }

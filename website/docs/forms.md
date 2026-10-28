@@ -8,7 +8,7 @@ description: actions · validation errors · in place · pending UI
 
 A form on a page posts to the page, and an action in the page's loader file answers it. The form is
 an ordinary `<form method="post">`, so it works before any script loads and without JavaScript; once
-the page has loaded, HTMLKit submits it in place.
+the page has loaded, MarkupKit submits it in place.
 
 ```html
 <!-- app/pages/todos.html -->
@@ -30,7 +30,7 @@ the page has loaded, HTMLKit submits it in place.
 
 ```ts
 // app/pages/todos.server.ts
-import type { LoadContext, PageAction } from '@threadlabs/htmlkit';
+import type { LoadContext, PageAction } from '@threadlabs/markupkit';
 import { db } from '@/lib/db.ts';
 
 export async function load({ cookies }: LoadContext) {
@@ -141,7 +141,7 @@ with 405.
 ## Submitting in place
 
 Once the page has loaded, a form that posts to a page of the site submits with `fetch`, and
-HTMLKit swaps in the answer the way [client navigation](/client-navigation) swaps in a page:
+MarkupKit swaps in the answer the way [client navigation](/client-navigation) swaps in a page:
 
 | Part of the submission | In place |
 | --- | --- |

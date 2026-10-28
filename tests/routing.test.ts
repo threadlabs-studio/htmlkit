@@ -98,9 +98,9 @@ it("redirects from the redirects table and from loaders, in fetch, render, and t
     expect(page.html).toContain('<link rel="canonical" href="/kit/docs/static/">');
     expect(page.html).toContain('<a href="/kit/docs/static/">');
     // Client navigation finds no payload and loads the redirecting URL itself.
-    expect((await application.fetch(new Request("http://localhost/kit/_htmlkit/pages/account/payload.json"))).status).toBe(404);
+    expect((await application.fetch(new Request("http://localhost/kit/_markupkit/pages/account/payload.json"))).status).toBe(404);
   } finally { await application.close(); }
-  for (const [table, message] of [[{ "old/": "/x/" }, /leading and trailing slashes/], [{ "/_htmlkit/x/": "/x/" }, /outside _htmlkit/],
+  for (const [table, message] of [[{ "old/": "/x/" }, /leading and trailing slashes/], [{ "/_markupkit/x/": "/x/" }, /outside _markupkit/],
     [{ "/old/": "//evil.example/" }, /application path starting with \/ or an http\(s\) URL/], [{ "/old/": "javascript:alert(1)" }, /http\(s\) URL/]] as const) {
     await expect(createApplication({ root, redirects: table })).rejects.toThrow(message);
   }

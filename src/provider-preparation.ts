@@ -67,9 +67,9 @@ export async function prepare({ document, host, flush, signal, port, data: input
       if (!root.isConnected) continue;
       const snapshot = entry.scope.snapshot();
       if (Object.keys(snapshot.reads).length === 0) continue;
-      const records = JSON.parse(root.getAttribute("data-htmlkit-bindings") ?? "{}") as Record<string, unknown>;
+      const records = JSON.parse(root.getAttribute("data-markupkit-bindings") ?? "{}") as Record<string, unknown>;
       records[entry.tag] = snapshot;
-      root.setAttribute("data-htmlkit-bindings", JSON.stringify(records));
+      root.setAttribute("data-markupkit-bindings", JSON.stringify(records));
     }
     return dispose;
   } catch (error) { dispose(); throw error; }

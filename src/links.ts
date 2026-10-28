@@ -1,7 +1,7 @@
 import { readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { parse, type DefaultTreeAdapterMap } from "parse5";
-import { HtmlKitError, within } from "./config.js";
+import { MarkupKitError, within } from "./config.js";
 
 /** A built document's links, and the fragments that name an element in it: ids and <a name>. */
 interface Document { readonly links: readonly string[]; readonly fragments: ReadonlySet<string> }
@@ -64,6 +64,6 @@ export async function checkLinks(outDir: string, origin: string, base: string, d
   }
   if (broken.length === 0) return;
   const message = `Broken internal links:\n  ${broken.join("\n  ")}`;
-  if (mode === "error") throw new HtmlKitError(message);
+  if (mode === "error") throw new MarkupKitError(message);
   console.warn(message);
 }

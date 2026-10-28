@@ -3,7 +3,7 @@ import { mkdtemp, readFile, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildApplication, createApplication, devApplication, type HtmlKitPlugin } from "../dist/index.js";
+import { buildApplication, createApplication, devApplication, type MarkupKitPlugin } from "../dist/index.js";
 import { checkLinks } from "../dist/links.js";
 import { write } from "./fixture.js";
 
@@ -15,7 +15,7 @@ afterEach(async () => {
 
 /** A site whose default layout has a loader, so every page renders through it. */
 async function site(): Promise<string> {
-  const root = await mkdtemp(join(tmpdir(), "htmlkit-static-")); roots.push(root);
+  const root = await mkdtemp(join(tmpdir(), "markupkit-static-")); roots.push(root);
   await write(root, "package.json", '{"type":"module"}');
   await write(root, "app/layouts/default.html", `<template component="site-shell"><defs><prop name="brand" type="string" required>Brand</prop><title>Site</title></defs>
     <main><header>{$brand}</header><slot name="page"></slot></main></template>`);
@@ -60,7 +60,7 @@ describe("the error page", () => {
       expect(html).not.toContain("secret");
       expect(logged).toHaveBeenCalledWith(expect.objectContaining({ message: "database secret" }));
       // A failed page has no payload; client navigation then loads its document.
-      expect((await application.fetch(new Request("http://localhost/_htmlkit/pages/broken/payload.json"))).status).toBe(500);
+      expect((await application.fetch(new Request("http://localhost/_markupkit/pages/broken/payload.json"))).status).toBe(500);
       // When the layout fails, the error page shares its fate, and the built-in page answers.
       const layout = await application.fetch(new Request("http://localhost/layout-fails/"));
       expect(layout.status).toBe(500);
@@ -211,7 +211,7 @@ describe("the internal link check", () => {
     await write(root, "public/file.pdf", "%PDF");
     return root;
   }
-  const search: HtmlKitPlugin = { name: "search", buildEnd: ({ writeFile }) => writeFile("search.json", "[]") };
+  const search: MarkupKitPlugin = { name: "search", buildEnd: ({ writeFile }) => writeFile("search.json", "[]") };
 
   it("passes links to pages, files, redirects, and anchors in the build", async () => {
     const root = await linked();

@@ -1,17 +1,17 @@
 ---
 title: Configuration
 order: 8
-description: htmlkit.config.ts · plugins · build hooks · build manifest · command line · using HTMLKit from code
+description: markupkit.config.ts · plugins · build hooks · build manifest · command line · using MarkupKit from code
 ---
 
 # Configuration
 
-HTMLKit works without configuration. To change a setting, add `htmlkit.config.ts` (or `.js`) at
+MarkupKit works without configuration. To change a setting, add `markupkit.config.ts` (or `.js`) at
 the project root:
 
 ```ts
-// htmlkit.config.ts
-import { defineConfig } from '@threadlabs/htmlkit';
+// markupkit.config.ts
+import { defineConfig } from '@threadlabs/markupkit';
 
 export default defineConfig({
   base: '/docs/',
@@ -113,9 +113,9 @@ A plugin can add a page format and adjust options. This one makes `.note` files 
 
 ```ts
 import { createHash } from 'node:crypto';
-import { defineConfig, type HtmlKitPlugin } from '@threadlabs/htmlkit';
+import { defineConfig, type MarkupKitPlugin } from '@threadlabs/markupkit';
 
-const notes: HtmlKitPlugin = {
+const notes: MarkupKitPlugin = {
   name: 'notes',
   pages: {
     extensions: ['.note'],
@@ -130,7 +130,7 @@ const notes: HtmlKitPlugin = {
 export default defineConfig({ plugins: [notes] });
 ```
 
-HTMLKit routes, orders, watches, renders, and builds `.note` files like `.html` pages, and errors
+MarkupKit routes, orders, watches, renders, and builds `.note` files like `.html` pages, and errors
 name the `.note` file. A compiled page is an HTML Next component, so its head content and `hk:`
 settings go in its `<defs>`. While compiling, a plugin can call:
 
@@ -138,7 +138,7 @@ settings go in its `<defs>`. While compiling, a plugin can call:
 - `page.asset(file)` to serve a file the page references, such as an image, and get its URL;
 - `page.watch(file)` for a file the page's output depends on, such as a metadata file beside it.
 
-`htmlkit dev` watches the project root, and also each file a plugin passes to `page.watch`, inside the
+`markupkit dev` watches the project root, and also each file a plugin passes to `page.watch`, inside the
 root or outside it. When one changes, it recompiles the pages and reloads open pages:
 
 ```ts
@@ -163,7 +163,7 @@ so it doesn't wrap the site's other pages. A plugin can also set a `headScript` 
 loader: a module path, or for a plugin, the loader itself:
 
 ```ts
-const theme: HtmlKitPlugin = {
+const theme: MarkupKitPlugin = {
   name: 'theme',
   config: () => ({
     layouts: {
@@ -175,7 +175,7 @@ const theme: HtmlKitPlugin = {
 
 A page with `<meta name="hk:layout" content="home">` then renders inside it, and its loader's
 `data` reaches the page's loader as `parent`. A `default` entry wraps every page as `default.html`
-does. HTMLKit looks a name up in this order, and the first match is the layout:
+does. MarkupKit looks a name up in this order, and the first match is the layout:
 
 1. The site's own `layouts` option.
 2. The site's `app/layouts/<name>.html`.
@@ -196,7 +196,7 @@ It runs once every page has compiled, so a plugin can build the files from what 
 
 ```ts
 const texts = new Map<string, string>();
-const notes: HtmlKitPlugin = {
+const notes: MarkupKitPlugin = {
   name: 'notes',
   pages: {
     extensions: ['.note'],
@@ -218,19 +218,19 @@ export default defineConfig({ base: '/docs/', plugins: [notes] });
 Each key is an application path, as a [redirect](/routes#redirects)'s is, so with `base:
 '/docs/'` the file `/notes.json` is at `/docs/notes.json`. Each value is a string, a `Uint8Array`,
 or `{ contents, type }`. `type` is the file's media type, and without it the path's extension gives
-it (`.json` is `application/json`), or `application/octet-stream` for an extension HTMLKit doesn't
+it (`.json` is `application/json`), or `application/octet-stream` for an extension MarkupKit doesn't
 know. The context has `root` and `base`, as in `buildStart`.
 
-- **`htmlkit dev` and `createApplication`** answer each file's `GET` and `HEAD` with its type and
+- **`markupkit dev` and `createApplication`** answer each file's `GET` and `HEAD` with its type and
   `Cache-Control: no-cache`. The development server compiles the pages again after each change and
   runs `generate` again with them, so the next request reads the new file.
-- **`htmlkit build`** writes each file into the output, lists it in the
+- **`markupkit build`** writes each file into the output, lists it in the
   [manifest](#build-manifest)'s `files`, and leaves it out of `sitemap.xml`. Links to it pass the
-  [link check](#link-check). `htmlkit preview` and `htmlkit start` send its `type`. A generated
+  [link check](#link-check). `markupkit preview` and `markupkit start` send its `type`. A generated
   `sitemap.xml` takes the place of the one `origin` writes, as a public one does.
 
 A path is an error that names the plugin when it isn't a file path (it starts with `/`, names a
-file and has no empty, `.` or `..` segment), when it is in `_htmlkit/`, or when it is `404.html`, or
+file and has no empty, `.` or `..` segment), when it is in `_markupkit/`, or when it is `404.html`, or
 `robots.txt` with the `robots` option set. So is a path that a page's URL, a redirect, an endpoint, a
 file in `public/`, a file a page references, or another plugin's `generate` also claims. When
 `generate` throws, the error names the plugin and the hook.
@@ -244,10 +244,10 @@ file in `public/`, a file a page references, or another plugin's `generate` also
 sitemap after it:
 
 ```ts
-import { defineConfig, type HtmlKitPlugin } from '@threadlabs/htmlkit';
+import { defineConfig, type MarkupKitPlugin } from '@threadlabs/markupkit';
 import { generateApi } from './scripts/generate-api.ts';
 
-const site: HtmlKitPlugin = {
+const site: MarkupKitPlugin = {
   name: 'site',
   async buildStart({ root }) {
     await generateApi(root);   // writes app/data/api.json, which loaders read
@@ -261,8 +261,8 @@ const site: HtmlKitPlugin = {
 export default defineConfig({ plugins: [site] });
 ```
 
-`buildStart(context)` runs before HTMLKit reads any page, so pages, data, and assets it generates
-are part of the build. It runs once per `htmlkit build`, and once when `htmlkit dev` starts; editing
+`buildStart(context)` runs before MarkupKit reads any page, so pages, data, and assets it generates
+are part of the build. It runs once per `markupkit build`, and once when `markupkit dev` starts; editing
 a file doesn't rerun it. Its context has:
 
 | Field | Value |
@@ -283,16 +283,16 @@ replacing `outDir`. Links to the files it writes pass the link check. Its contex
 | `pages` | Each built page's URL path, such as `/docs/guide/`. `404.html` isn't one. |
 | `writeFile(path, contents)` | Writes a string or bytes at a path relative to the output. |
 
-`writeFile` refuses a path outside the output, a path in `_htmlkit/`, and a file that already
+`writeFile` refuses a path outside the output, a path in `_markupkit/`, and a file that already
 exists, so a plugin can't replace a page, a public file, or another plugin's file.
 
 Plugins run each hook in the order they're listed. If a hook throws, the build fails with an error
-that names the plugin and the hook, and the previous `outDir` stays as it was. `htmlkit preview`
+that names the plugin and the hook, and the previous `outDir` stays as it was. `markupkit preview`
 and `createApplication` don't run either hook.
 
 ## Search engines
 
-With `origin` set, `htmlkit build` writes `sitemap.xml` at the site's base, listing each page at its
+With `origin` set, `markupkit build` writes `sitemap.xml` at the site's base, listing each page at its
 own URL:
 
 ```ts
@@ -328,7 +328,7 @@ there. A `robots.txt` in `public/` beside the `robots` option is an error.
 
 ## Link check
 
-`htmlkit build` reads every page it wrote, along with its redirect pages and `404.html`, and checks
+`markupkit build` reads every page it wrote, along with its redirect pages and `404.html`, and checks
 each `<a href>` and `<area href>` that leads under `base`. The build fails on a link to a page or file
 that isn't in the output, or to a `#fragment` that names no `id` (or `<a name>`) in its page. A
 fragment-only link such as `#install` checks the page it's on. The error names each page and link:
@@ -346,14 +346,14 @@ fragments (`#:~:text=`). A link without its trailing slash, such as `/docs/guide
 
 ## Content Security Policy
 
-Every page carries the site's Content Security Policy, which HTMLKit generates from what the site's
+Every page carries the site's Content Security Policy, which MarkupKit generates from what the site's
 components declare. It allows the scripts the site needs and nothing else:
 
 ```text
 script-src 'self' https://js.stripe.com 'sha256-…'; object-src 'none'; base-uri 'none'
 ```
 
-- `'self'` for HTMLKit's own modules, the page's component modules, and same-origin declared scripts.
+- `'self'` for MarkupKit's own modules, the page's component modules, and same-origin declared scripts.
 - The origin of each [declared script](/routes#declared-scripts) any page, layout, or
   component of the site names, such as `https://js.stripe.com` for a checkout page that declares
   Stripe.js.
@@ -364,7 +364,7 @@ The `csp` option adds sources to any directive, in CSP's own grammar. They join 
 and never replace them:
 
 ```ts
-// htmlkit.config.ts
+// markupkit.config.ts
 export default defineConfig({
   csp: {
     'script-src': ['https://cdn.example/'],
@@ -376,9 +376,9 @@ export default defineConfig({
 
 | Where | Delivery |
 | --- | --- |
-| `htmlkit build` | Each page's `<meta http-equiv="Content-Security-Policy">`, first in its head, so static hosts enforce it. A meta element ignores `frame-ancestors`, `report-uri`, and `sandbox`, so the page's meta leaves them out. |
-| `htmlkit start` and `application.fetch` | The `Content-Security-Policy` header, with every directive, beside the page's meta. |
-| `htmlkit dev` | The same header and meta, plus what Vite needs (below). |
+| `markupkit build` | Each page's `<meta http-equiv="Content-Security-Policy">`, first in its head, so static hosts enforce it. A meta element ignores `frame-ancestors`, `report-uri`, and `sandbox`, so the page's meta leaves them out. |
+| `markupkit start` and `application.fetch` | The `Content-Security-Policy` header, with every directive, beside the page's meta. |
+| `markupkit dev` | The same header and meta, plus what Vite needs (below). |
 
 `reportOnly: true` sends `Content-Security-Policy-Report-Only` instead, which reports violations and
 blocks nothing. Only a header can report only, so built pages then carry no meta, and a static host
@@ -388,11 +388,11 @@ The policy is site-wide. A document keeps the policy it loaded with, and
 [client navigation](/client-navigation) moves between pages in place, so one policy covers
 every page a visitor can reach. A policy per page would need a full page load whenever it changes.
 
-In development, `htmlkit dev` reports each violation in the terminal and the browser console, with the
+In development, `markupkit dev` reports each violation in the terminal and the browser console, with the
 page, what was blocked, the directive, and the line that would allow it:
 
 ```text
-HTMLKit: /checkout/ blocked https://m.stripe.network/inner.html under frame-src. To allow it, add to htmlkit.config.ts: csp: { "frame-src": ["https://m.stripe.network"] }
+MarkupKit: /checkout/ blocked https://m.stripe.network/inner.html under frame-src. To allow it, add to markupkit.config.ts: csp: { "frame-src": ["https://m.stripe.network"] }
 ```
 
 Vite's client and modules load from the development server, which `'self'` allows. Where the
@@ -402,12 +402,12 @@ imports. Builds have neither.
 
 ## Build manifest
 
-`htmlkit build` writes `_htmlkit/manifest.json`, which lists the site's pages for tools such as a
+`markupkit build` writes `_markupkit/manifest.json`, which lists the site's pages for tools such as a
 link checker or a coverage report. Read it with `readManifest(outDir)`, which returns a typed
 `BuildManifest`:
 
 ```ts
-import { readManifest } from '@threadlabs/htmlkit';
+import { readManifest } from '@threadlabs/markupkit';
 
 const { base, routes, pages, redirects, files } = await readManifest('dist');
 ```
@@ -421,8 +421,8 @@ const { base, routes, pages, redirects, files } = await readManifest('dist');
     {
       "pathname": "/docs/",
       "pageName": "home-page",
-      "browserModule": "/docs/_htmlkit/page-0-BxfIu_Pn.js",
-      "chunks": ["/docs/_htmlkit/client-Cq3Rt8aZ.js"]
+      "browserModule": "/docs/_markupkit/page-0-BxfIu_Pn.js",
+      "chunks": ["/docs/_markupkit/client-Cq3Rt8aZ.js"]
     }
   ],
   "redirects": [
@@ -450,27 +450,27 @@ const { base, routes, pages, redirects, files } = await readManifest('dist');
 | `redirects[].status` | The status a server answers with: 308 for the option and `hk:redirect-from`, and the loader's status for `redirect()`. |
 | `files` | Each file plugins' [`generate`](#generated-files) returned. |
 | `files[].pathname` | The file's URL path, including `base`. |
-| `files[].type` | Its media type, which `htmlkit preview` and `htmlkit start` send. |
+| `files[].type` | Its media type, which `markupkit preview` and `markupkit start` send. |
 
 These fields are stable. A release may add fields at version `1`, so ignore fields you don't use.
 `version` changes only when a field is removed, renamed, or changes meaning, and `readManifest`
-refuses a version it doesn't know. File names inside `_htmlkit/` change from build to build; read
+refuses a version it doesn't know. File names inside `_markupkit/` change from build to build; read
 them from the manifest. The manifest lists prerendered pages; pages that
 [render on each request](/loaders#rendering-on-each-request) have no file to list.
-`_htmlkit/server/` holds the [request server](/deployment#the-node-server).
+`_markupkit/server/` holds the [request server](/deployment#the-node-server).
 
 ## Command line
 
 ```text
-htmlkit <command> [root] [options]
+markupkit <command> [root] [options]
 ```
 
 | Command | Does |
 | --- | --- |
-| `htmlkit dev` | Serves the application with live reload, rendering every page, endpoint, and middleware on request. |
-| `htmlkit build` | Prerenders pages and writes them, the browser bundles, and the request server to `dist/`. |
-| `htmlkit preview` | Serves `dist/` as a static host does: files only. |
-| `htmlkit start` | Serves the build on Node, without Vite: prerendered pages and assets from files, plus server-rendered pages, endpoints, and middleware ([deployment](/deployment#the-node-server)). |
+| `markupkit dev` | Serves the application with live reload, rendering every page, endpoint, and middleware on request. |
+| `markupkit build` | Prerenders pages and writes them, the browser bundles, and the request server to `dist/`. |
+| `markupkit preview` | Serves `dist/` as a static host does: files only. |
+| `markupkit start` | Serves the build on Node, without Vite: prerendered pages and assets from files, plus server-rendered pages, endpoints, and middleware ([deployment](/deployment#the-node-server)). |
 
 | Option | Commands | Does |
 | --- | --- | --- |
@@ -483,13 +483,13 @@ htmlkit <command> [root] [options]
 | `--render-workers 4` | all | How many workers render pages: the number of available CPUs, up to 8, unless given. |
 | `-h`, `--help` | | Lists the commands and options. |
 
-Flags override the same settings in `htmlkit.config.ts`. `start` runs the build alone and doesn't read
+Flags override the same settings in `markupkit.config.ts`. `start` runs the build alone and doesn't read
 the config file.
 
-## Using HTMLKit from code
+## Using MarkupKit from code
 
 ```ts
-import { buildApplication, createApplication, devApplication, previewApplication } from '@threadlabs/htmlkit';
+import { buildApplication, createApplication, devApplication, previewApplication } from '@threadlabs/markupkit';
 
 await buildApplication({ root: 'site' });
 
@@ -502,12 +502,12 @@ await app.close();
 These functions take the same options as the config file, which they don't read. Close
 applications and servers when you're done.
 
-`loadConfig(root)` reads `htmlkit.config.ts` or `.js` at `root` as the CLI does, and returns its
-options, or `{}` when there is no file. A command that wraps HTMLKit loads the site's config this way
+`loadConfig(root)` reads `markupkit.config.ts` or `.js` at `root` as the CLI does, and returns its
+options, or `{}` when there is no file. A command that wraps MarkupKit loads the site's config this way
 and adds its own settings:
 
 ```ts
-import { buildApplication, loadConfig } from '@threadlabs/htmlkit';
+import { buildApplication, loadConfig } from '@threadlabs/markupkit';
 
 const config = await loadConfig(root);
 await buildApplication({ ...config, root, plugins: [...config.plugins ?? [], docs()] });
@@ -519,5 +519,9 @@ middleware, endpoints, and pages, with prerendered pages' loaders run as a build
 don't include browser scripts; the development server adds those. `app.endpoints` lists the
 `app/api` endpoints and `app.middleware` names the middleware file.
 
-`startApplication({ outDir, port, host })` is `htmlkit start`. Import it from
-`@threadlabs/htmlkit/server`, which never loads Vite; see [deployment](/deployment#from-code).
+`startApplication({ outDir, port, host })` is `markupkit start`. Import it from
+`@threadlabs/markupkit/server`, which never loads Vite; see [deployment](/deployment#from-code).
+
+## Application descriptions
+
+`describeApplication(options)` from `@threadlabs/markupkit/description` returns a build-time snapshot of routes, layouts, component sources, registered assets, redirects, and server references. MarkupNative uses this inventory to bind native implementations. Discovery runs explicitly configured plugin hooks but does not execute page loaders, controllers, endpoints, or middleware. Call `loadConfig()` explicitly if you want to load a configuration file. The snapshot contains private source paths and content; keep it in build tooling.

@@ -6,11 +6,11 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { buildApplication, createApplication } from "@threadlabs/htmlkit";
+import { buildApplication, createApplication } from "@threadlabs/markupkit";
 
 const runtime = globalThis.Deno ? "Deno" : globalThis.Bun ? "Bun" : "Node";
 const page = '<template component="page-smoke"><defs><prop name="count" type="number" default="21">Count</prop></defs><p>{$count * 2}</p></template>';
-const root = await mkdtemp(join(tmpdir(), "htmlkit-runtime-"));
+const root = await mkdtemp(join(tmpdir(), "markupkit-runtime-"));
 await writeFile(join(root, "package.json"), '{"type":"module"}');
 await mkdir(join(root, "app/pages"), { recursive: true });
 await writeFile(join(root, "app/pages/index.html"), page);
@@ -26,7 +26,7 @@ try {
 }
 
 // The built application lives beside node_modules, where its server entry finds the installed packages.
-const built = join(process.cwd(), "htmlkit-runtime-app");
+const built = join(process.cwd(), "markupkit-runtime-app");
 if (runtime === "Node") {
   const files = {
     "package.json": '{"type":"module"}',
@@ -42,7 +42,7 @@ if (runtime === "Node") {
   }
   await buildApplication({ root: built });
 }
-const { default: server } = await import(pathToFileURL(join(built, "dist/_htmlkit/server/entry.js")).href);
+const { default: server } = await import(pathToFileURL(join(built, "dist/_markupkit/server/entry.js")).href);
 const checks = [
   ["http://localhost/", />42<\/p>/],
   ["http://localhost/greet/?name=Ada", /Hello Ada, visit 3/],

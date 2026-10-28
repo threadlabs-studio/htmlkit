@@ -1,15 +1,15 @@
 ---
 title: Deployment
 order: 7
-description: static hosts · htmlkit start · Deno · Bun · prerendered and server pages
+description: static hosts · markupkit start · Deno · Bun · prerendered and server pages
 ---
 
 # Deployment
 
-`htmlkit build` writes everything a deployment needs to `dist/`: each prerendered page as a file,
+`markupkit build` writes everything a deployment needs to `dist/`: each prerendered page as a file,
 the browser bundles, and a request server for the pages, endpoints, and middleware that run on each
 request. A site of prerendered pages deploys to any static host. A site that renders pages on request,
-or has endpoints, middleware, or private component readers, runs `htmlkit start`, or the same server
+or has endpoints, middleware, or private component readers, runs `markupkit start`, or the same server
 on Deno or Bun.
 
 ## Prerendered and server pages
@@ -55,18 +55,18 @@ Each page's [Content Security Policy](/configuration#content-security-policy) is
 `<meta http-equiv>` in its head, which static hosts serve as written. For `frame-ancestors`,
 `report-uri`, or a report-only policy, which only a header carries, configure the host's headers.
 
-`htmlkit preview` serves `dist/` the way a static host does, to check a build first.
+`markupkit preview` serves `dist/` the way a static host does, to check a build first.
 
 ## The Node server
 
-`htmlkit start` serves the build on Node, without Vite: prerendered pages and assets from `dist/`'s
+`markupkit start` serves the build on Node, without Vite: prerendered pages and assets from `dist/`'s
 files, server-rendered pages, endpoints, and middleware:
 
 ```json
 {
   "scripts": {
-    "build": "htmlkit build",
-    "start": "htmlkit start"
+    "build": "markupkit build",
+    "start": "markupkit start"
   }
 }
 ```
@@ -79,18 +79,18 @@ PORT=8080 HOST=0.0.0.0 npm start
 - It listens on `127.0.0.1:3000`. `--port` and `--host`, or the `PORT` and `HOST` environment
   variables, change that; the flags win.
 - It takes the base path from the build, and `--out-dir` names another build than `dist/`.
-  It doesn't read `htmlkit.config.ts`.
+  It doesn't read `markupkit.config.ts`.
 - Pages that render on request render in a pool of workers, one page at a time each, each in a fresh
   document. The pool has one worker per available CPU, up to 8; `--render-workers` sets another
   count. Each worker holds its own jsdom and HTML Next runtime in memory.
 - When a loader, endpoint, middleware, or render fails, or a render worker ends, the request gets
   [`app/error.html`](/routes#the-error-page) with status 500, and the next request
   renders on a new worker.
-- Hashed bundles in `_htmlkit/` are served with `Cache-Control: public, max-age=31536000, immutable`.
+- Hashed bundles in `_markupkit/` are served with `Cache-Control: public, max-age=31536000, immutable`.
 - Every page is served with its [Content Security Policy](/configuration#content-security-policy)
   header, as the build generated it, including directives a `<meta>` can't carry.
-- `dist/_htmlkit/server/` holds the server's code; it is never served.
-- The server imports `@threadlabs/htmlkit` and your loaders' packages from `node_modules`, so deploy
+- `dist/_markupkit/server/` holds the server's code; it is never served.
+- The server imports `@threadlabs/markupkit` and your loaders' packages from `node_modules`, so deploy
   `dist/` with `package.json` and the installed production dependencies, as for any Node application:
 
 ```dockerfile
@@ -110,34 +110,34 @@ Compression is the proxy's to add.
 
 ## Deno and Bun
 
-`dist/_htmlkit/server/entry.js`'s default export is the application, whose `fetch` takes a standard
+`dist/_markupkit/server/entry.js`'s default export is the application, whose `fetch` takes a standard
 `Request` and returns a `Response`. Deno and Bun serve it as it is:
 
 ```sh
-deno serve --allow-all dist/_htmlkit/server/entry.js
-bun dist/_htmlkit/server/entry.js
+deno serve --allow-all dist/_markupkit/server/entry.js
+bun dist/_markupkit/server/entry.js
 ```
 
 or from your own module:
 
 ```ts
-import application from './dist/_htmlkit/server/entry.js';
+import application from './dist/_markupkit/server/entry.js';
 
 Deno.serve({ port: 8080 }, application.fetch);
 // Bun.serve({ port: 8080, fetch: application.fetch });
 ```
 
-To set the render pool's size there, call `setRenderWorkers(count)` from `@threadlabs/htmlkit/server`
+To set the render pool's size there, call `setRenderWorkers(count)` from `@threadlabs/markupkit/server`
 before the first request. Build with Node, then run the entry where `node_modules` has the installed
 packages. CI runs the same
 built entry on Node, Deno 2.8+, and Bun.
 
 ## From code
 
-`startApplication` is `htmlkit start`, from `@threadlabs/htmlkit/server`, which never loads Vite:
+`startApplication` is `markupkit start`, from `@threadlabs/markupkit/server`, which never loads Vite:
 
 ```ts
-import { startApplication } from '@threadlabs/htmlkit/server';
+import { startApplication } from '@threadlabs/markupkit/server';
 
 const server = await startApplication({ outDir: 'dist', port: 8080 });
 console.log(server.url);

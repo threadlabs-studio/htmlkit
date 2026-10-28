@@ -76,7 +76,7 @@ export function createProviderModules(root: string, host: ModuleHost) {
         // Keep native package resolution rooted in the app; Vite excludes its cache from watching.
         const directory = (): Promise<string> => (temporary ??= (async () => {
           await mkdir(host.cacheDir, { recursive: true });
-          const directory = await mkdtemp(join(host.cacheDir, "htmlkit-providers-"));
+          const directory = await mkdtemp(join(host.cacheDir, "markupkit-providers-"));
           try { await writeFile(join(directory, "package.json"), '{"type":"module"}'); }
           catch (error) { await rm(directory, { recursive: true, force: true }); throw error; }
           return directory;
@@ -105,7 +105,7 @@ export function createProviderModules(root: string, host: ModuleHost) {
     },
     close(): Promise<void> {
       return closing ??= (async () => {
-        abort.abort(new Error("HTMLKit provider modules are closed."));
+        abort.abort(new Error("MarkupKit provider modules are closed."));
         await Promise.allSettled([...cache.values(), ...surfaces.values()]);
         const directory = await temporary?.catch(() => undefined);
         if (directory !== undefined) await rm(directory, { recursive: true, force: true });

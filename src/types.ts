@@ -25,7 +25,7 @@ export interface ApplicationOptions {
   readonly layouts?: Readonly<Record<string, RouteLayer>>;
   /** Route-directory defaults, overridden by page metadata; longest prefix wins. */
   readonly layoutDefaults?: Readonly<Record<string, string | false>>;
-  readonly plugins?: readonly HtmlKitPlugin[];
+  readonly plugins?: readonly MarkupKitPlugin[];
   /**
    * Global stylesheets on every page, relative to the root or starting with @/. Unlike component
    * styles they are not scoped, so they can style built-in components such as <hk-nav>.
@@ -103,7 +103,7 @@ export interface PageDirectory {
   readonly alias?: boolean;
 }
 
-export interface HtmlKitPlugin {
+export interface MarkupKitPlugin {
   readonly name: string;
   /** Options merged before the application starts, such as page directories or a layout. */
   readonly config?: (options: ApplicationOptions) => ApplicationOptions | void | Promise<ApplicationOptions | void>;
@@ -112,7 +112,7 @@ export interface HtmlKitPlugin {
     readonly extensions: readonly string[];
     compile(source: string, page: PageContext): string | Promise<string>;
   };
-  /** Runs before HTMLKit reads any page: once per build, and once when the development server starts. */
+  /** Runs before MarkupKit reads any page: once per build, and once when the development server starts. */
   readonly buildStart?: (context: BuildStartContext) => void | Promise<void>;
   /**
    * Runs after a build writes every page, asset, and the manifest to its staging directory, before the
@@ -152,12 +152,12 @@ export interface BuildEndContext {
   readonly pages: readonly string[];
   /**
    * Write a file at a path relative to the output, such as sitemap.xml. Refuses a path outside the
-   * output, in the reserved _htmlkit directory, or at a file that already exists.
+   * output, in the reserved _markupkit directory, or at a file that already exists.
    */
   writeFile(path: string, contents: string | Uint8Array): Promise<void>;
 }
 
-/** _htmlkit/manifest.json, the build's public route manifest. version changes only with an incompatible format. */
+/** _markupkit/manifest.json, the build's public route manifest. version changes only with an incompatible format. */
 export interface BuildManifest {
   readonly version: 1;
   readonly base: string;
@@ -471,7 +471,7 @@ export interface Application {
   close(): Promise<void>;
 }
 /**
- * A build's request server, the default export of _htmlkit/server/entry.js in the output. Its fetch
+ * A build's request server, the default export of _markupkit/server/entry.js in the output. Its fetch
  * answers as Application.fetch does, serving prerendered pages and assets from the output's files.
  */
 export interface ServerApplication {

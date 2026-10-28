@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="868" viewBox="170 293.5 914 774.3733333333333" role="img" aria-labelledby="title desc">
-<title id="title">HTMLKit — architectural pencil sketch</title>
-<desc id="desc">The HTML Next shield and N geometry, outlined with loose, localized pencil shading and architectural construction crosses and outer-corner radius circles, above the HTMLKit wordmark.</desc>
+<title id="title">MarkupKit — architectural pencil sketch</title>
+<desc id="desc">The HTML Next shield and N geometry, outlined with loose, localized pencil shading and architectural construction crosses and outer-corner radius circles, above the MarkupKit wordmark.</desc>
 <defs>
   <path id="shield" fill-rule="evenodd" d="M403.5 313.5H848.5Q868.5 313.5 868.5 333.5V754.34Q868.5 772.34 851.6350 778.6360L632.558 860.4253Q626 862.8733333333333 619.442 860.4253L400.365 778.6360Q383.5 772.34 383.5 754.34V333.5Q383.5 313.5 403.5 313.5Z M479.423304 403.692395A5 5 0 0 0 471.500000 407.748784L471.500000 690.360941A5 5 0 0 0 473.684444 694.492846L547.684444 744.917811A5 5 0 0 0 555.500000 740.785906L555.500000 579.755962A7.5 7.5 0 0 1 567.314930 573.621520L772.623380 718.034252A5 5 0 0 0 780.500000 713.944624L780.500000 457.733704A5 5 0 0 0 778.322748 453.606708L702.322748 401.624864A5 5 0 0 0 694.500000 405.751860L694.500000 539.158099A10 10 0 0 1 678.653391 547.270877Z"/>
   <clipPath id="silhouette"><use href="#shield" clip-rule="evenodd"/></clipPath>
@@ -45,13 +45,5 @@
 </g>
 <!-- Light edge retracing. -->
 <path d="M405 316Q488 315 543 317 M681 316Q758 314 837 316 M386 385Q385 472 387 537 M866 456Q864 546 866 604 M433 788Q484 806 517 820 M704 832Q752 812 793 798" fill="none" stroke="#34332f" stroke-width=".8" opacity=".34" clip-path="url(#silhouette)"/>
-<g fill="#34332f" fill-rule="evenodd" transform="translate(270.5 927.8733333333333) scale(1.2740524781341107)">
-<path xmlns="http://www.w3.org/2000/svg" transform="translate(0 0)" d="M0 0H28V37H54V0H82V100H54V63H28V100H0Z" />
-<path xmlns="http://www.w3.org/2000/svg" transform="translate(87 0)" d="M0 0H80V26H54V100H26V26H0Z" />
-<path xmlns="http://www.w3.org/2000/svg" transform="translate(172 0)" d="M0 100V0H29L54 41L79 0H108V100H80V43L64 77H44L28 43V100Z" />
-<path xmlns="http://www.w3.org/2000/svg" transform="translate(285 0)" d="M0 0H28V74H72V100H0Z" />
-<path transform="translate(376 0)" d="M0 0H27V40L58 0H91L51 49L94 100H59L27 60V100H0Z"/>
-<path transform="translate(477 0)" d="M0 0H25V21H0ZM0 29H25V100H0Z"/>
-<path transform="translate(505 0)" d="M12 8H39V28H53V51H39V70C39 77 43 78 53 76V99C24 105 12 96 12 76V51H0V28H12Z"/>
-</g>
+<text x="626" y="1035" text-anchor="middle" fill="#34332f" font-family="system-ui, sans-serif" font-size="118" font-weight="750" letter-spacing="-4">MarkupKit</text>
 </svg>

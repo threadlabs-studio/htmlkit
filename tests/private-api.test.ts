@@ -25,7 +25,7 @@ describe("private reader input boundary", () => {
       sample: (_props: unknown, { state }: { state: Readonly<Record<string, unknown>> }) => state.note,
     } } }), readers: async () => ({ value: { load(input: unknown, { sample }: { sample: unknown }) { samples.push(sample); return sample === "invalid-output" ? "3" : input; } } }) }]]);
     const send = async (props: Record<string, unknown>, state: Record<string, unknown>) => {
-      const request = new Request("http://localhost/app/_htmlkit/read", { method: "POST", body: JSON.stringify({ version: 1,
+      const request = new Request("http://localhost/app/_markupkit/read", { method: "POST", body: JSON.stringify({ version: 1,
         source: "revision", tag: "private-typed", name: "value", url: "http://localhost/app/", inputs: encodeHydrationValue({ props, state }),
       }) });
       return privateReadResponse(request, "/app/", sources, url => requestReadContext(request, url, "/app/", {}, undefined));

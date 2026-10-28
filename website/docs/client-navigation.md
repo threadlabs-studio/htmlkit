@@ -12,7 +12,7 @@ Links between your pages are ordinary links:
 <a href="/guide/install/">Install</a>
 ```
 
-Once the first page has loaded, clicking one doesn't reload the browser tab. HTMLKit loads the
+Once the first page has loaded, clicking one doesn't reload the browser tab. MarkupKit loads the
 next page's code and a small file of its data, builds the page in the browser, keeps the layout both
 pages share, and swaps in the new page. There's nothing to set up.
 
@@ -39,7 +39,7 @@ input or explicitly refresh when the data should be read again.
 
 ## Links that load the whole page
 
-These links load normally, as they would without HTMLKit:
+These links load normally, as they would without MarkupKit:
 
 | Link | Example |
 | --- | --- |
@@ -66,17 +66,17 @@ A page that defines a component differently from one already on the screen, such
 docs version's own copy of a component, loads in full: one page can't hold both definitions. Back
 and forward move between the two pages as usual.
 
-If a page's data file can't be used, HTMLKit fetches the page's HTML instead. If that can't be
+If a page's data file can't be used, MarkupKit fetches the page's HTML instead. If that can't be
 shown in place either, because the page is missing or the request fails, the page loads in full.
 
 ## Faster clicks
 
-When the pointer rests on a link, the link gets keyboard focus, or a finger touches it, HTMLKit
+When the pointer rests on a link, the link gets keyboard focus, or a finger touches it, MarkupKit
 starts loading that page's code and data. By the click, it's usually ready. Moving across a menu
 fetches nothing. Links on screen only load code that several pages share, never a page's own
 content, so a long sidebar stays cheap.
 
-Choose a different policy for the whole site in `htmlkit.config.ts`:
+Choose a different policy for the whole site in `markupkit.config.ts`:
 
 ```ts
 export default defineConfig({ prefetch: 'visible' });
@@ -102,7 +102,7 @@ page does. Give links to such pages `data-hk-prefetch="none"` when their loaders
 
 ## Animating the change
 
-Add the rule browsers use for animated page loads, and HTMLKit animates client navigation with it
+Add the rule browsers use for animated page loads, and MarkupKit animates client navigation with it
 too:
 
 ```css
@@ -152,7 +152,7 @@ Client navigation needs the Navigation API with `NavigateEvent.sourceElement`: C
 Firefox 147, and Safari 26.2.
 Older browsers and readers without JavaScript load every page in full, with the same result.
 
-In `htmlkit dev`, styles from pages you've visited stay loaded until the next full reload. Built
+In `markupkit dev`, styles from pages you've visited stay loaded until the next full reload. Built
 sites remove a page's styles when you leave it.
 
 Next: [Configuration and API](/configuration).

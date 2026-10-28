@@ -53,7 +53,7 @@ export function connectModules<H extends BindingHost>(common: BindingDefinition<
   };
 }
 
-/** HTMLKit composition only; the binding library retains instance, source and activation ownership. */
+/** MarkupKit composition only; the binding library retains instance, source and activation ownership. */
 export function componentModule<H extends BindingHost>(common: ComponentBindingModule<H> = {}, local: ComponentBindingModule<H> = {}, deferClientReads = false): BindingModule<H> {
   return { create() {
     const base = moduleDefinition(common); const environment = moduleDefinition(local);

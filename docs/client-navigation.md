@@ -1,7 +1,7 @@
 # Client navigation design
 
-HTMLKit renders every page as a static document. After the first page hydrates, links to other
-pages of the application render in place, as in Nuxt: HTMLKit loads the next page's module and its
+MarkupKit renders every page as a static document. After the first page hydrates, links to other
+pages of the application render in place, as in Nuxt: MarkupKit loads the next page's module and its
 data payload, renders its layers in the browser as the server does, keeps the layouts both pages
 share, and swaps the rest. A page the payload cannot render loads from its static HTML
 instead. This is tooling documentation; the component language is specified by the
@@ -29,7 +29,7 @@ navigation uses the server HTML and its component continuation records.
 | Submit a form as the browser would: its action URL, `formaction`, method, encoding, and constraint validation | The `navigate` event's destination and `formData`, after validation; `sourceElement` is the submitter | Same as Navigation API |
 | Focus after a submission | The intercept's focus reset, which focuses the autofocus delegate, else the body | Same as Navigation API |
 | Pending state for scripts | `navigation.transition`, `navigatesuccess`, `navigateerror` | Same as Navigation API |
-| Pending state for CSS | None: no pseudo-class matches a document or form during a navigation. HTMLKit sets `data-hk-navigating`, and `data-hk-submitting` with `aria-busy` on the form | |
+| Pending state for CSS | None: no pseudo-class matches a document or form during a navigation. MarkupKit sets `data-hk-navigating`, and `data-hk-submitting` with `aria-busy` on the form | |
 | Per-link opt-out | `NavigateEvent.sourceElement` | Chrome 135, Firefox 147, Safari 26.2 |
 | Modified clicks, `target`, middle clicks | They open another browsing context, so this document gets no `navigate` event | All |
 | Cancel a superseded navigation | `event.signal` (an `AbortSignal`), passed to `fetch` | Same as Navigation API |
@@ -51,19 +51,19 @@ all three. Engine findings that needed code:
 
 - WebKit 26.6 sometimes restores no scroll position on back and forward after an intercepted
   navigation, through either `scroll: "after-transition"` or `event.scroll()` (in the tests, under
-  `htmlkit dev`). HTMLKit uses `scroll: "manual"`, records each entry's position when it is left,
+  `markupkit dev`). MarkupKit uses `scroll: "manual"`, records each entry's position when it is left,
   and restores it after the swap; new entries still use `event.scroll()` for the top or fragment.
 - Chromium 153 and WebKit 26.6 treat the entries of a document that a load replaced, such as a page
   that loaded as a document for a conflicting definition, as the new document's own: traversing to one
   is a same-document `navigate` event (`destination.sameDocument`, `canIntercept`), and Firefox 155's
-  is a cross-document one. HTMLKit intercepts such a traversal and renders the entry's page, in place
-  or as a document. Before HTMLKit starts nothing intercepts it, so the URL changes and the loaded page
-  stays; `navigation.activation.entry` is the entry the document loaded into, and when HTMLKit starts
+  is a cross-document one. MarkupKit intercepts such a traversal and renders the entry's page, in place
+  or as a document. Before MarkupKit starts nothing intercepts it, so the URL changes and the loaded page
+  stays; `navigation.activation.entry` is the entry the document loaded into, and when MarkupKit starts
   on another entry it renders that entry's page through the same navigation, as a `replace`.
 - Firefox 155 fires a second `navigate` event, without `downloadRequest`, for a `download` link.
-  HTMLKit also leaves alone any navigation whose `sourceElement` has `download`.
+  MarkupKit also leaves alone any navigation whose `sourceElement` has `download`.
 - Vite's development server rewrites a dynamic `import()` of a path to add `?import`, which is a
-  second URL and so a second module instance. HTMLKit imports absolute URLs, which Vite leaves alone.
+  second URL and so a second module instance. MarkupKit imports absolute URLs, which Vite leaves alone.
 
 Not used:
 
@@ -74,7 +74,7 @@ Not used:
 - **Speculation Rules** prefetch only for document navigations and cannot feed `fetch`.
 
 The browser does not announce a same-document navigation. As Nuxt (`<NuxtRouteAnnouncer>`) and
-Next.js (`next-route-announcer`) do, HTMLKit adds a visually hidden `aria-live="polite"` region,
+Next.js (`next-route-announcer`) do, MarkupKit adds a visually hidden `aria-live="polite"` region,
 `#hk-announcer`, and puts the new title in it.
 
 ### The remaining gap
@@ -115,13 +115,13 @@ Next.js (`next-route-announcer`) do, HTMLKit adds a visually hidden `aria-live="
 4. **Head content.** HTML Next owns the head declarations, the elements marked
    `data-component-head`: the swap disconnects the old page and connects the new one, and its head
    manager reconciles them once, in the microtasks after the swap, which a view transition's update
-   includes. HTMLKit diffs only its own unmarked links, stylesheets and an alias page's canonical
+   includes. MarkupKit diffs only its own unmarked links, stylesheets and an alias page's canonical
    link, with `isEqualNode`: shared ones stay, others are removed and added. Elements scripts add
    are left alone. New stylesheets load before the swap; component styles are scoped, so only the
    next page's global rules apply early.
 5. **Route announcement** and **back and forward positions** in WebKit, above.
 6. **Content Security Policy.** A policy belongs to its document, so client navigation keeps the
-   current one, and HTMLKit gives every page of the site the same policy. The render document has no
+   current one, and MarkupKit gives every page of the site the same policy. The render document has no
    `<base>`, which `base-uri 'none'` forbids: the next page's module URLs resolve against its URL.
 
 ## Chosen approach: payloads, with the HTML as the fallback
@@ -132,15 +132,15 @@ carries. The payload carries only what the module cannot: the data.
 
 ### Payload format and location
 
-`htmlkit build` writes one payload per page, and `application.fetch` (which `htmlkit dev` uses)
+`markupkit build` writes one payload per page, and `application.fetch` (which `markupkit dev` uses)
 serves the same JSON per request through the same render as the document:
 
 ```text
-/kit/guide/install/  →  /kit/_htmlkit/pages/guide/install/payload.json
-/kit/                →  /kit/_htmlkit/pages/payload.json
+/kit/guide/install/  →  /kit/_markupkit/pages/guide/install/payload.json
+/kit/                →  /kit/_markupkit/pages/payload.json
 ```
 
-`_htmlkit/` is reserved: a route segment and a public file may not use it, so a payload can never
+`_markupkit/` is reserved: a route segment and a public file may not use it, so a payload can never
 collide with an application's own URLs. Within it, `pages/` mirrors the route path; route segments
 cannot contain a dot, so `payload.json` never collides with a page's own directory.
 
@@ -148,8 +148,8 @@ cannot contain a dot, so `payload.json` never collides with a page's own directo
 {
   "version": 1,
   "head": { "lang": "en" },
-  "styles": ["/kit/_htmlkit/page-3-….css"],
-  "modules": ["/kit/_htmlkit/page-3-….js"],
+  "styles": ["/kit/_markupkit/page-3-….css"],
+  "modules": ["/kit/_markupkit/page-3-….js"],
   "layers": [
     { "component": "site-shell", "attributes": { "navigation": "[{\"href\":\"/kit/\",…}]" } },
     { "component": "install-page", "attributes": {}, "state": { "count": 4 } }
@@ -167,7 +167,7 @@ cannot contain a dot, so `payload.json` never collides with a page's own directo
 - A page whose state JSON cannot carry exactly (`undefined`, `-0`, non-finite numbers, shared or
   non-plain objects) gets no payload and navigates by its HTML.
 
-The build's `_htmlkit/manifest.json` also lists each page's shared chunks (`chunks`), for prefetching
+The build's `_markupkit/manifest.json` also lists each page's shared chunks (`chunks`), for prefetching
 links on screen.
 
 ### Rendering a payload
@@ -197,12 +197,12 @@ attributes in its own order, which the parity test sorts.
 
 ### Fallback to the HTML
 
-The whole-HTML fetch from the first version of this design remains. HTMLKit uses it when the payload
+The whole-HTML fetch from the first version of this design remains. MarkupKit uses it when the payload
 is missing or fails, when the module fails to load, or when rendering throws. If the HTML cannot
 render in place either (a missing page, a failed fetch, or a page without layers), or the page
 defines a tag differently, the page loads as a document. Every opt-out is unchanged.
 
-That document load is `navigation.navigate(url, { history: "replace" })`, which HTMLKit leaves
+That document load is `navigation.navigate(url, { history: "replace" })`, which MarkupKit leaves
 native: it takes the committed entry's place, so history has one entry for the visit, the page starts
 at its top or fragment as any document load does, and back and forward cross between the documents
 natively. `location.reload()` would keep the previous page's scroll position for the new one.
@@ -241,9 +241,9 @@ request would run that page's loaders.
 
 ## Nuxt and Next.js
 
-| | HTMLKit | Nuxt | Next.js (App Router) |
+| | MarkupKit | Nuxt | Next.js (App Router) |
 | --- | --- | --- | --- |
-| Next page from | Page module and `_htmlkit/pages/…/payload.json`; HTML as the fallback | Page chunks and `_payload.json` | RSC payload |
+| Next page from | Page module and `_markupkit/pages/…/payload.json`; HTML as the fallback | Page chunks and `_payload.json` | RSC payload |
 | Shared layouts | Kept; props updated in place | Kept | Kept, not re-rendered |
 | Page with new params | Replaced | Replaced (keyed by path) | Replaced |
 | Prefetch | Shared code for links on screen; page data and module on interaction | Visible links (default) or interaction | Visible links |
@@ -255,7 +255,7 @@ request would run that page's loaders.
 ## Measurements
 
 JavaScript per page, gzip -9 of the page's module and every chunk it imports, from
-`pnpm --filter @threadlabs/htmlkit measure:delivery` on HTMLKit's examples. The live column is the
+`pnpm --filter @threadlabs/markupkit measure:delivery` on MarkupKit's examples. The live column is the
 same pages delivered with the live runtime and serialized definitions, client navigation included:
 
 | Page | Live runtime | Compiled |
@@ -285,7 +285,7 @@ already loaded:
 
 Navigation time on the docs proof between two guide pages that share a layout, measured with the
 live-runtime delivery: the median of 20, on
-`htmlkit preview` over loopback, with both modules already loaded. Client navigation is click to
+`markupkit preview` over loopback, with both modules already loaded. Client navigation is click to
 `navigatesuccess`, which includes the fetch, styles, rendering, swap, and module connection.
 Document navigation is the new document's navigation start to `DOMContentLoaded`, which excludes
 unloading the old one. The HTML column forces the fallback, so it includes a failed payload request.

@@ -8,7 +8,7 @@ export function privateReaders(codec: ReadCodec, base: string, source: string, t
     const frame = operation.captureInputs();
     const discriminators = [...new Set([...Object.keys(frame.props), name].flatMap(name => selectors[name] === undefined ? [] : [selectors[name]!]))];
     const inputs = discriminators.length === 0 ? frame : operation.captureInputs(discriminators);
-    const response = await fetch(base + "_htmlkit/read", { method: "POST", credentials: "same-origin", signal: operation.signal,
+    const response = await fetch(base + "_markupkit/read", { method: "POST", credentials: "same-origin", signal: operation.signal,
       headers: { "content-type": "application/json" }, cache: "no-store",
       body: JSON.stringify({ version: 1, source, tag, name, url: location.href, inputs: codec.encodeHydrationValue(inputs) }) });
     const result = await response.json() as { value?: unknown; error?: { name?: string; message?: string }; code?: string };

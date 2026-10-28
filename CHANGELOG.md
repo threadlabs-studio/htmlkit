@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0
+
+- Support native document direction through loader `head.dir`, initial/static HTML, navigation payloads and in-place browser adoption. Pages inherit their layout direction, can override it, and clear a preceding page's direction when no loader sets one.
+
 ## 0.2.2
 
 - Restore the published `mk:` page metadata, `mk-` navigation components and `data-mk-` browser contract. Version 0.2.1 reverted these names to `hk`, breaking consumers such as Markupress.

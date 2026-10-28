@@ -157,7 +157,7 @@ cannot contain a dot, so `payload.json` never collides with a page's own directo
 }
 ```
 
-- `head` is what the page's document carries beyond its components: its language, and an alias
+- `head` is what the page's document carries beyond its components: its language, optional native `dir` (`ltr`, `rtl` or `auto`), and an alias
   page's `canonical` URL. The components' head declarations come from their compiled modules.
   `app/head.js` is not in it; it runs once per document load.
 - `styles` and `modules` are what the page's document links.

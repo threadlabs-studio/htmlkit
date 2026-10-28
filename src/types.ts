@@ -204,9 +204,11 @@ export interface PageContext {
   watch(file: string): void;
 }
 
-/** What a loader sets on the document: its language, the `<html lang>`. */
+/** Native document language and text direction; other head declarations belong to page/layout components. */
 export interface PageHead {
   readonly lang?: string;
+  /** The document's native `dir`; a page overrides its layout, and omission across all loaders leaves the browser default. */
+  readonly dir?: "ltr" | "rtl" | "auto";
 }
 
 export interface RenderedHead extends PageHead {

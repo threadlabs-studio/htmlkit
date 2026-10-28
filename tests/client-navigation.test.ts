@@ -45,6 +45,7 @@ async function site(): Promise<string> {
   await write(root, "app/pages/guide/index.html", `<template component="guide-page" controller="./guide.ts"><defs><title>Guide</title><meta name="description" content="Guide page"><meta name="mk:label" content="Guide">
       <script type="application/ld+json">{"@type":"WebPage","name":"Guide"}</script><script src="/kit/widget.js"></script></defs>
     <article><h1>Guide</h1></article><style>@import "@/app/styles/heading.css"; :host { color: rgb(4, 5, 6); }</style></template>`);
+  await write(root, "app/pages/guide/index.server.ts", 'export const load = () => ({ head: { lang: "ar", dir: "rtl" } });');
   // A declared script runs once per document, however often its page connects.
   await write(root, "public/widget.js", "window.widgetRuns = (window.widgetRuns ?? 0) + 1;");
   await write(root, "app/pages/guide/guide.ts", "export default function(host) { host.root.dataset.ready = 'guide'; }");
@@ -127,6 +128,7 @@ async function scenario(browser: Browser, url: string, built: boolean): Promise<
     await page.goto(url);
     await page.waitForFunction(() => document.querySelector('[data-component="site-shell"]')?.getAttribute("data-connections") === "1");
     await mark(page);
+    expect(await page.locator("html").getAttribute("dir")).toBeNull();
     await page.getByRole("button", { name: "Menu" }).click();
     await page.evaluate(() => { (window as unknown as { shell: Element }).shell = document.getElementById("mk-layer-0")!; });
     expect(await page.locator('nav a[href="/kit/"]').getAttribute("aria-current")).toBe("page");
@@ -161,6 +163,7 @@ async function scenario(browser: Browser, url: string, built: boolean): Promise<
     await poll(() => [count(payloadPath("guide/")), count(modules["guide/"]!)]).toEqual([1, 1]);
     await guide.click();
     await settled(page, "Guide");
+    expect(await page.locator("html").evaluate(element => [element.getAttribute("lang"), element.getAttribute("dir")])).toEqual(["ar", "rtl"]);
     expect([count(payloadPath("guide/")), count(modules["guide/"]!), count("/kit/guide/")]).toEqual([1, 1, 0]);
     expect(await marked(page)).toBe(true);
     expect(page.url()).toBe(url + "guide/");
@@ -187,6 +190,7 @@ async function scenario(browser: Browser, url: string, built: boolean): Promise<
     await page.route(`**${payloadPath("guide/install/")}`, route => route.fulfill({ status: 404 }));
     await page.locator("#to-deep").click();
     await settled(page, "Install");
+    expect(await page.locator("html").evaluate(element => [element.getAttribute("lang"), element.getAttribute("dir")])).toEqual(["en", null]);
     await page.unroute(`**${payloadPath("guide/install/")}`);
     expect([await marked(page), count("/kit/guide/install/", "fetch")]).toEqual([true, 1]);
     expect(page.url()).toBe(url + "guide/install/#deep");

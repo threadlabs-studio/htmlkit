@@ -33,12 +33,13 @@ describe("standalone package contract", () => {
     writeFileSync(join(consumer, "app/layouts/default.html"), '<link rel="component" href="@threadlabs/markupkit/components/nav.html"><template component="packed-shell"><defs><prop name="navigation" type="list(object({ href: string, label: string, current: string, depth: number, pageName: string }))" required>Links</prop><title>Layout default</title></defs><main><mk-nav from:items="$navigation"></mk-nav><slot name="page"></slot></main></template>');
     writeFileSync(join(consumer, "app/layouts/default.server.ts"), 'export const load = async ({ navigation }) => ({ props: { navigation: await navigation() } });');
     writeFileSync(join(consumer, "app/pages/01.index.html"), '<meta name="mk:page" content="packed-page"><template component="packed-label"><strong>Packaged helper</strong></template><template component="packed-page"><defs><prop name="label" type="string" required>Label</prop><title>{$label}</title></defs><section><h1 $value="$label"></h1><packed-label></packed-label></section></template>');
-    writeFileSync(join(consumer, "app/pages/01.index.server.ts"), 'export const load = () => ({ props: { label: "Installed platform" } });');
+    writeFileSync(join(consumer, "app/pages/01.index.server.ts"), 'export const load = () => ({ props: { label: "Installed platform" }, head: { lang: "ar", dir: "rtl" } });');
     const installed = join(consumer, "node_modules/@threadlabs/markupkit");
     const output = runBin(consumer, "markupkit", ["build"]);
     expect(output).toContain("Generated 1 pages");
     const html = readFileSync(join(consumer, "dist/index.html"), "utf8");
     expect(html).toContain("Installed platform");
+    expect(html).toContain('<html lang="ar" dir="rtl">');
     expect(html).toContain(">Installed platform</title>");
     expect(html).toContain('data-component="packed-shell"');
     expect(html).toContain("Packaged helper");
@@ -48,7 +49,7 @@ describe("standalone package contract", () => {
     expect(JSON.parse(readFileSync(join(installed, "package.json"), "utf8")).dependencies[componentsPackage]).not.toContain("workspace:");
     expect(readFileSync(join(installed, "LICENSE"), "utf8")).toBe(repositoryLicense);
     const entry = join(consumer, "platform-types.ts");
-    writeFileSync(entry, 'import { defineConfig, type Application, type ComponentBindingModule, type EndpointHandler, type LoadContext, type LoaderResult, type Middleware, type RouteInput, type ServerReader, type ServerReaders, type ServerReadContext } from "@threadlabs/markupkit"; import type { ServerApplication } from "@threadlabs/markupkit/server"; export const config = defineConfig({ routes: [] satisfies RouteInput[] }); export const reader = { load: (id, context) => context.phase === "build" ? id : context.cookies.get("user") ?? id } satisfies ServerReader<string, string>; export type PublicTypes = [Application, ComponentBindingModule, LoadContext, LoaderResult, EndpointHandler, Middleware, ServerApplication, ServerReaders, ServerReadContext];');
+    writeFileSync(entry, 'import { defineConfig, type Application, type ComponentBindingModule, type EndpointHandler, type LoadContext, type LoaderResult, type Middleware, type RouteInput, type ServerReader, type ServerReaders, type ServerReadContext } from "@threadlabs/markupkit"; import type { ServerApplication } from "@threadlabs/markupkit/server"; export const config = defineConfig({ routes: [] satisfies RouteInput[] }); export const localized = { head: { lang: "ar", dir: "rtl" } } satisfies LoaderResult; export const reader = { load: (id, context) => context.phase === "build" ? id : context.cookies.get("user") ?? id } satisfies ServerReader<string, string>; export type PublicTypes = [Application, ComponentBindingModule, LoadContext, LoaderResult, EndpointHandler, Middleware, ServerApplication, ServerReaders, ServerReadContext];');
     execFileSync("corepack", ["pnpm", "exec", "tsc", "--ignoreConfig", "--noEmit", "--strict", "--skipLibCheck", "--target", "ES2023", "--module", "NodeNext", "--moduleResolution", "NodeNext", entry], { cwd: root, shell: useCommandShell });
 
     // The built server runs on Node from the installed packages; a resolve hook fails if anything loads Vite.

@@ -7,6 +7,7 @@
  * adopt in place. docs/client-navigation.md records the design.
  */
 import type { adoptRenderedProps, flushComponent, generatedHost, replaceProjectedNode } from "@nextwebwg/html-next/generated-runtime";
+import type { PageHead } from "./types.js";
 import type { BindingSnapshot } from "@nextwebwg/html-next/bindings";
 
 /** Consume only this component's read identities; the renderer adopts accepted values itself. */
@@ -47,7 +48,7 @@ export type Component = readonly [factory: (options: object, html?: Record<strin
 interface Payload {
   readonly version: 1 | 2;
   readonly rendered?: { readonly body: string; readonly head: string };
-  readonly head: { readonly lang: string; readonly canonical?: string };
+  readonly head: PageHead & { readonly lang: string; readonly canonical?: string };
   readonly styles: readonly string[];
   readonly modules: readonly string[];
   readonly layers: readonly { readonly component: string; readonly attributes: Readonly<Record<string, string>>;
@@ -125,6 +126,7 @@ async function render(runtime: Runtime, payload: Payload): Promise<Rendered> {
   for (const href of payload.styles) append(next.head, "link", { rel: "stylesheet", href });
   for (const src of payload.modules) append(next.head, "script", { type: "module", src });
   next.documentElement.lang = payload.head.lang;
+  if (payload.head.dir !== undefined) next.documentElement.dir = payload.head.dir;
   if (payload.version === 2) {
     const layers = payload.layers.map((_, index) => {
       const root = layer(next, index);
@@ -345,6 +347,8 @@ function navigate(runtime: Runtime, { base, prefetch: policy, manifest }: Client
         document.head.append(...added.filter(element => !sheets.includes(element as HTMLLinkElement)));
         owned = [...kept, ...added];
         document.documentElement.lang = next.documentElement.lang;
+        if (next.documentElement.hasAttribute("dir")) document.documentElement.dir = next.documentElement.dir;
+        else document.documentElement.removeAttribute("dir");
         // Layouts persist while each depth renders the same component: they keep their DOM, state,
         // and controllers, and take the new rendering's props. The page layer is always replaced.
         let index = 0;

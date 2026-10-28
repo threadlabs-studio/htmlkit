@@ -291,7 +291,7 @@ import server-only packages. `@/` is the project root.
   Purpose: Starting values for the page's declared `<state>`.
 
 - Field: `head`
-  Purpose: `lang`, the document's language. Titles and metadata are [head declarations](/routes#the-page-head) bound to props.
+  Purpose: `lang`, the document's language, and optional `dir` (`"ltr"`, `"rtl"` or `"auto"`), the native document direction. Titles and metadata are [head declarations](/routes#the-page-head) bound to props.
 
 - Field: `data`
   Purpose: Private values passed on to inner loaders as `parent`; never sent to the browser.

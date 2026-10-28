@@ -55,14 +55,27 @@ An action receives the same context as the [page's loader](/loaders#rendering-on
 form with `await request.formData()`, which reads every encoding a form sends. The action runs before
 every loader of the page, layouts' included, so the page renders with what it changed.
 
-| The action | The answer |
-| --- | --- |
-| Returns nothing | 303 to the page's own URL, without the action's name |
-| Calls `redirect('/todos/42/')` | 303 to that URL, or the status you pass |
-| Returns an object, such as `{ errors, values }` | The page, rendered with those props over its loader's |
-| Sets `response.status = 422` and returns an object | The same page, with that status |
-| Sets `response.headers` | Those headers, on the redirect or the page |
-| Calls `notFound()` | The not-found page, with 404 |
+::: table
+
+- The action: Returns nothing
+  The answer: 303 to the page's own URL, without the action's name
+
+- The action: Calls `redirect('/todos/42/')`
+  The answer: 303 to that URL, or the status you pass
+
+- The action: Returns an object, such as `{ errors, values }`
+  The answer: The page, rendered with those props over its loader's
+
+- The action: Sets `response.status = 422` and returns an object
+  The answer: The same page, with that status
+
+- The action: Sets `response.headers`
+  The answer: Those headers, on the redirect or the page
+
+- The action: Calls `notFound()`
+  The answer: The not-found page, with 404
+
+:::
 
 A page that renders on each request has actions; a page that prerenders has no request to answer,
 so a build that finds `actions` on one fails, naming the page and its loader file. A layout's loader
@@ -143,14 +156,27 @@ with 405.
 Once the page has loaded, a form that posts to a page of the site submits with `fetch`, and
 MarkupKit swaps in the answer the way [client navigation](/client-navigation) swaps in a page:
 
-| Part of the submission | In place |
-| --- | --- |
-| The request | The same `POST`, with the form's fields, encoding and submitter's `formaction` |
-| An action that redirects | The redirect's page replaces the submission in history, as after a document's POST/redirect/GET |
-| An action that returns props | The page renders at the action's URL, as a document POST would show it |
-| A layout both pages use | Stays, with its state |
-| Keyboard focus | The first `autofocus` field, else the start of the page, as after a page load |
-| Screen readers | Hear the page's title once it renders |
+::: table
+
+- Part of the submission: The request
+  In place: The same `POST`, with the form's fields, encoding and submitter's `formaction`
+
+- Part of the submission: An action that redirects
+  In place: The redirect's page replaces the submission in history, as after a document's POST/redirect/GET
+
+- Part of the submission: An action that returns props
+  In place: The page renders at the action's URL, as a document POST would show it
+
+- Part of the submission: A layout both pages use
+  In place: Stays, with its state
+
+- Part of the submission: Keyboard focus
+  In place: The first `autofocus` field, else the start of the page, as after a page load
+
+- Part of the submission: Screen readers
+  In place: Hear the page's title once it renders
+
+:::
 
 Without JavaScript, or in a browser without the Navigation API, the form submits as a document
 does, with the same result. Put `data-hk-reload` on a form, or an element around it, to always

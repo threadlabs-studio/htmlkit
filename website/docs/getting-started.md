@@ -80,13 +80,30 @@ every command and option.
 
 ## Next steps
 
-| To… | Read |
-| --- | --- |
-| Add pages, dynamic URLs, and layouts | [Pages and routing](/routes) |
-| Load data into a page, at build time or on each request | [Loading data](/loaders) |
-| Answer API requests, or run code before every request | [Endpoints and middleware](/server) |
-| Accept form submissions, with validation errors | [Forms](/forms) |
-| Put the site online | [Deployment](/deployment) |
-| Add site navigation and order pages | [Navigation](/navigation) |
-| Move between pages without reloading | [Moving between pages](/client-navigation) |
-| Change settings, use plugins, or call MarkupKit from code | [Configuration](/configuration) |
+::: table
+
+- To…: Add pages, dynamic URLs, and layouts
+  Read: [Pages and routing](/routes)
+
+- To…: Load data into a page, at build time or on each request
+  Read: [Loading data](/loaders)
+
+- To…: Answer API requests, or run code before every request
+  Read: [Endpoints and middleware](/server)
+
+- To…: Accept form submissions, with validation errors
+  Read: [Forms](/forms)
+
+- To…: Put the site online
+  Read: [Deployment](/deployment)
+
+- To…: Add site navigation and order pages
+  Read: [Navigation](/navigation)
+
+- To…: Move between pages without reloading
+  Read: [Moving between pages](/client-navigation)
+
+- To…: Change settings, use plugins, or call MarkupKit from code
+  Read: [Configuration](/configuration)
+
+:::

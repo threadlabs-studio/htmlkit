@@ -1,6 +1,6 @@
 {
   "name": "@threadlabs/markupkit",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "description": "Build applications with HTML, CSS, and JavaScript, powered by HTML Next.",
   "license": "MIT",
   "type": "module",
@@ -43,7 +43,7 @@
     "verify:inner": "pnpm lint && pnpm typecheck && pnpm test",
     "verify:pr": "pnpm verify:inner && pnpm build && pnpm test:package && pnpm build:site",
     "verify:release": "pnpm verify:pr",
-    "build:site": "node dist/cli.js build website"
+    "build:site": "markupress build --root website"
   },
   "dependencies": {
     "@nextwebwg/html-next": "1.0.0-alpha.69",
@@ -59,8 +59,8 @@
     "marked": "18.1.1",
     "tsx": "4.23.15",
     "oxlint": "1.81.0",
-    "markupress": "0.8.4",
-    "@threadlabs/looma": "0.33.0"
+    "markupress": ">=0.12.0 <1",
+    "@threadlabs/looma": "0.44.0"
   },
   "publishConfig": {
     "access": "public",

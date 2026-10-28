@@ -26,14 +26,37 @@ loader can read the [request](/loaders#rendering-on-each-request):
 </template>
 ```
 
-| | Prerendered (default) | `hk:render` `server` |
-| --- | --- | --- |
-| Loader runs | once, at build time | on each request |
-| Loader reads | params, `url` under `origin` | also the query, headers, cookies, and `request` |
-| Loader sets | | the status and response headers |
-| Dynamic pages | `entries()` lists every page | any URL the pattern matches |
-| Output | `index.html` and a navigation payload | none; the server renders it |
-| Static host | serves it | can't serve it |
+::: table {header}
+
+- -
+  - Prerendered (default)
+  - `hk:render` `server`
+
+- - Loader runs
+  - once, at build time
+  - on each request
+
+- - Loader reads
+  - params, `url` under `origin`
+  - also the query, headers, cookies, and `request`
+
+- - Loader sets
+  -
+  - the status and response headers
+
+- - Dynamic pages
+  - `entries()` lists every page
+  - any URL the pattern matches
+
+- - Output
+  - `index.html` and a navigation payload
+  - none; the server renders it
+
+- - Static host
+  - serves it
+  - can't serve it
+
+:::
 
 The setting goes in the page because whether a page needs the request is a property of its loader,
 which lives beside it. Both kinds of page share layouts, navigation, client navigation, and browser

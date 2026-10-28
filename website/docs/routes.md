@@ -8,15 +8,30 @@ description: file routes · dynamic pages · layouts · page head
 
 Every file in `app/pages` is a page, and its path is its URL:
 
-| File | URL |
-| --- | --- |
-| `app/pages/index.html` | `/` |
-| `app/pages/about.html` | `/about/` |
-| `app/pages/blog/index.html` | `/blog/` |
-| `app/pages/blog/first-post.html` | `/blog/first-post/` |
-| `app/pages/blog/[slug].html` | `/blog/anything/` (one page per value) |
-| `app/pages/docs/[...path].html` | `/docs/a/` and `/docs/a/b/` (any depth) |
-| `app/pages/docs/(guides)/intro.html` | `/docs/intro/` (`(guides)` organizes the files without adding a URL segment) |
+::: table
+
+- File: `app/pages/index.html`
+  URL: `/`
+
+- File: `app/pages/about.html`
+  URL: `/about/`
+
+- File: `app/pages/blog/index.html`
+  URL: `/blog/`
+
+- File: `app/pages/blog/first-post.html`
+  URL: `/blog/first-post/`
+
+- File: `app/pages/blog/[slug].html`
+  URL: `/blog/anything/` (one page per value)
+
+- File: `app/pages/docs/[...path].html`
+  URL: `/docs/a/` and `/docs/a/b/` (any depth)
+
+- File: `app/pages/docs/(guides)/intro.html`
+  URL: `/docs/intro/` (`(guides)` organizes the files without adding a URL segment)
+
+:::
 
 A few rules cover the rest:
 
@@ -85,10 +100,21 @@ When a literal page and a dynamic one could both match, the literal page wins.
 `[...name]` matches one or more segments, and `[[...name]]` matches any number, including none. The
 parameter is the list of segments:
 
-| File | Matches | `params` |
-| --- | --- | --- |
-| `app/pages/docs/[...path].html` | `/docs/a/`, `/docs/a/b/` | `{ path: ['a'] }`, `{ path: ['a', 'b'] }` |
-| `app/pages/files/[[...path]].html` | `/files/`, `/files/a/b/` | `{ path: [] }`, `{ path: ['a', 'b'] }` |
+::: table {header}
+
+- - File
+  - Matches
+  - `params`
+
+- - `app/pages/docs/[...path].html`
+  - `/docs/a/`, `/docs/a/b/`
+  - `{ path: ['a'] }`, `{ path: ['a', 'b'] }`
+
+- - `app/pages/files/[[...path]].html`
+  - `/files/`, `/files/a/b/`
+  - `{ path: [] }`, `{ path: ['a', 'b'] }`
+
+:::
 
 A catch-all is the last part of its route, so it is a file name or a folder holding only an
 `index.html`. Its `entries()` list each page as a list of segments:
@@ -113,11 +139,18 @@ entry whose URL a more specific page matches.
 Wrap a folder's name in parentheses, such as `(marketing)`, to organize pages without including
 that folder name in their URLs. MarkupKit calls this a **route group**:
 
-| File | URL |
-| --- | --- |
-| `app/pages/marketing/about.html` | `/marketing/about/` |
-| `app/pages/(marketing)/about.html` | `/about/` |
-| `app/pages/docs/(guides)/intro.html` | `/docs/intro/` |
+::: table
+
+- File: `app/pages/marketing/about.html`
+  URL: `/marketing/about/`
+
+- File: `app/pages/(marketing)/about.html`
+  URL: `/about/`
+
+- File: `app/pages/docs/(guides)/intro.html`
+  URL: `/docs/intro/`
+
+:::
 
 Use a route group when pages should share a layout or appear under one navigation heading
 without adding the group's name to their addresses. In the last example, `docs` is still part of
@@ -191,12 +224,24 @@ receives the `data` of `default`, `docs`, and `guide` as `parent`.
 
 The layout a page selects only replaces the outermost one, and folder layouts always nest inside it:
 
-| The page's layout | Layers for `/docs/guide/intro/` |
-| --- | --- |
-| None selected, with `app/layouts/default.html` | `default` → `docs` → `guide` → page |
-| None selected, without `default.html` | `docs` → `guide` → page |
-| `hk:layout="admin"`, or `admin` from a `pages` entry's `layout`, `layoutDefaults`, or the `layout` option | `admin` → `docs` → `guide` → page |
-| `none` or `false`, from any of these | page alone |
+::: table {header}
+
+- - The page's layout
+  - Layers for `/docs/guide/intro/`
+
+- - None selected, with `app/layouts/default.html`
+  - `default` → `docs` → `guide` → page
+
+- - None selected, without `default.html`
+  - `docs` → `guide` → page
+
+- - `hk:layout="admin"`, or `admin` from a `pages` entry's `layout`, `layoutDefaults`, or the `layout` option
+  - `admin` → `docs` → `guide` → page
+
+- - `none` or `false`, from any of these
+  - page alone
+
+:::
 
 The outermost layout is chosen in this order: `hk:layout`, then the `pages` entry's `layout`, then
 `layoutDefaults`, then the `layout` option, then `app/layouts/default.html`. Pages added through the
@@ -250,13 +295,24 @@ itself goes to the server's console, so its message and stack stay out of the pa
 </template>
 ```
 
-| Where | When a page fails |
-| --- | --- |
-| `application.fetch` | It answers 500 with `app/error.html`. The page's payload answers 500, so client navigation loads the error page's document. |
-| `markupkit dev` | It answers 500 with the error and its stack, to fix in development. |
-| `markupkit build` | The build fails with the error, and the previous `dist/` stays. A static build has no error page, because each of its pages rendered. |
-| `markupkit preview` | It serves the built pages, which rendered during the build. |
-| `markupkit start` | It answers 500 with `app/error.html`, which the build includes in the server when pages render on request or there are endpoints or middleware. |
+::: table
+
+- Where: `application.fetch`
+  When a page fails: It answers 500 with `app/error.html`. The page's payload answers 500, so client navigation loads the error page's document.
+
+- Where: `markupkit dev`
+  When a page fails: It answers 500 with the error and its stack, to fix in development.
+
+- Where: `markupkit build`
+  When a page fails: The build fails with the error, and the previous `dist/` stays. A static build has no error page, because each of its pages rendered.
+
+- Where: `markupkit preview`
+  When a page fails: It serves the built pages, which rendered during the build.
+
+- Where: `markupkit start`
+  When a page fails: It answers 500 with `app/error.html`, which the build includes in the server when pages render on request or there are endpoints or middleware.
+
+:::
 
 Like the not-found page, it is not a route: no URL serves it, and navigation doesn't list it. It
 takes its layout as a page does, from `hk:layout`, the `layout` option, or `default.html`, and it
@@ -355,8 +411,7 @@ external scripts it needs. They read the component's props, state, and data:
   replaces a page, HTML Next updates the head in one step, so no layout title shows between two page
   titles.
 
-Every document starts from `<meta charset="utf-8">` and `<meta name="viewport"
-content="width=device-width, initial-scale=1">`, which a page's own viewport meta replaces. A
+Every document starts from `<meta charset="utf-8">` and `<meta name="viewport" content="width=device-width, initial-scale=1">`, which a page's own viewport meta replaces. A
 loader sets the document's language with `head: { lang }`; a loader's other values reach the head
 as props.
 
@@ -384,16 +439,33 @@ connection hook waits for `host.scripts.stripe.ready`
 Settings that start with `hk:` configure MarkupKit. They are `<meta>` entries in the component's
 `<defs>`, and MarkupKit leaves them out of the document head:
 
-| Metadata | Does |
-| --- | --- |
-| `hk:page` | Chooses the page component in a file with several components. It describes the file, so it goes outside the components. |
-| `hk:layout` | Chooses a layout, or `none`. |
-| `hk:label` | Sets the page's label in [navigation](/navigation). |
-| `hk:order` | Sets the page's place in [navigation](/navigation#ordering-pages), in place of its file name's number. |
-| `hk:navigation` | `content="hidden"` keeps the page out of navigation. |
-| `hk:alias` | Adds another URL for the page, such as `content="/start/"`. Its page has a canonical link to the page's own URL, unless the page sets one, and [`sitemap.xml`](/configuration#search-engines) lists only the page's own URL. |
-| `hk:redirect-from` | Redirects an old URL to the page, such as `content="/getting-started/"` ([details](#redirects)). |
-| `hk:render` | `content="server"` renders the page on each request instead of at build time ([details](/loaders#rendering-on-each-request)). |
+::: table
+
+- Metadata: `hk:page`
+  Does: Chooses the page component in a file with several components. It describes the file, so it goes outside the components.
+
+- Metadata: `hk:layout`
+  Does: Chooses a layout, or `none`.
+
+- Metadata: `hk:label`
+  Does: Sets the page's label in [navigation](/navigation).
+
+- Metadata: `hk:order`
+  Does: Sets the page's place in [navigation](/navigation#ordering-pages), in place of its file name's number.
+
+- Metadata: `hk:navigation`
+  Does: `content="hidden"` keeps the page out of navigation.
+
+- Metadata: `hk:alias`
+  Does: Adds another URL for the page, such as `content="/start/"`. Its page has a canonical link to the page's own URL, unless the page sets one, and [`sitemap.xml`](/configuration#search-engines) lists only the page's own URL.
+
+- Metadata: `hk:redirect-from`
+  Does: Redirects an old URL to the page, such as `content="/getting-started/"` ([details](#redirects)).
+
+- Metadata: `hk:render`
+  Does: `content="server"` renders the page on each request instead of at build time ([details](/loaders#rendering-on-each-request)).
+
+:::
 
 ## A script before first paint
 

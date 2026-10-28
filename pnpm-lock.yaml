@@ -180,8 +180,8 @@ importers:
         version: 8.3.4(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1)
     devDependencies:
       '@threadlabs/looma':
-        specifier: 0.33.0
-        version: 0.33.0(@nextwebwg/html-next@1.0.0-alpha.69)
+        specifier: 0.44.0
+        version: 0.44.0(@nextwebwg/html-next@1.0.0-alpha.69)(@threadlabs/markupkit@0.2.0(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))(markupress@0.12.0)(vite@8.3.4(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))
       '@types/node':
         specifier: 22.20.1
         version: 22.20.1
@@ -189,8 +189,8 @@ importers:
         specifier: 18.1.1
         version: 18.1.1
       markupress:
-        specifier: 0.8.4
-        version: 0.8.4(@nextwebwg/html-next@1.0.0-alpha.69)(@threadlabs/looma@0.33.0(@nextwebwg/html-next@1.0.0-alpha.69))(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)
+        specifier: '>=0.12.0 <1'
+        version: 0.12.0(@nextwebwg/html-next@1.0.0-alpha.69)(@threadlabs/looma@0.44.0)(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)
       oxlint:
         specifier: 1.81.0
         version: 1.81.0
@@ -474,11 +474,6 @@ packages:
 
   '@nextwebwg/html-next@1.0.0-alpha.69':
     resolution: {integrity: sha512-nvgzlQK3Dz09bU9LRWA/b797zwjoJ6FXasTlusw71oMFqG1ZuTMgolAqthMbXLpgxN70oYj4M756JxDxgzZY/A==}
-    engines: {node: '>=22.22.2 <23 || >=24.15 <25'}
-    hasBin: true
-
-  '@nextwebwg/htmlkit@1.0.0-alpha.69':
-    resolution: {integrity: sha512-7Ik5fkUDac47v5GDJFnJ99apPcOGDxQHt9depYKyO5GcRXKekPeRnWFTgGQY0bLU/YYY6sR7qa7Lo8osQMhf4g==}
     engines: {node: '>=22.22.2 <23 || >=24.15 <25'}
     hasBin: true
 
@@ -970,24 +965,39 @@ packages:
   '@shikijs/vscode-textmate@10.1.0':
     resolution: {integrity: sha512-cVBuhDQjBZaNMTwBquYfPydrUP+E3hE6oYGasx8h6ZrODIM7/r+gxLDXdd66oszbrggZHEntdE6j+5gYIVyMWQ==}
 
-  '@threadlabs/looma@0.33.0':
-    resolution: {integrity: sha512-4iqiG8dYREEy+PMSWiVnm4wKQSe+AHCdG5ExElRXaGICMJBFdtsu050aRr/D7mbP6e+WZnS3af7rGm2QYuoNMA==}
+  '@threadlabs/looma@0.44.0':
+    resolution: {integrity: sha512-ZIOm+eC8BKsFmndcjZnmtkl4mbD6fh3bn/ekUuTbLrBuG8zspLbjFU+JB7yctaq1kOZYbVpy8KRciqnCkj0nRg==}
     engines: {node: '>=22.22.2 <23 || >=24.15 <25'}
+    hasBin: true
     peerDependencies:
       '@nextwebwg/html-next': 1.0.0-alpha.69
+      '@threadlabs/markupkit': '>=0.2.0 <1'
       '@tiptap/core': '>=2 <3'
       '@tiptap/pm': '>=2 <3'
       '@tiptap/vue-3': '>=2 <3'
+      markupress: '>=0.10.3 <1'
+      vite: '>=7.2.7 <9'
       vue: ^3.5.43
     peerDependenciesMeta:
+      '@threadlabs/markupkit':
+        optional: true
       '@tiptap/core':
         optional: true
       '@tiptap/pm':
         optional: true
       '@tiptap/vue-3':
         optional: true
+      markupress:
+        optional: true
+      vite:
+        optional: true
       vue:
         optional: true
+
+  '@threadlabs/markupkit@0.2.0':
+    resolution: {integrity: sha512-Vyb6TebrAIlgQZXodbDWB429H/iMzQP1stdau+5D6b5EnP8vU1z7vJ9R5MlrdLiJ8rV5FKrTn+iHaS7JAMvk/g==}
+    engines: {node: '>=22.22.2 <23 || >=24.15 <25'}
+    hasBin: true
 
   '@tybys/wasm-util@0.10.4':
     resolution: {integrity: sha512-W3c4gRigFS0T/Ma4qIYF3GDAc5AQdHb1yL5znJT1Zv1YaD9Kitx656wBjvr19qbiosmZT8lWDM5BEMynUqX65A==}
@@ -1263,8 +1273,12 @@ packages:
     resolution: {integrity: sha512-KfYbmpRm0VbLjEvVa9yGwCi9GI34xvi7A/HXYWQO65CSD2u3MczUJSuwXKFIxlGsgBQizV9q5J9NHj4VG0n+pA==}
     engines: {node: '>=12.0.0'}
 
-  expressmark@0.1.6:
-    resolution: {integrity: sha512-b8Fnj86DaHPrv0aKPhIfux7vEKM3hyJKMhiDrkNtpvYRcoGAaJve5U2vb+PR8qxpvwogIEe+y0oxoj+mM+PVgg==}
+  expressmark@0.2.1:
+    resolution: {integrity: sha512-+8oavTdWKLgvH7N+0aDx8I3SYQfTdcIPsejcgV/2xz3/Z56QpZJoZ2CDIdnMcKF1IPY7+jjRUVSMAPNEuvfHXQ==}
+    engines: {node: '>=22.13 <23 || >=24 <25'}
+
+  expressmark@0.2.2:
+    resolution: {integrity: sha512-mecRmshYZ8VGH/tvM5Y1fyeb/Mz6euAlvcFJfofmy53cNRGq9tABVARaGYt/oWzCnA/ieBRJ/9UnBLqTIJP0sg==}
     engines: {node: '>=22.13 <23 || >=24 <25'}
 
   fdir@6.5.0:
@@ -1425,8 +1439,8 @@ packages:
     resolution: {integrity: sha512-4Ej49aYTDFIQ+uBkfX8GBvJGccoARxxPep+7aWTs55ozbjQJpW9M26Fe53vnGgvLeVzva/amzjQQaQu9w0vMhA==}
     hasBin: true
 
-  markdown-it@15.0.2:
-    resolution: {integrity: sha512-q4IGxMv56jCqT4OCRCADBoDP3LO4MhmTXjFbphHPXs4g3j9Xg5RDnxqN8IF/3vIWEU+VCnUq+7JUg/cfy2E6Qw==}
+  markdown-it@15.0.3:
+    resolution: {integrity: sha512-+Az7Ojz3iRGu8KYMvJ6xVhvrxP3eE+vEtJX75Ow88XBpcQNV/0lGX5ZynIIBftREo4DC2jsveAMDaeltmm8QvQ==}
     hasBin: true
 
   marked@18.1.1:
@@ -1434,13 +1448,13 @@ packages:
     engines: {node: '>= 20'}
     hasBin: true
 
-  markupress@0.8.4:
-    resolution: {integrity: sha512-6jk1djO0TH/2nLzTjyehi7rx8w/wPS4/i3S6YrUp5GCU3SYHrRH3/Umw1rntuYl6DlUWvo2mURNSDQo1JyY5mw==}
+  markupress@0.12.0:
+    resolution: {integrity: sha512-5cuRXUTs7EjzeAapfvze2abGbhtJH5tZdaNkK0OO7VezVIwAcpQ0/SD3r/1Qdo4Us4iEN5ktkXMtNn07GWLVpg==}
     engines: {node: '>=22.22.2 <23 || >=24.15 <25'}
     hasBin: true
     peerDependencies:
       '@nextwebwg/html-next': 1.0.0-alpha.69
-      '@threadlabs/looma': ^0.33.0 || ^0.34.0 || ^0.35.0
+      '@threadlabs/looma': '>=0.44.0 <1'
 
   mdast-util-to-hast@13.2.1:
     resolution: {integrity: sha512-cctsq2wp5vTsLIcaymblUriiTcZd0CwWtCbLvrOzYCDZoWyMNV8sZ7krj09FSnsiJi3WVsHLM4k6Dq/yaPyCXA==}
@@ -1507,8 +1521,8 @@ packages:
   parse5@8.0.1:
     resolution: {integrity: sha512-z1e/HMG90obSGeidlli3hj7cbocou0/wa5HacvI3ASx34PecNjNQeaHNo5WIZpWofN9kgkqV1q5YvXe3F0FoPw==}
 
-  parseman@0.54.0:
-    resolution: {integrity: sha512-axAkINMNllfz1IRxKhI6qm3GVcBvvTVxnjvIo+kKCmL9PWYeK1XYQO/121uYuEsTvsw1QXpT5wTUyZmu+xTfcQ==}
+  parseman@0.55.2:
+    resolution: {integrity: sha512-FmRj2BmiK08Ey6i4tK8XJPV7JARytnnxLnuozCeyPUVtSgWQ/qolx3zUNXpmjTY5Qz5WKMS/kzc8ui7tYzVDGQ==}
     engines: {node: ^20.19.0 || >=22.13.0}
     hasBin: true
 
@@ -2002,28 +2016,6 @@ snapshots:
       - '@noble/hashes'
       - canvas
 
-  '@nextwebwg/htmlkit@1.0.0-alpha.69(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1)':
-    dependencies:
-      '@nextwebwg/html-next': 1.0.0-alpha.69
-      parse5: 8.0.1
-      typescript-compiler: '@typescript/typescript6@6.0.2'
-      vite: 8.3.4(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1)
-    transitivePeerDependencies:
-      - '@noble/hashes'
-      - '@types/node'
-      - '@vitejs/devtools'
-      - canvas
-      - esbuild
-      - jiti
-      - less
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - terser
-      - tsx
-      - yaml
-
   '@oxc-parser/binding-android-arm-eabi@0.137.0':
     optional: true
 
@@ -2297,15 +2289,41 @@ snapshots:
 
   '@shikijs/vscode-textmate@10.1.0': {}
 
-  '@threadlabs/looma@0.33.0(@nextwebwg/html-next@1.0.0-alpha.69)':
+  '@threadlabs/looma@0.44.0(@nextwebwg/html-next@1.0.0-alpha.69)(@threadlabs/markupkit@0.2.0(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))(markupress@0.12.0)(vite@8.3.4(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))':
     dependencies:
       '@nextwebwg/html-next': 1.0.0-alpha.69
       dompurify: 3.4.15
-      expressmark: 0.1.6
+      expressmark: 0.2.1
       highlight.js: 11.11.2
       lowlight: 3.3.0
       lucide: 0.554.0
       markdown-it: 14.3.1
+    optionalDependencies:
+      '@threadlabs/markupkit': 0.2.0(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1)
+      markupress: 0.12.0(@nextwebwg/html-next@1.0.0-alpha.69)(@threadlabs/looma@0.44.0)(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)
+      vite: 8.3.4(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1)
+
+  '@threadlabs/markupkit@0.2.0(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1)':
+    dependencies:
+      '@nextwebwg/html-next': 1.0.0-alpha.69
+      parse5: 8.0.1
+      typescript-compiler: '@typescript/typescript6@6.0.2'
+      vite: 8.3.4(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1)
+    transitivePeerDependencies:
+      - '@noble/hashes'
+      - '@types/node'
+      - '@vitejs/devtools'
+      - canvas
+      - esbuild
+      - jiti
+      - less
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - terser
+      - tsx
+      - yaml
 
   '@tybys/wasm-util@0.10.4':
     dependencies:
@@ -2528,11 +2546,19 @@ snapshots:
 
   expect-type@1.4.0: {}
 
-  expressmark@0.1.6:
+  expressmark@0.2.1:
     dependencies:
       htmlparser2: 12.0.0
-      markdown-it: 15.0.2
-      parseman: 0.54.0
+      markdown-it: 15.0.3
+      parseman: 0.55.2
+      sanitize-html: 2.18.1
+      yaml: 2.9.1
+
+  expressmark@0.2.2:
+    dependencies:
+      htmlparser2: 12.0.0
+      markdown-it: 15.0.3
+      parseman: 0.55.2
       sanitize-html: 2.18.1
       yaml: 2.9.1
 
@@ -2697,7 +2723,7 @@ snapshots:
       punycode.js: 2.3.1
       uc.micro: 2.1.0
 
-  markdown-it@15.0.2:
+  markdown-it@15.0.3:
     dependencies:
       argparse: 3.0.3
       entities: 8.1.0
@@ -2708,11 +2734,12 @@ snapshots:
 
   marked@18.1.1: {}
 
-  markupress@0.8.4(@nextwebwg/html-next@1.0.0-alpha.69)(@threadlabs/looma@0.33.0(@nextwebwg/html-next@1.0.0-alpha.69))(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15):
+  markupress@0.12.0(@nextwebwg/html-next@1.0.0-alpha.69)(@threadlabs/looma@0.44.0)(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15):
     dependencies:
       '@nextwebwg/html-next': 1.0.0-alpha.69
-      '@nextwebwg/htmlkit': 1.0.0-alpha.69(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1)
-      '@threadlabs/looma': 0.33.0(@nextwebwg/html-next@1.0.0-alpha.69)
+      '@threadlabs/looma': 0.44.0(@nextwebwg/html-next@1.0.0-alpha.69)(@threadlabs/markupkit@0.2.0(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))(markupress@0.12.0)(vite@8.3.4(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))
+      '@threadlabs/markupkit': 0.2.0(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1)
+      expressmark: 0.2.2
       parse5: 8.0.1
       postcss: 8.5.30
       postcss-value-parser: 4.2.0
@@ -2854,7 +2881,7 @@ snapshots:
     dependencies:
       entities: 8.1.0
 
-  parseman@0.54.0:
+  parseman@0.55.2:
     dependencies:
       linecraft: 0.2.6
       magic-string: 0.30.21

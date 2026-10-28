@@ -19,24 +19,73 @@ export default defineConfig({
 });
 ```
 
-| Option | Default | Does |
-| --- | --- | --- |
-| `base` | `/` | Serves the site under a path, such as `/docs/`. |
-| `origin` | `http://localhost` | The site's origin, used for `url` in loaders. Setting it writes [`sitemap.xml`](#search-engines). |
-| `outDir` | `dist` | Where `build` writes the site. |
-| `layout` | `default` when `app/layouts/default.html` exists | The layout name for every page, or `false` for none. |
-| `layouts` | none | [Named layouts](#named-layouts) beside `app/layouts/`, such as `{ home: { component: 'theme/home.html' } }`. |
-| `layoutDefaults` | none | Layout names by URL prefix, such as `{ '/admin/': 'admin' }`. |
-| `pages` | `[{ dir: 'app/pages' }]` | Page folders and the URL prefix each serves. |
-| `routes` | none | Pages at URLs of your choosing (below). |
-| `redirects` | none | Old paths and where each now lives, such as `{ '/start/': '/guide/' }` ([redirects](/routes#redirects)). |
-| `fileRoutes` | `true` | `false` turns off page folders, so only `routes` remain. |
-| `css` | none | Page-wide stylesheets for rules such as `html` and `body`, for example `['@/styles/page.css']`. Components keep their own styles. |
-| `plugins` | none | [Plugins](#plugins), such as a Markdown page format. |
-| `prefetch` | `interaction` | What links load before a click: `interaction`, `visible`, or `none` ([details](/client-navigation#faster-clicks)). |
-| `robots` | none | `true`, or the text of `robots.txt`, for the build to write ([search engines](#search-engines)). |
-| `linkCheck` | `error` | What `build` does with a [broken internal link](#link-check): `error` fails the build, and `warn` reports it. |
-| `csp` | generated | Sources to add to each page's [Content Security Policy](#content-security-policy), `reportOnly`, or `false` for none. |
+::: table
+
+- Option: `base`
+  Default: `/`
+  Does: Serves the site under a path, such as `/docs/`.
+
+- Option: `origin`
+  Default: `http://localhost`
+  Does: The site's origin, used for `url` in loaders. Setting it writes [`sitemap.xml`](#search-engines).
+
+- Option: `outDir`
+  Default: `dist`
+  Does: Where `build` writes the site.
+
+- Option: `layout`
+  Default: `default` when `app/layouts/default.html` exists
+  Does: The layout name for every page, or `false` for none.
+
+- Option: `layouts`
+  Default: none
+  Does: [Named layouts](#named-layouts) beside `app/layouts/`, such as `{ home: { component: 'theme/home.html' } }`.
+
+- Option: `layoutDefaults`
+  Default: none
+  Does: Layout names by URL prefix, such as `{ '/admin/': 'admin' }`.
+
+- Option: `pages`
+  Default: `[{ dir: 'app/pages' }]`
+  Does: Page folders and the URL prefix each serves.
+
+- Option: `routes`
+  Default: none
+  Does: Pages at URLs of your choosing (below).
+
+- Option: `redirects`
+  Default: none
+  Does: Old paths and where each now lives, such as `{ '/start/': '/guide/' }` ([redirects](/routes#redirects)).
+
+- Option: `fileRoutes`
+  Default: `true`
+  Does: `false` turns off page folders, so only `routes` remain.
+
+- Option: `css`
+  Default: none
+  Does: Page-wide stylesheets for rules such as `html` and `body`, for example `['@/styles/page.css']`. Components keep their own styles.
+
+- Option: `plugins`
+  Default: none
+  Does: [Plugins](#plugins), such as a Markdown page format.
+
+- Option: `prefetch`
+  Default: `interaction`
+  Does: What links load before a click: `interaction`, `visible`, or `none` ([details](/client-navigation#faster-clicks)).
+
+- Option: `robots`
+  Default: none
+  Does: `true`, or the text of `robots.txt`, for the build to write ([search engines](#search-engines)).
+
+- Option: `linkCheck`
+  Default: `error`
+  Does: What `build` does with a [broken internal link](#link-check): `error` fails the build, and `warn` reports it.
+
+- Option: `csp`
+  Default: generated
+  Does: Sources to add to each page's [Content Security Policy](#content-security-policy), `reportOnly`, or `false` for none.
+
+:::
 
 A page's own `hk:layout` wins over `layoutDefaults`, which win over `layout`. Each selects the outermost
 layout; a folder's `_layout.html` nests inside it ([nested layouts](/routes#nested-layouts)).
@@ -215,8 +264,7 @@ const notes: MarkupKitPlugin = {
 export default defineConfig({ base: '/docs/', plugins: [notes] });
 ```
 
-Each key is an application path, as a [redirect](/routes#redirects)'s is, so with `base:
-'/docs/'` the file `/notes.json` is at `/docs/notes.json`. Each value is a string, a `Uint8Array`,
+Each key is an application path, as a [redirect](/routes#redirects)'s is, so with `base: '/docs/'` the file `/notes.json` is at `/docs/notes.json`. Each value is a string, a `Uint8Array`,
 or `{ contents, type }`. `type` is the file's media type, and without it the path's extension gives
 it (`.json` is `application/json`), or `application/octet-stream` for an extension MarkupKit doesn't
 know. The context has `root` and `base`, as in `buildStart`.
@@ -265,23 +313,41 @@ export default defineConfig({ plugins: [site] });
 are part of the build. It runs once per `markupkit build`, and once when `markupkit dev` starts; editing
 a file doesn't rerun it. Its context has:
 
-| Field | Value |
-| --- | --- |
-| `command` | `'build'` or `'dev'` |
-| `root` | The absolute project root. |
-| `base` | The `base` option, such as `/docs/`. |
+::: table
+
+- Field: `command`
+  Value: `'build'` or `'dev'`
+
+- Field: `root`
+  Value: The absolute project root.
+
+- Field: `base`
+  Value: The `base` option, such as `/docs/`.
+
+:::
 
 `buildEnd(context)` runs once the build has written every page, asset, `sitemap.xml` and `robots.txt`,
 and the [manifest](#build-manifest), and before the [link check](#link-check) and the new output
 replacing `outDir`. Links to the files it writes pass the link check. Its context has:
 
-| Field | Value |
-| --- | --- |
-| `root`, `base` | As in `buildStart`. |
-| `outDir` | The directory being built, which becomes `outDir` when every `buildEnd` succeeds. |
-| `routes` | Every route, as `createApplication` lists them. |
-| `pages` | Each built page's URL path, such as `/docs/guide/`. `404.html` isn't one. |
-| `writeFile(path, contents)` | Writes a string or bytes at a path relative to the output. |
+::: table
+
+- Field: `root`, `base`
+  Value: As in `buildStart`.
+
+- Field: `outDir`
+  Value: The directory being built, which becomes `outDir` when every `buildEnd` succeeds.
+
+- Field: `routes`
+  Value: Every route, as `createApplication` lists them.
+
+- Field: `pages`
+  Value: Each built page's URL path, such as `/docs/guide/`. `404.html` isn't one.
+
+- Field: `writeFile(path, contents)`
+  Value: Writes a string or bytes at a path relative to the output.
+
+:::
 
 `writeFile` refuses a path outside the output, a path in `_markupkit/`, and a file that already
 exists, so a plugin can't replace a page, a public file, or another plugin's file.
@@ -374,11 +440,18 @@ export default defineConfig({
 });
 ```
 
-| Where | Delivery |
-| --- | --- |
-| `markupkit build` | Each page's `<meta http-equiv="Content-Security-Policy">`, first in its head, so static hosts enforce it. A meta element ignores `frame-ancestors`, `report-uri`, and `sandbox`, so the page's meta leaves them out. |
-| `markupkit start` and `application.fetch` | The `Content-Security-Policy` header, with every directive, beside the page's meta. |
-| `markupkit dev` | The same header and meta, plus what Vite needs (below). |
+::: table
+
+- Where: `markupkit build`
+  Delivery: Each page's `<meta http-equiv="Content-Security-Policy">`, first in its head, so static hosts enforce it. A meta element ignores `frame-ancestors`, `report-uri`, and `sandbox`, so the page's meta leaves them out.
+
+- Where: `markupkit start` and `application.fetch`
+  Delivery: The `Content-Security-Policy` header, with every directive, beside the page's meta.
+
+- Where: `markupkit dev`
+  Delivery: The same header and meta, plus what Vite needs (below).
+
+:::
 
 `reportOnly: true` sends `Content-Security-Policy-Report-Only` instead, which reports violations and
 blocks nothing. Only a header can report only, so built pages then carry no meta, and a static host
@@ -434,23 +507,54 @@ const { base, routes, pages, redirects, files } = await readManifest('dist');
 }
 ```
 
-| Field | Value |
-| --- | --- |
-| `version` | The format version, `1`. |
-| `base` | The `base` the site was built for. |
-| `routes` | Each page's URL path, including `base`, in build order. `404.html` isn't listed. |
-| `pages` | One entry per route, in the same order. |
-| `pages[].pathname` | The page's URL path. |
-| `pages[].pageName` | The page's component name. |
-| `pages[].browserModule` | The URL of the page's own browser module. |
-| `pages[].chunks` | URLs of the shared modules the page imports. |
-| `redirects` | Each redirect page the build wrote, from the [`redirects` option](/routes#redirects), pages' [`hk:redirect-from`](/routes#redirects) and loaders' [`redirect()`](/loaders#redirecting). |
-| `redirects[].from` | The old URL path, where the redirect page is. |
-| `redirects[].to` | Where it sends readers: a URL path including `base`, or an absolute URL. |
-| `redirects[].status` | The status a server answers with: 308 for the option and `hk:redirect-from`, and the loader's status for `redirect()`. |
-| `files` | Each file plugins' [`generate`](#generated-files) returned. |
-| `files[].pathname` | The file's URL path, including `base`. |
-| `files[].type` | Its media type, which `markupkit preview` and `markupkit start` send. |
+::: table
+
+- Field: `version`
+  Value: The format version, `1`.
+
+- Field: `base`
+  Value: The `base` the site was built for.
+
+- Field: `routes`
+  Value: Each page's URL path, including `base`, in build order. `404.html` isn't listed.
+
+- Field: `pages`
+  Value: One entry per route, in the same order.
+
+- Field: `pages[].pathname`
+  Value: The page's URL path.
+
+- Field: `pages[].pageName`
+  Value: The page's component name.
+
+- Field: `pages[].browserModule`
+  Value: The URL of the page's own browser module.
+
+- Field: `pages[].chunks`
+  Value: URLs of the shared modules the page imports.
+
+- Field: `redirects`
+  Value: Each redirect page the build wrote, from the [`redirects` option](/routes#redirects), pages' [`hk:redirect-from`](/routes#redirects) and loaders' [`redirect()`](/loaders#redirecting).
+
+- Field: `redirects[].from`
+  Value: The old URL path, where the redirect page is.
+
+- Field: `redirects[].to`
+  Value: Where it sends readers: a URL path including `base`, or an absolute URL.
+
+- Field: `redirects[].status`
+  Value: The status a server answers with: 308 for the option and `hk:redirect-from`, and the loader's status for `redirect()`.
+
+- Field: `files`
+  Value: Each file plugins' [`generate`](#generated-files) returned.
+
+- Field: `files[].pathname`
+  Value: The file's URL path, including `base`.
+
+- Field: `files[].type`
+  Value: Its media type, which `markupkit preview` and `markupkit start` send.
+
+:::
 
 These fields are stable. A release may add fields at version `1`, so ignore fields you don't use.
 `version` changes only when a field is removed, renamed, or changes meaning, and `readManifest`
@@ -465,23 +569,57 @@ them from the manifest. The manifest lists prerendered pages; pages that
 markupkit <command> [root] [options]
 ```
 
-| Command | Does |
-| --- | --- |
-| `markupkit dev` | Serves the application with live reload, rendering every page, endpoint, and middleware on request. |
-| `markupkit build` | Prerenders pages and writes them, the browser bundles, and the request server to `dist/`. |
-| `markupkit preview` | Serves `dist/` as a static host does: files only. |
-| `markupkit start` | Serves the build on Node, without Vite: prerendered pages and assets from files, plus server-rendered pages, endpoints, and middleware ([deployment](/deployment#the-node-server)). |
+::: table
 
-| Option | Commands | Does |
-| --- | --- | --- |
-| `[root]` | all | The project folder; the current folder unless given. |
-| `--base /docs/` | `dev`, `build` | Serves the site under a path. `preview` and `start` take it from the build. |
-| `--origin https://example.com` | `dev`, `build` | The origin of prerendered pages' `url`. |
-| `--out-dir dist` | `build`, `preview`, `start` | The build output. |
-| `--port 3000` | `dev`, `preview`, `start` | The port; `start` also reads `PORT`. |
-| `--host 127.0.0.1` | `dev`, `preview`, `start` | The host; `start` also reads `HOST`. |
-| `--render-workers 4` | all | How many workers render pages: the number of available CPUs, up to 8, unless given. |
-| `-h`, `--help` | | Lists the commands and options. |
+- Command: `markupkit dev`
+  Does: Serves the application with live reload, rendering every page, endpoint, and middleware on request.
+
+- Command: `markupkit build`
+  Does: Prerenders pages and writes them, the browser bundles, and the request server to `dist/`.
+
+- Command: `markupkit preview`
+  Does: Serves `dist/` as a static host does: files only.
+
+- Command: `markupkit start`
+  Does: Serves the build on Node, without Vite: prerendered pages and assets from files, plus server-rendered pages, endpoints, and middleware ([deployment](/deployment#the-node-server)).
+
+:::
+
+::: table
+
+- Option: `[root]`
+  Commands: all
+  Does: The project folder; the current folder unless given.
+
+- Option: `--base /docs/`
+  Commands: `dev`, `build`
+  Does: Serves the site under a path. `preview` and `start` take it from the build.
+
+- Option: `--origin https://example.com`
+  Commands: `dev`, `build`
+  Does: The origin of prerendered pages' `url`.
+
+- Option: `--out-dir dist`
+  Commands: `build`, `preview`, `start`
+  Does: The build output.
+
+- Option: `--port 3000`
+  Commands: `dev`, `preview`, `start`
+  Does: The port; `start` also reads `PORT`.
+
+- Option: `--host 127.0.0.1`
+  Commands: `dev`, `preview`, `start`
+  Does: The host; `start` also reads `HOST`.
+
+- Option: `--render-workers 4`
+  Commands: all
+  Does: How many workers render pages: the number of available CPUs, up to 8, unless given.
+
+- Option: `-h`, `--help`
+  Commands:
+  Does: Lists the commands and options.
+
+:::
 
 Flags override the same settings in `markupkit.config.ts`. `start` runs the build alone and doesn't read
 the config file.

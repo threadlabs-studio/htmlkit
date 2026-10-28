@@ -10,12 +10,25 @@ Components receive data through their typed props. A component module can provid
 prerendering, request-time rendering, and browser updates. A page loader can also supply ordinary
 values before rendering; supplied values bypass that prop's provider.
 
-| Source | First render | Later browser reads |
-| --- | --- | --- |
-| Common `.js` or `.ts` provider | Prerendered or rendered on request | The same provider runs in the browser. |
-| `.client` reader | Loading branch, unless a common or private reader prepared data | The client reader runs in the browser. |
-| `.server` reader with a common selector | Prerendered or rendered on request | The request server runs the private reader; an optional client reader overrides this. |
-| Supplied prop value | The supplied value | No provider read while the caller owns that prop. |
+::: table
+
+- Source: Common `.js` or `.ts` provider
+  First render: Prerendered or rendered on request
+  Later browser reads: The same provider runs in the browser.
+
+- Source: `.client` reader
+  First render: Loading branch, unless a common or private reader prepared data
+  Later browser reads: The client reader runs in the browser.
+
+- Source: `.server` reader with a common selector
+  First render: Prerendered or rendered on request
+  Later browser reads: The request server runs the private reader; an optional client reader overrides this.
+
+- Source: Supplied prop value
+  First render: The supplied value
+  Later browser reads: No provider read while the caller owns that prop.
+
+:::
 
 ## Component providers in the browser
 
@@ -269,12 +282,21 @@ import server-only packages. `@/` is the project root.
 
 ## What `load()` returns
 
-| Field | Purpose |
-| --- | --- |
-| `props` | Values for the page's declared `<prop>`s. |
-| `state` | Starting values for the page's declared `<state>`. |
-| `head` | `lang`, the document's language. Titles and metadata are [head declarations](/routes#the-page-head) bound to props. |
-| `data` | Private values passed on to inner loaders as `parent`; never sent to the browser. |
+::: table
+
+- Field: `props`
+  Purpose: Values for the page's declared `<prop>`s.
+
+- Field: `state`
+  Purpose: Starting values for the page's declared `<state>`.
+
+- Field: `head`
+  Purpose: `lang`, the document's language. Titles and metadata are [head declarations](/routes#the-page-head) bound to props.
+
+- Field: `data`
+  Purpose: Private values passed on to inner loaders as `parent`; never sent to the browser.
+
+:::
 
 Props and state are written into the page's HTML and its navigation data file, so **anything in
 them is public**. Keep secrets in `data` or out of the result entirely.
@@ -286,20 +308,45 @@ layout kept between pages. Passing ordinary fixture values uses the same typed p
 
 ## What `load()` receives
 
-| Field | Value |
-| --- | --- |
-| `params` | URL parameters, such as `{ slug: 'first-post' }` for `blog/[slug].html`, or a list of segments for a [catch-all](/routes#catch-all-pages), such as `{ path: ['guide', 'intro'] }`. |
-| `url` | The page URL, using the configured `origin`. |
-| `base` | The site's base path, for building links. |
-| `parent` | `data` from the layout loaders that ran before this one. |
-| `propNames` | The props this loader's page or layout declares, which are the props `load()` may return. |
-| `navigation(query)` | The site's pages, for [navigation](/navigation). |
-| `navigationTree(query)` | The same pages nested by folder and group, for [`<hk-nav>`](/navigation#a-navigation-tree). |
-| `redirect(location, status)` | Stops loading and sends the reader to `location` instead ([below](#redirecting)). |
-| `notFound()` | Stops loading and answers with the [not-found page](/routes#the-not-found-page) and status 404. |
-| `phase` | `'prerender'` at build time, `'request'` for a page that renders on each request. |
-| `request`, `cookies`, `response` | The request, its cookies, and the response's status and headers, for a page that [renders on each request](#rendering-on-each-request). |
-| `fetch`, `signal` | The standard `fetch`, and an `AbortSignal` for the render. |
+::: table
+
+- Field: `params`
+  Value: URL parameters, such as `{ slug: 'first-post' }` for `blog/[slug].html`, or a list of segments for a [catch-all](/routes#catch-all-pages), such as `{ path: ['guide', 'intro'] }`.
+
+- Field: `url`
+  Value: The page URL, using the configured `origin`.
+
+- Field: `base`
+  Value: The site's base path, for building links.
+
+- Field: `parent`
+  Value: `data` from the layout loaders that ran before this one.
+
+- Field: `propNames`
+  Value: The props this loader's page or layout declares, which are the props `load()` may return.
+
+- Field: `navigation(query)`
+  Value: The site's pages, for [navigation](/navigation).
+
+- Field: `navigationTree(query)`
+  Value: The same pages nested by folder and group, for [`<hk-nav>`](/navigation#a-navigation-tree).
+
+- Field: `redirect(location, status)`
+  Value: Stops loading and sends the reader to `location` instead ([below](#redirecting)).
+
+- Field: `notFound()`
+  Value: Stops loading and answers with the [not-found page](/routes#the-not-found-page) and status 404.
+
+- Field: `phase`
+  Value: `'prerender'` at build time, `'request'` for a page that renders on each request.
+
+- Field: `request`, `cookies`, `response`
+  Value: The request, its cookies, and the response's status and headers, for a page that [renders on each request](#rendering-on-each-request).
+
+- Field: `fetch`, `signal`
+  Value: The standard `fetch`, and an `AbortSignal` for the render.
+
+:::
 
 A prerendered page has no visitor request: its `url` has no query, and reading `request`, `cookies`,
 or `response` is an error that names the loader.
@@ -338,13 +385,24 @@ export async function load({ url, cookies, request, response, redirect, notFound
 }
 ```
 
-| Field | Value |
-| --- | --- |
-| `url` | The request's URL, with its query: `url.searchParams.get('page')`. |
-| `request` | The standard `Request`: `request.headers.get('accept-language')`, `request.method`. |
-| `cookies` | The request's cookies by name, a `Map`: `cookies.get('session')`. |
-| `response.status` | The page's status, 200 unless a loader sets another. |
-| `response.headers` | The response's `Headers`. A cookie is a `Set-Cookie` header: `response.headers.append('set-cookie', …)`. |
+::: table
+
+- Field: `url`
+  Value: The request's URL, with its query: `url.searchParams.get('page')`.
+
+- Field: `request`
+  Value: The standard `Request`: `request.headers.get('accept-language')`, `request.method`.
+
+- Field: `cookies`
+  Value: The request's cookies by name, a `Map`: `cookies.get('session')`.
+
+- Field: `response.status`
+  Value: The page's status, 200 unless a loader sets another.
+
+- Field: `response.headers`
+  Value: The response's `Headers`. A cookie is a `Set-Cookie` header: `response.headers.append('set-cookie', …)`.
+
+:::
 
 Every loader of the page shares `response`, and a redirect or `notFound()` keeps the headers set
 before it, so a loader can set a cookie and then redirect. A dynamic page that renders on each request

@@ -90,14 +90,27 @@ const middleware: Middleware = async (request, next) => {
 export default middleware;
 ```
 
-| To… | Return |
-| --- | --- |
-| Let the request through | `next()` |
-| Redirect | `Response.redirect(new URL('/login/', request.url), 303)` |
-| Answer as another path, a rewrite | `next('/other/')` or `next(new URL(…))` |
-| Pass loaders a changed request, such as an added header | `next(new Request(request, { headers }))` |
-| Answer with your own response | `new Response('Members only', { status: 401 })` |
-| Set headers or cookies | `const response = await next()`, then `response.headers.set(…)` or `.append('set-cookie', …)` |
+::: table
+
+- To…: Let the request through
+  Return: `next()`
+
+- To…: Redirect
+  Return: `Response.redirect(new URL('/login/', request.url), 303)`
+
+- To…: Answer as another path, a rewrite
+  Return: `next('/other/')` or `next(new URL(…))`
+
+- To…: Pass loaders a changed request, such as an added header
+  Return: `next(new Request(request, { headers }))`
+
+- To…: Answer with your own response
+  Return: `new Response('Members only', { status: 401 })`
+
+- To…: Set headers or cookies
+  Return: `const response = await next()`, then `response.headers.set(…)` or `.append('set-cookie', …)`
+
+:::
 
 Middleware runs before every page, prerendered or server-rendered, before every endpoint, and before
 missing paths. Files, such as `public/` assets and MarkupKit's bundles, are served without it. When client
@@ -110,11 +123,21 @@ moving to it in place too. A static host serves files as they are, so middleware
 Loaders, endpoints, and middleware all read the request's headers and cookies and set the
 response's:
 
-| Where | Read | Set |
-| --- | --- | --- |
-| A server-rendered page's loader | `request.headers`, `cookies.get('name')` | `response.status`, `response.headers` ([details](/loaders#rendering-on-each-request)) |
-| An endpoint | `request.headers` | the `Response` it returns |
-| Middleware | `request.headers` | `response.headers` of `next()`'s response, or its own `Response` |
+::: table
+
+- Where: A server-rendered page's loader
+  Read: `request.headers`, `cookies.get('name')`
+  Set: `response.status`, `response.headers` ([details](/loaders#rendering-on-each-request))
+
+- Where: An endpoint
+  Read: `request.headers`
+  Set: the `Response` it returns
+
+- Where: Middleware
+  Read: `request.headers`
+  Set: `response.headers` of `next()`'s response, or its own `Response`
+
+:::
 
 A cookie is a `Set-Cookie` header, so `headers.append('set-cookie', 'theme=dark; Path=/')` sets one,
 and each `append` adds another.

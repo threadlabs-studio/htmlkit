@@ -306,8 +306,8 @@ describe("application platform", () => {
     await rm(join(root, "app/layouts/default.server.ts"));
     await write(root, "app/layouts/default.html", '<template component="default-shell"><main>Default<slot name="page"></slot></main></template>');
     await write(root, "app/layouts/admin.html", '<template component="admin-shell"><main>Admin<slot name="page"></slot></main></template>');
-    await write(root, "extra/products.html", '<meta name="hk:page" content="page-products"><template component="product-label"><defs><meta name="hk:layout" content="absent"></defs><strong>Helper</strong></template><template component="page-products"><defs><meta name="hk:layout" content="admin"><title>Products</title></defs><product-label></product-label></template>');
-    await write(root, "extra/plain.html", '<template component="page-plain"><defs><meta name="hk:layout" content="none"></defs><p>Standalone</p></template>');
+    await write(root, "extra/products.html", '<meta name="mk:page" content="page-products"><template component="product-label"><defs><meta name="mk:layout" content="absent"></defs><strong>Helper</strong></template><template component="page-products"><defs><meta name="mk:layout" content="admin"><title>Products</title></defs><product-label></product-label></template>');
+    await write(root, "extra/plain.html", '<template component="page-plain"><defs><meta name="mk:layout" content="none"></defs><p>Standalone</p></template>');
     await write(root, "extra/default.html", '<template component="page-default"><p>Content</p></template>');
     const options = { root, fileRoutes: false, layoutDefaults: { "/admin/": "admin" }, routes: [
       { pattern: "/products/", component: "extra/products.html" },
@@ -326,8 +326,8 @@ describe("application platform", () => {
       expect((await application.render("/admin/")).body).toContain('data-component="admin-shell"');
     } finally { await application.close(); }
     await write(root, "extra/products.html", '<template component="product-label"><p>Label</p></template><template component="page-products"><p>Page</p></template>');
-    await expect(discoverRoutes(root, options)).rejects.toThrow(/hk:page/);
-    await write(root, "extra/products.html", '<meta name="hk:page" content="absent-page"><template component="page-products"><p>Page</p></template>');
+    await expect(discoverRoutes(root, options)).rejects.toThrow(/mk:page/);
+    await write(root, "extra/products.html", '<meta name="mk:page" content="absent-page"><template component="page-products"><p>Page</p></template>');
     await expect(discoverRoutes(root, options)).rejects.toThrow(/absent-page/);
   }, 60_000);
 
@@ -335,7 +335,7 @@ describe("application platform", () => {
     const root = await app();
     await rm(join(root, "app/layouts/default.server.ts"));
     await write(root, "app/layouts/default.html", '<template component="head-shell"><defs><title>Site title</title><meta name="description" content="Site description"><meta property="og:title" content="Site"><link rel="canonical" href="https://example.test/"><link rel="alternate" hreflang="en" href="https://example.test/en/"><script src="https://js.pay.example/v3/"></script></defs><main><slot name="page"></slot></main></template>');
-    await write(root, "extra/head.html", '<meta name="hk:page" content="page-head"><template component="head-helper"><strong>Helper content</strong></template><template component="page-head"><defs><prop name="title" type="string" required>Title</prop><prop name="description" type="string" required>Description</prop><prop name="canonical" type="string" required>Canonical</prop><title>{$title}</title><meta name="hk:layout" content="default"><meta name="description" from:content="$description"><meta property="og:title" from:content="$title"><meta property="og:image" content="https://example.test/a.png"><meta property="og:image" content="https://example.test/b.png"><link rel="canonical" from:href="$canonical"><link rel="alternate" hreflang="fr" href="https://example.test/fr/"><script type="application/ld+json">{"@type":"WebPage"}</script><script name="maps" src="https://maps.example/sdk.js" loading="lazy"></script></defs><section><p>{$title}</p><head-helper></head-helper></section></template>');
+    await write(root, "extra/head.html", '<meta name="mk:page" content="page-head"><template component="head-helper"><strong>Helper content</strong></template><template component="page-head"><defs><prop name="title" type="string" required>Title</prop><prop name="description" type="string" required>Description</prop><prop name="canonical" type="string" required>Canonical</prop><title>{$title}</title><meta name="mk:layout" content="default"><meta name="description" from:content="$description"><meta property="og:title" from:content="$title"><meta property="og:image" content="https://example.test/a.png"><meta property="og:image" content="https://example.test/b.png"><link rel="canonical" from:href="$canonical"><link rel="alternate" hreflang="fr" href="https://example.test/fr/"><script type="application/ld+json">{"@type":"WebPage"}</script><script name="maps" src="https://maps.example/sdk.js" loading="lazy"></script></defs><section><p>{$title}</p><head-helper></head-helper></section></template>');
     await write(root, "extra/head.server.ts", 'export const load = () => ({ props: { title: "Page & title", description: "a < b", canonical: "https://example.test/page/" } });');
     const application = await createApplication({ root, fileRoutes: false, routes: [{ pattern: "/", component: "extra/head.html", server: "extra/head.server.ts" }] });
     try {
@@ -352,8 +352,8 @@ describe("application platform", () => {
       expect(head).toContain('<link rel="preload" as="script" href="https://js.pay.example/v3/" data-component-head="">');
       expect(head.replace(/<meta http-equiv="Content-Security-Policy"[^>]*>/, "")).not.toMatch(/<script src|maps\.example/);
       expect(head).toContain('<script type="application/ld+json" data-component-head="">{"@type":"WebPage"}</script>');
-      // MarkupKit reads its hk: settings and leaves them out of the head.
-      expect(head).not.toMatch(/hk:|from:|\{\$/);
+      // MarkupKit reads its mk: settings and leaves them out of the head.
+      expect(head).not.toMatch(/mk:|from:|\{\$/);
       expect(html.split("</head>")[1]).toContain("Helper content");
     } finally { await application.close(); }
   });
@@ -452,14 +452,14 @@ describe("application platform", () => {
     await write(root, "controllers/card.ts", "export default function (host) { host.root.dataset.card = 'ready'; }");
     await write(root, "styles/card.css", "p { color: rgb(1, 2, 3); }");
     await write(root, "lib/title.ts", "export const title = 'From @/';");
-    await write(root, "app/pages/index.html", '<link rel="component" href="@/components/card.html"><template component="page-home"><defs><prop name="links" type="list(object({ href: string, label: string, current: string, depth: number, pageName: string }))" required>Links</prop><prop name="title" type="string" required>Title</prop><title>{$title}</title></defs><main><app-card></app-card><hk-nav from:items="$links"></hk-nav></main></template>');
+    await write(root, "app/pages/index.html", '<link rel="component" href="@/components/card.html"><template component="page-home"><defs><prop name="links" type="list(object({ href: string, label: string, current: string, depth: number, pageName: string }))" required>Links</prop><prop name="title" type="string" required>Title</prop><title>{$title}</title></defs><main><app-card></app-card><mk-nav from:items="$links"></mk-nav></main></template>');
     await write(root, "app/pages/index.server.ts", "import { title } from '@/lib/title.ts'; export const load = async ({ navigation }) => ({ props: { links: await navigation(), title } });");
     const application = await createApplication({ root });
     try {
       const { html } = await application.render("/");
       expect(html).toContain(">From @/</title>");
       expect(html).toContain("Card");
-      expect(html).toMatch(/<nav[^>]*data-component="hk-nav"/);
+      expect(html).toMatch(/<nav[^>]*data-component="mk-nav"/);
     } finally { await application.close(); }
     const result = await buildApplication({ root });
     expect(result.browserInputs.some(input => input.endsWith("controllers/card.ts"))).toBe(true);
@@ -478,10 +478,10 @@ describe("application platform", () => {
 
   it("keeps each page's metadata with its component when a file contains multiple candidate pages", async () => {
     const root = await app();
-    const pages = '<template component="page-first"><defs><meta name="hk:layout" content="none"><title>First title</title><meta name="description" content="First description"></defs><p>First page</p></template>' +
-      '<template component="page-second"><defs><meta name="hk:layout" content="default"><title>Second title</title><meta name="description" content="Second description"></defs><p>Second page</p></template>';
+    const pages = '<template component="page-first"><defs><meta name="mk:layout" content="none"><title>First title</title><meta name="description" content="First description"></defs><p>First page</p></template>' +
+      '<template component="page-second"><defs><meta name="mk:layout" content="default"><title>Second title</title><meta name="description" content="Second description"></defs><p>Second page</p></template>';
     for (const selected of ["first", "second"]) {
-      await write(root, "extra/pages.html", `<meta name="hk:page" content="page-${selected}">${pages}`);
+      await write(root, "extra/pages.html", `<meta name="mk:page" content="page-${selected}">${pages}`);
       const application = await createApplication({ root, fileRoutes: false, routes: [{ pattern: "/", component: "extra/pages.html" }] });
       try {
         const page = await application.render("/");
@@ -496,15 +496,15 @@ describe("application platform", () => {
   it("diagnoses file-level page metadata and component-level file selectors", async () => {
     const root = await app();
     const options = { root, fileRoutes: false, routes: [{ pattern: "/", component: "extra/page.html" }] };
-    for (const metadata of ['<title>File title</title>', '<meta name="description" content="File description">', '<meta name="hk:layout" content="none">']) {
+    for (const metadata of ['<title>File title</title>', '<meta name="description" content="File description">', '<meta name="mk:layout" content="none">']) {
       await write(root, "extra/page.html", `${metadata}<template component="page-invalid"><p>Page</p></template>`);
       await expect(discoverRoutes(root, options)).rejects.toThrow(/metadata belongs in its <template component>'s <defs>/);
       // Head content and settings are head declarations, so they belong in the carrier's <defs>.
       await write(root, "extra/page.html", `<template component="page-invalid">${metadata}<p>Page</p></template>`);
       await expect(discoverRoutes(root, options)).rejects.toThrow("belongs in <page-invalid>'s <defs>");
     }
-    await write(root, "extra/page.html", '<template component="page-invalid"><defs><meta name="hk:page" content="page-invalid"></defs><p>Page</p></template>');
-    await expect(discoverRoutes(root, options)).rejects.toThrow(/hk:page belongs outside/);
+    await write(root, "extra/page.html", '<template component="page-invalid"><defs><meta name="mk:page" content="page-invalid"></defs><p>Page</p></template>');
+    await expect(discoverRoutes(root, options)).rejects.toThrow(/mk:page belongs outside/);
   });
 
   it("rejects duplicate page component names across file and registered routes before loading application code", async () => {
@@ -585,7 +585,7 @@ describe("application platform", () => {
     // Every page module shares one client and runtime chunk, so client navigation keeps one registry.
     const chunks = await Promise.all((await readdir(join(result.outDir, "_markupkit"))).filter(file => file.endsWith(".js"))
       .map(file => readFile(join(result.outDir, "_markupkit", file), "utf8")));
-    expect(chunks.filter(source => source.includes("hk-announcer"))).toHaveLength(1);
+    expect(chunks.filter(source => source.includes("mk-announcer"))).toHaveLength(1);
     // Payloads live in the reserved _markupkit tree and name what the page's document links.
     const payload = JSON.parse(await readFile(join(result.outDir, "_markupkit/pages/items/one/payload.json"), "utf8"));
     expect(payload.modules).toEqual([manifest.pages[1].browserModule]);
@@ -622,8 +622,8 @@ describe("application platform", () => {
     await write(root, "app/pages/docs/guide/_layout.server.ts", "export const load = ({ parent }) => ({ props: { trail: parent.owner + '/' + parent.section }, data: { chapter: 'guide' } });");
     await write(root, "app/pages/docs/guide/intro.html", '<template component="intro-page"><defs><prop name="trail" type="string" required>Trail</prop></defs><p>Intro {$trail}</p></template>');
     await write(root, "app/pages/docs/guide/intro.server.ts", "export const load = ({ parent }) => ({ props: { trail: [parent.owner, parent.section, parent.chapter].join('/') } });");
-    await write(root, "app/pages/docs/guide/admin.html", '<template component="admin-page"><defs><meta name="hk:layout" content="admin"></defs><p>Admin</p></template>');
-    await write(root, "app/pages/docs/guide/plain.html", '<template component="plain-page"><defs><meta name="hk:layout" content="none"></defs><p>Plain</p></template>');
+    await write(root, "app/pages/docs/guide/admin.html", '<template component="admin-page"><defs><meta name="mk:layout" content="admin"></defs><p>Admin</p></template>');
+    await write(root, "app/pages/docs/guide/plain.html", '<template component="plain-page"><defs><meta name="mk:layout" content="none"></defs><p>Plain</p></template>');
     const routes = await discoverRoutes(root);
     const chain = (pattern: string) => routes.find(route => route.pattern === pattern)!.layouts.map(layer => [layer.component.slice(root.length), layer.server?.toString().slice(root.length)]);
     expect(routes.some(route => route.pattern.includes("_layout"))).toBe(false);
@@ -631,7 +631,7 @@ describe("application platform", () => {
       ["/app/pages/docs/_layout.html", "/app/pages/docs/_layout.server.ts"], ["/app/pages/docs/guide/_layout.html", "/app/pages/docs/guide/_layout.server.ts"]]);
     expect(chain("/docs/")).toHaveLength(2);
     expect(chain("/")).toHaveLength(1);
-    // hk:layout replaces the outermost layout only; none drops every layout, folder layouts included.
+    // mk:layout replaces the outermost layout only; none drops every layout, folder layouts included.
     expect(chain("/docs/guide/admin/").map(([component]) => component)).toEqual(["/app/layouts/admin.html", "/app/pages/docs/_layout.html", "/app/pages/docs/guide/_layout.html"]);
     expect(chain("/docs/guide/plain/")).toEqual([]);
     const application = await createApplication({ root });

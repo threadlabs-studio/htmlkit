@@ -77,7 +77,7 @@ for (const delivery of ["development", "built"] as const) {
       await write(root, "app/pages/override.ts", 'export * from "./index.ts";');
       await write(root, "app/pages/override.server.ts", 'export * from "./index.server.ts";');
       await write(root, "app/pages/override.client.ts", 'export const props = { label: { load: query => "client:" + query } };');
-      await write(root, "app/pages/typed.html", `<template component="private-typed-page"><defs><meta name="hk:layout" content="none">
+      await write(root, "app/pages/typed.html", `<template component="private-typed-page"><defs><meta name="mk:layout" content="none">
         <state name="mode" type="keyword" values="text, number" value="number"></state><state name="query" type="number" value="1"></state>
         <prop name="label">Result.<type from="mode"><option value="text" type="string"></option><option value="number" type="number"></option></type></prop>
         <handler name="next"><set name="query" value="2"></set></handler></defs><main>

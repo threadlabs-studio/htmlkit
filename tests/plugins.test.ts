@@ -24,7 +24,7 @@ function notes(root: string): MarkupKitPlugin {
       const tag = "page-note-" + createHash("sha256").update(page.file).digest("hex").slice(0, 12);
       const body = source.replace(/@href\(([^)]+)\)/g, (_, target: string) => page.href(resolve(dirname(page.file), target)) ?? "missing")
         .replace(/@asset\(([^)]+)\)/g, (_, file: string) => page.asset(resolve(dirname(page.file), file)));
-      // A note's head content and hk: settings come before its <article>, and go in the page's <defs>.
+      // A note's head content and mk: settings come before its <article>, and go in the page's <defs>.
       const article = body.indexOf("<article");
       return `<template component="${tag}"><defs>${body.slice(0, article)}</defs>${body.slice(article)}</template>`;
     } },
@@ -35,9 +35,9 @@ async function site() {
   const root = await mkdtemp(join(tmpdir(), "markupkit-plugins-")); roots.push(root);
   await write(root, "package.json", '{"type":"module"}');
   await write(root, "plugin/shell.html", '<template component="notes-shell"><defs><prop name="links" type="string" required>Links</prop></defs><main><nav>{$links}</nav><slot name="page"></slot></main></template>');
-  await write(root, "docs/01.index.note", '<title>Home</title><meta name="hk:label" content="Home"><article>Home body</article>');
-  await write(root, "docs/02.install.note", '<title>Install</title><meta name="hk:label" content="Installing"><meta name="hk:alias" content="/start/"><article><a href="@href(01.index.note)">Back</a> <img src="@asset(mark.svg)" alt="Mark"> Install body</article>');
-  await write(root, "docs/03.hidden.note", '<meta name="hk:navigation" content="hidden"><article>Hidden body</article>');
+  await write(root, "docs/01.index.note", '<title>Home</title><meta name="mk:label" content="Home"><article>Home body</article>');
+  await write(root, "docs/02.install.note", '<title>Install</title><meta name="mk:label" content="Installing"><meta name="mk:alias" content="/start/"><article><a href="@href(01.index.note)">Back</a> <img src="@asset(mark.svg)" alt="Mark"> Install body</article>');
+  await write(root, "docs/03.hidden.note", '<meta name="mk:navigation" content="hidden"><article>Hidden body</article>');
   await write(root, "docs/mark.svg", '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"></svg>');
   return root;
 }
@@ -102,7 +102,7 @@ it("serves plugin page files and recompiles edited pages in development", async 
     const html = await (await fetch(server.url + "v/one/install/")).text();
     const image = await fetch(new URL(/src="([^"]+mark\.svg)"/.exec(html)![1]!, server.url));
     expect([image.status, image.headers.get("content-type")]).toEqual([200, "image/svg+xml"]);
-    await write(root, "docs/02.install.note", '<title>Install</title><meta name="hk:label" content="Installing"><article>Edited body</article>');
+    await write(root, "docs/02.install.note", '<title>Install</title><meta name="mk:label" content="Installing"><article>Edited body</article>');
     await expect.poll(async () => (await fetch(server.url + "v/one/install/")).text(), { timeout: 10_000 }).toContain("Edited body");
   } finally { await server.close(); }
 }, 60_000);
@@ -157,10 +157,10 @@ it("adds a plugin's page folders, stylesheets, and folder layout to the site's o
   } finally { await application.close(); }
 }, 60_000);
 
-it("names plugin layouts that hk:layout selects, with their own loaders and declared props", async () => {
+it("names plugin layouts that mk:layout selects, with their own loaders and declared props", async () => {
   const root = await site();
   await write(root, "plugin/home.html", '<template component="home-shell"><defs><prop name="title" type="string" required>Title</prop></defs><main><h1>{$title}</h1><slot name="page"></slot></main></template>');
-  await write(root, "docs/04.landing.note", '<meta name="hk:layout" content="home"><article>Landing body</article>');
+  await write(root, "docs/04.landing.note", '<meta name="mk:layout" content="home"><article>Landing body</article>');
   const seen: (readonly string[])[] = [];
   const data = { title: "Welcome", sidebar: "unused by home" };
   const plugin: MarkupKitPlugin = { name: "home", config: () => ({ layouts: { home: { component: join(root, "plugin/home.html"), server: {
@@ -190,7 +190,7 @@ it("names plugin layouts that hk:layout selects, with their own loaders and decl
 
 it("names the page and the expected file for a missing named layout", async () => {
   const root = await site();
-  await write(root, "docs/04.landing.note", '<meta name="hk:layout" content="missing"><article>Landing body</article>');
+  await write(root, "docs/04.landing.note", '<meta name="mk:layout" content="missing"><article>Landing body</article>');
   await expect(createApplication({ root, plugins: [notes(root)] }))
     .rejects.toThrow(/04\.landing\.note: Layout missing needs .*app\/layouts\/missing\.html or a layouts entry named missing\./);
 });

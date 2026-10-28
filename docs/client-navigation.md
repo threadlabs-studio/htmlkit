@@ -29,7 +29,7 @@ navigation uses the server HTML and its component continuation records.
 | Submit a form as the browser would: its action URL, `formaction`, method, encoding, and constraint validation | The `navigate` event's destination and `formData`, after validation; `sourceElement` is the submitter | Same as Navigation API |
 | Focus after a submission | The intercept's focus reset, which focuses the autofocus delegate, else the body | Same as Navigation API |
 | Pending state for scripts | `navigation.transition`, `navigatesuccess`, `navigateerror` | Same as Navigation API |
-| Pending state for CSS | None: no pseudo-class matches a document or form during a navigation. MarkupKit sets `data-hk-navigating`, and `data-hk-submitting` with `aria-busy` on the form | |
+| Pending state for CSS | None: no pseudo-class matches a document or form during a navigation. MarkupKit sets `data-mk-navigating`, and `data-mk-submitting` with `aria-busy` on the form | |
 | Per-link opt-out | `NavigateEvent.sourceElement` | Chrome 135, Firefox 147, Safari 26.2 |
 | Modified clicks, `target`, middle clicks | They open another browsing context, so this document gets no `navigate` event | All |
 | Cancel a superseded navigation | `event.signal` (an `AbortSignal`), passed to `fetch` | Same as Navigation API |
@@ -75,7 +75,7 @@ Not used:
 
 The browser does not announce a same-document navigation. As Nuxt (`<NuxtRouteAnnouncer>`) and
 Next.js (`next-route-announcer`) do, MarkupKit adds a visually hidden `aria-live="polite"` region,
-`#hk-announcer`, and puts the new title in it.
+`#mk-announcer`, and puts the new title in it.
 
 ### The remaining gap
 
@@ -87,12 +87,12 @@ Next.js (`next-route-announcer`) do, MarkupKit adds a visually hidden `aria-live
    that definition, so the page loads as one directly, without the HTML fallback, and logs nothing.
    A versioned documentation site whose archived pages define their own `<demo-counter>` takes this
    path between versions and stays in place within each.
-2. **Which layers persist, and their new props.** Layers carry `data-hk-layer="N"`; older output's
-   `hk-layer-N` IDs also remain readable. An authored `id` does not identify the layer. From the
+2. **Which layers persist, and their new props.** Layers carry `data-mk-layer="N"`; older output's
+   `mk-layer-N` IDs also remain readable. An authored `id` does not identify the layer. From the
    outermost, a layer whose root renders the same component (`data-component`) as the next page's
    layer at that depth persists. The page layer is always replaced, and so is everything below the
    first layer that differs. A persisted layer keeps its DOM, state, and module instance, but its loader
-   may compute new props, such as `<hk-nav>`'s `current` item. `adoptRenderedProps(element, rendered)`
+   may compute new props, such as `<mk-nav>`'s `current` item. `adoptRenderedProps(element, rendered)`
    reads the props of the layer's new rendering (a root its factory made, or a server root's
    continuation record) and applies them through the compiled prop channel, as the live runtime's
    function of that name does.
@@ -223,7 +223,7 @@ where comparing layer tags is enough.
 
 Prefetching never runs anything: payloads are data, and modules and stylesheets are only hinted with
 `modulepreload` and `prefetch`. The policy is the site's `prefetch` option, overridden by
-`data-hk-prefetch` on a link or an ancestor:
+`data-mk-prefetch` on a link or an ancestor:
 
 | Policy | Link on screen, at idle | Hover or focus for 80 ms, or touch |
 | --- | --- | --- |
@@ -249,7 +249,7 @@ request would run that page's loaders.
 | Prefetch | Shared code for links on screen; page data and module on interaction | Visible links (default) or interaction | Visible links |
 | Announcement | `aria-live="polite"` title | `aria-live="polite"` title | `aria-live="assertive"` title, `h1`, or path |
 | Scroll and focus | Navigation API, with recorded back and forward positions | Router `scrollBehavior` | Router |
-| Opt-out | `data-hk-reload` (on the link or an ancestor) | `external` | Plain `<a>` |
+| Opt-out | `data-mk-reload` (on the link or an ancestor) | `external` | Plain `<a>` |
 | Failure | The HTML, then a document load | Error page; a document load for a missing chunk | Document load |
 
 ## Measurements

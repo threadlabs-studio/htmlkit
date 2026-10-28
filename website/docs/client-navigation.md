@@ -24,7 +24,7 @@ pages share, and swaps in the new page. There's nothing to set up.
   When you move to another page: Stays, with its state and module instance. An open menu stays open.
 
 - Part of the page: That layout's props
-  When you move to another page: Update from its loader. `<hk-nav>` marks the new page current.
+  When you move to another page: Update from its loader. `<mk-nav>` marks the new page current.
 
 - Part of the page: That layout's providers
   When you move to another page: A changed selected input adopts compatible prepared data without repeating the read. An existing read for the same input stays current.
@@ -75,18 +75,18 @@ These links load normally, as they would without MarkupKit:
 - Link: A `#fragment` on the same page
   Example: `<a href="#install">`
 
-- Link: Marked with `data-hk-reload`
-  Example: `<a href="/print/" data-hk-reload>`
+- Link: Marked with `data-mk-reload`
+  Example: `<a href="/print/" data-mk-reload>`
 
 :::
 
 Forms submit in place as well: a `GET` form loads its page with the form's query, and a
 [form that posts](/forms#submitting-in-place) runs its page's action.
 
-Put `data-hk-reload` on a link, or on an element around several links, to load those pages in full:
+Put `data-mk-reload` on a link, or on an element around several links, to load those pages in full:
 
 ```html
-<nav data-hk-reload>
+<nav data-mk-reload>
   <a href="/legacy/">Legacy reports</a>
   <a href="/admin/">Admin</a>
 </nav>
@@ -115,13 +115,13 @@ export default defineConfig({ prefetch: 'visible' });
 Or for one link, or every link inside an element:
 
 ```html
-<a href="/big-report/" data-hk-prefetch="none">Big report</a>
-<nav data-hk-prefetch="visible">…</nav>
+<a href="/big-report/" data-mk-prefetch="none">Big report</a>
+<nav data-mk-prefetch="visible">…</nav>
 ```
 
 ::: table {header}
 
-- - `prefetch` / `data-hk-prefetch`
+- - `prefetch` / `data-mk-prefetch`
   - Link on screen
   - Hover, focus, or touch
 
@@ -142,7 +142,7 @@ Or for one link, or every link inside an element:
 `visible` suits small sites. Prefetching never runs a page's code in the browser; it only downloads
 it. For a page that [renders on each request](/loaders#rendering-on-each-request), loading its
 data runs its loaders on the server, with the link's query and the reader's cookies, as loading the
-page does. Give links to such pages `data-hk-prefetch="none"` when their loaders are costly.
+page does. Give links to such pages `data-mk-prefetch="none"` when their loaders are costly.
 
 ## Animating the change
 
@@ -160,16 +160,16 @@ to change it. Firefox loads pages without the animation.
 
 ## Showing that a page is loading
 
-While a page loads in place, `<html>` has `data-hk-navigating`. While a
+While a page loads in place, `<html>` has `data-mk-navigating`. While a
 [form submits in place](/forms#submitting-in-place), the form also has
-`data-hk-submitting` and `aria-busy="true"`. Both go when the next page has rendered, or when the
+`data-mk-submitting` and `aria-busy="true"`. Both go when the next page has rendered, or when the
 navigation fails or another replaces it. Show a pending indicator with CSS:
 
 ```css
 .progress { opacity: 0; }
 /* Shown after 150 ms, so a quick navigation shows nothing. */
-:root[data-hk-navigating] .progress { opacity: 1; transition: opacity 200ms 150ms; }
-form[data-hk-submitting] button { cursor: progress; opacity: 0.6; }
+:root[data-mk-navigating] .progress { opacity: 1; transition: opacity 200ms 150ms; }
+form[data-mk-submitting] button { cursor: progress; opacity: 0.6; }
 ```
 
 `aria-busy` tells screen readers the form is changing, and they hear the next page's title once it
@@ -188,7 +188,7 @@ navigation.addEventListener('navigatesuccess', () => {
 });
 ```
 
-`hk:ready` fires once, when the first page has loaded.
+`mk:ready` fires once, when the first page has loaded.
 
 ## Browser support
 

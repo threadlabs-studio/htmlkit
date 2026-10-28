@@ -5,14 +5,14 @@ import { MarkupKitError } from "./config.js";
 interface ComponentMetadata {
   readonly layout?: string;
   readonly label?: string;
-  /** hk:order, the page's place among its neighbours, as a number-and-dot prefix gives it. */
+  /** mk:order, the page's place among its neighbours, as a number-and-dot prefix gives it. */
   readonly order?: string;
   readonly hidden?: boolean;
-  /** hk:render: "server" renders the page on each request; "prerender", the default, at build time. */
+  /** mk:render: "server" renders the page on each request; "prerender", the default, at build time. */
   readonly render?: "prerender" | "server";
   /** Extra route patterns for a page, relative to its page directory's prefix. */
   readonly aliases: readonly string[];
-  /** hk:redirect-from: old route paths, relative to its page directory's prefix, that redirect to the page. */
+  /** mk:redirect-from: old route paths, relative to its page directory's prefix, that redirect to the page. */
   readonly redirectsFrom: readonly string[];
   /** The text of a <title> without expressions. */
   readonly title?: string;
@@ -20,7 +20,7 @@ interface ComponentMetadata {
 
 // MarkupKit metadata was spelled htmlkit:*; name the new spelling rather than ignore it.
 function renamed(name: string | undefined, file: string): void {
-  if (name?.startsWith("htmlkit:")) throw new MarkupKitError(`MarkupKit metadata uses the hk: prefix; write ${"hk:" + name.slice(name.indexOf(":") + 1)} instead of ${name}.`, file);
+  if (name?.startsWith("htmlkit:") || name?.startsWith("hk:")) throw new MarkupKitError(`MarkupKit metadata uses the mk: prefix; write ${"mk:" + name.slice(name.indexOf(":") + 1)} instead of ${name}.`, file);
 }
 
 /** Native HTML parsing determines resource nodes; HTML Next owns component syntax. */
@@ -32,12 +32,12 @@ export function applicationResource(source: string, file: string) {
     if (!("tagName" in node) || !["meta", "title", "link"].includes(node.tagName)) continue;
     const name = node.attrs.find(attribute => attribute.name === "name")?.value;
     renamed(name, file);
-    if (node.tagName === "meta" && name === "hk:page") {
+    if (node.tagName === "meta" && name === "mk:page") {
       const content = node.attrs.find(attribute => attribute.name === "content")?.value;
       if (!content || configuration.has(name)) throw new MarkupKitError(`Declare ${name} once with nonempty content.`, file);
       configuration.set(name, content);
     } else if (node.tagName !== "link" || !node.attrs.find(attribute => attribute.name === "rel")?.value.toLowerCase().split(/\s+/).includes("component")) {
-      throw new MarkupKitError("Page and layout metadata belongs in its <template component>'s <defs>; only hk:page, which selects the file's page, is outside it.", file);
+      throw new MarkupKitError("Page and layout metadata belongs in its <template component>'s <defs>; only mk:page, which selects the file's page, is outside it.", file);
     }
   }
   for (const node of fragment.childNodes) {
@@ -49,13 +49,13 @@ export function applicationResource(source: string, file: string) {
     const aliases: string[] = [], redirectsFrom: string[] = [];
     for (const child of children) {
       if ("tagName" in child && ["meta", "title", "link"].includes(child.tagName)) {
-        throw new MarkupKitError(`<${child.tagName}> belongs in <${tag}>'s <defs>, where head content and hk: settings are declared.`, file);
+        throw new MarkupKitError(`<${child.tagName}> belongs in <${tag}>'s <defs>, where head content and mk: settings are declared.`, file);
       }
     }
     const defs = children.find(child => "tagName" in child && child.tagName === "defs");
     for (const child of defs !== undefined && "childNodes" in defs ? defs.childNodes : []) {
       if (!("tagName" in child)) continue;
-      // A static <title> labels the page's folder in navigation trees when hk:label doesn't.
+      // A static <title> labels the page's folder in navigation trees when mk:label doesn't.
       if (child.tagName === "title") {
         const text = child.childNodes.map(text => "value" in text ? text.value : "").join("").trim();
         if (text !== "" && !text.includes("{")) configuration.title = text;
@@ -64,17 +64,17 @@ export function applicationResource(source: string, file: string) {
       if (child.tagName !== "meta") continue;
       const name = child.attrs.find(attribute => attribute.name === "name")?.value;
       renamed(name, file);
-      if (!name?.startsWith("hk:")) continue;
+      if (!name?.startsWith("mk:")) continue;
       const content = child.attrs.find(attribute => attribute.name === "content")?.value;
       if (!content) throw new MarkupKitError(`Declare ${name} with nonempty content.`, file);
-      if (name === "hk:alias") { aliases.push(content); continue; }
-      if (name === "hk:redirect-from") { redirectsFrom.push(content); continue; }
-      const key = ({ "hk:layout": "layout", "hk:label": "label", "hk:order": "order", "hk:navigation": "hidden", "hk:render": "render" } as const)[name];
-      if (key === undefined) throw new MarkupKitError(`Component configuration is hk:layout, hk:label, hk:order, hk:navigation, hk:render, hk:alias, or hk:redirect-from; hk:page belongs outside the carrier (${name}).`, file);
+      if (name === "mk:alias") { aliases.push(content); continue; }
+      if (name === "mk:redirect-from") { redirectsFrom.push(content); continue; }
+      const key = ({ "mk:layout": "layout", "mk:label": "label", "mk:order": "order", "mk:navigation": "hidden", "mk:render": "render" } as const)[name];
+      if (key === undefined) throw new MarkupKitError(`Component configuration is mk:layout, mk:label, mk:order, mk:navigation, mk:render, mk:alias, or mk:redirect-from; mk:page belongs outside the carrier (${name}).`, file);
       if (configuration[key] !== undefined) throw new MarkupKitError(`Declare ${name} once per component.`, file);
-      if (key === "hidden" && content !== "hidden") throw new MarkupKitError('hk:navigation accepts only content="hidden".', file);
-      if (key === "order" && !/^\d+$/.test(content)) throw new MarkupKitError("hk:order needs a whole number, such as content=\"3\".", file);
-      if (key === "render" && content !== "prerender" && content !== "server") throw new MarkupKitError('hk:render accepts content="prerender" or content="server".', file);
+      if (key === "hidden" && content !== "hidden") throw new MarkupKitError('mk:navigation accepts only content="hidden".', file);
+      if (key === "order" && !/^\d+$/.test(content)) throw new MarkupKitError("mk:order needs a whole number, such as content=\"3\".", file);
+      if (key === "render" && content !== "prerender" && content !== "server") throw new MarkupKitError('mk:render accepts content="prerender" or content="server".', file);
       if (key === "hidden") configuration.hidden = true;
       else if (key === "render") configuration.render = content as "prerender" | "server";
       else configuration[key] = content;
@@ -87,9 +87,9 @@ export function applicationResource(source: string, file: string) {
 }
 
 export function pageDefinition(resource: ReturnType<typeof applicationResource>, file: string): ComponentDefinition {
-  const selected = resource.configuration.get("hk:page");
+  const selected = resource.configuration.get("mk:page");
   if (selected === undefined && resource.definitions.length !== 1) {
-    throw new MarkupKitError("Multiple components require <meta name=\"hk:page\" content=\"page-name\">.", file);
+    throw new MarkupKitError("Multiple components require <meta name=\"mk:page\" content=\"page-name\">.", file);
   }
   const definition = selected === undefined ? resource.definitions[0] : resource.definitions.find(value => value.contract.tag === selected);
   if (definition === undefined) throw new MarkupKitError(`Unknown page component ${selected}.`, file);
@@ -97,12 +97,12 @@ export function pageDefinition(resource: ReturnType<typeof applicationResource>,
 }
 
 /**
- * A definition without its hk: settings, which MarkupKit reads as configuration, so the runtime never
+ * A definition without its mk: settings, which MarkupKit reads as configuration, so the runtime never
  * adds them to the document head.
  */
 export function withoutSettings(definition: ComponentDefinition): ComponentDefinition {
   const head = definition.head?.filter(declaration => declaration.kind !== "meta" ||
-    !declaration.attributes.some(attribute => attribute.kind === "literal" && attribute.name === "name" && attribute.value.startsWith("hk:")));
+    !declaration.attributes.some(attribute => attribute.kind === "literal" && attribute.name === "name" && attribute.value.startsWith("mk:")));
   if (head === undefined || head.length === definition.head!.length) return definition;
   const { head: _head, ...rest } = definition;
   return Object.freeze(head.length === 0 ? rest : { ...rest, head: Object.freeze(head) });

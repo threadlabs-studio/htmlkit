@@ -1,4 +1,4 @@
-<template component="hk-nav-items">
+<template component="mk-nav-items">
   <defs>
     <prop name="items" type="list(object({ label: string, current: string, depth: number, href?: string, group?: string, open?: boolean, children?: list(object({ label: string, ... })), ... }))" required>Navigation items, each with its nested items.</prop>
   </defs>
@@ -7,15 +7,15 @@
     <li from:data-depth="$item.depth">
       <template $match><details $when="$item.children" from:open="$item.open">
         <summary><template $match><a $when="$item.href" from:href="$item.href" from:aria-current="$item.current">{$item.label}</a><span $else>{$item.label}</span></template></summary>
-        <hk-nav-items from:items="$item.children"></hk-nav-items>
+        <mk-nav-items from:items="$item.children"></mk-nav-items>
       </details>
       <a $else from:href="$item.href" from:aria-current="$item.current">{$item.label}</a></template>
     </li>
   </template></ul>
 </template>
-<!-- The first three levels of items render inline, each as <hk-nav-items> renders a level, so a tree up to
-  three levels deep is one instance and the page carries its items once. Each deeper level is an <hk-nav-items>. -->
-<template component="hk-nav">
+<!-- The first three levels of items render inline, each as <mk-nav-items> renders a level, so a tree up to
+  three levels deep is one instance and the page carries its items once. Each deeper level is an <mk-nav-items>. -->
+<template component="mk-nav">
   <defs>
     <prop name="items" type="list(object({ label: string, current: string, depth: number, href?: string, group?: string, open?: boolean, children?: list(object({ label: string, ... })), ... }))" required>Ordered page links: navigation() items, or navigationTree() nodes.</prop>
     <prop name="label" type="string" default="Navigation">Accessible navigation name.</prop>
@@ -35,7 +35,7 @@
                 <li from:data-depth="$c.depth">
                   <template $match><details $when="$c.children" from:open="$c.open">
                     <summary><template $match><a $when="$c.href" from:href="$c.href" from:aria-current="$c.current">{$c.label}</a><span $else>{$c.label}</span></template></summary>
-                    <hk-nav-items from:items="$c.children"></hk-nav-items>
+                    <mk-nav-items from:items="$c.children"></mk-nav-items>
                   </details>
                   <a $else from:href="$c.href" from:aria-current="$c.current">{$c.label}</a></template>
                 </li>

@@ -23,7 +23,7 @@ async function app(): Promise<string> {
   await write(root, "app/pages/checkout.html", `<template component="checkout-page"><defs><title>Checkout</title>
     <link rel="preconnect" href="https://js.pay.example"><script name="pay" src="https://js.pay.example/v3/" loading="lazy"></script></defs>
     <form><p $if="$pay.pending">Loading the payment form</p><button>Pay</button></form></template>`);
-  await write(root, "app/pages/account.html", '<template component="account-page"><defs><meta name="hk:render" content="server"><title>Account</title>' +
+  await write(root, "app/pages/account.html", '<template component="account-page"><defs><meta name="mk:render" content="server"><title>Account</title>' +
     '<script src="https://maps.example/sdk.js"></script></defs><p>Account</p></template>');
   return root;
 }

@@ -19,7 +19,7 @@ async function fixture() {
 describe("application descriptions for independent build targets", () => {
   it("describes explicit page/layout modules and server capabilities without executing either", async () => {
     const root = await fixture();
-    await writeFile(join(root, "app/pages/index.html"), '<template component="home-page" controller="./home.ts"><defs><meta name="hk:alias" content="/start/"></defs><main>Home</main></template>');
+    await writeFile(join(root, "app/pages/index.html"), '<template component="home-page" controller="./home.ts"><defs><meta name="mk:alias" content="/start/"></defs><main>Home</main></template>');
     await writeFile(join(root, "app/layouts/default.html"), '<template component="app-shell" controller="./shell.ts"><main><slot name="page"></slot></main></template>');
     for (const file of ["app/pages/index.server.ts", "app/layouts/default.server.ts"]) await writeFile(join(root, file), 'throw new Error("Module executed during description"); export const load = () => ({}); export const connect = () => {}; export const other = 1;');
     const app = await describeApplication({ root, base: "/app/", redirects: { "/old/": "/start/" } });

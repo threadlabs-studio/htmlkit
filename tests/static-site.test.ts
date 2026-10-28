@@ -118,10 +118,10 @@ describe("the error page", () => {
 describe("sitemap.xml and robots.txt", () => {
   async function pages(): Promise<string> {
     const root = await site();
-    await write(root, "app/pages/about.html", '<template component="about-page"><defs><title>About</title><meta name="hk:alias" content="/old-about/"></defs><h1>About</h1></template>');
-    await write(root, "app/pages/hidden.html", '<template component="hidden-page"><defs><title>Hidden</title><meta name="hk:navigation" content="hidden"></defs><h1>Hidden</h1></template>');
+    await write(root, "app/pages/about.html", '<template component="about-page"><defs><title>About</title><meta name="mk:alias" content="/old-about/"></defs><h1>About</h1></template>');
+    await write(root, "app/pages/hidden.html", '<template component="hidden-page"><defs><title>Hidden</title><meta name="mk:navigation" content="hidden"></defs><h1>Hidden</h1></template>');
     await write(root, "app/pages/private.html", '<template component="private-page"><defs><title>Private</title><meta name="robots" content="noindex, follow"></defs><h1>Private</h1></template>');
-    await write(root, "app/pages/posts/[slug].html", '<template component="post-page"><defs><title>Post</title><meta name="hk:alias" content="/articles/[slug]/"></defs><h1>Post</h1></template>');
+    await write(root, "app/pages/posts/[slug].html", '<template component="post-page"><defs><title>Post</title><meta name="mk:alias" content="/articles/[slug]/"></defs><h1>Post</h1></template>');
     await write(root, "app/pages/posts/[slug].server.ts", "export const entries = () => [{ slug: 'a&b' }];");
     await write(root, "app/pages/404.html", '<template component="missing-page"><defs><title>Lost</title></defs><h1>Lost</h1></template>');
     return root;
@@ -148,7 +148,7 @@ describe("sitemap.xml and robots.txt", () => {
   it("serves an alias page directory with canonical links to its own prefix, and lists only that one", async () => {
     const root = await site();
     await write(root, "docs/index.html", '<template component="docs-home"><defs><title>Docs</title></defs><h1>Docs</h1></template>');
-    await write(root, "docs/guide.html", '<template component="docs-guide"><defs><title>Guide</title><meta name="hk:alias" content="/start/"></defs><h1>Guide</h1></template>');
+    await write(root, "docs/guide.html", '<template component="docs-guide"><defs><title>Guide</title><meta name="mk:alias" content="/start/"></defs><h1>Guide</h1></template>');
     await write(root, "docs/posts/[slug].html", '<template component="docs-post"><defs><title>Post</title></defs><h1>Post</h1></template>');
     await write(root, "docs/posts/[slug].server.ts", "export const entries = () => [{ slug: 'a&b' }];");
     const pages = [{ dir: "docs", prefix: "/v/current/", alias: true }, { dir: "docs", prefix: "/docs/" }];
@@ -179,9 +179,9 @@ describe("sitemap.xml and robots.txt", () => {
 
   it("keeps a public sitemap, writes robots.txt from its text, and gives aliases a path canonical without origin", async () => {
     const root = await site();
-    await write(root, "app/pages/about.html", '<template component="about-page"><defs><title>About</title><meta name="hk:alias" content="/old-about/"></defs><h1>About</h1></template>');
+    await write(root, "app/pages/about.html", '<template component="about-page"><defs><title>About</title><meta name="mk:alias" content="/old-about/"></defs><h1>About</h1></template>');
     // An alias's own canonical link stays.
-    await write(root, "app/pages/hidden.html", '<template component="hidden-page"><defs><title>Hidden</title><link rel="canonical" href="https://elsewhere.example/"><meta name="hk:alias" content="/also-hidden/"></defs><h1>Hidden</h1></template>');
+    await write(root, "app/pages/hidden.html", '<template component="hidden-page"><defs><title>Hidden</title><link rel="canonical" href="https://elsewhere.example/"><meta name="mk:alias" content="/also-hidden/"></defs><h1>Hidden</h1></template>');
     const application = await createApplication({ root });
     try {
       const canonical = async (path: string) => [...(await application.render(path)).head.html.matchAll(/<link rel="canonical" href="([^"]*)"/g)].map(match => match[1]);

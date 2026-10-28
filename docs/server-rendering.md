@@ -2,8 +2,8 @@
 
 MarkupKit renders a page at build time or on each request through one render kernel, so a page's
 authored files don't change when it moves between the two. Route matching, layout selection,
-`hk:page` selection, the loader result contract, head merging, and the HTML Next rendering and
-adoption path are the same in both. A page's `hk:render` metadata chooses: `prerender`, the default,
+`mk:page` selection, the loader result contract, head merging, and the HTML Next rendering and
+adoption path are the same in both. A page's `mk:render` metadata chooses: `prerender`, the default,
 or `server`. This is a tooling implementation design, not a component-language specification; the
 [deployment guide](./guide/deployment.md) describes the behavior for authors.
 
@@ -105,7 +105,7 @@ the next render starts a new worker. An idle worker doesn't keep the process ali
 Each page is one render of the layers' invocations, with the application document's own head
 (`renderComponents`' `head` option: the viewport meta, and an alias page's canonical link). HTML
 Next reconciles every rendered component's head declarations into it, deepest first, and returns the
-head HTML that the document assembler writes after the charset and head scripts. MarkupKit's `hk:`
+head HTML that the document assembler writes after the charset and head scripts. MarkupKit's `mk:`
 settings are left out of the definitions before they render or compile.
 
 Loaders, endpoints, and middleware are trusted application code that runs in the server's process,

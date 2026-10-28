@@ -1,12 +1,12 @@
 ---
 title: Navigation
 order: 5
-description: hk-nav · page order · labels
+description: mk-nav · page order · labels
 ---
 
 # Navigation
 
-`<hk-nav>` renders a list of links to your pages. It's built in, so you don't need to link it.
+`<mk-nav>` renders a list of links to your pages. It's built in, so you don't need to link it.
 A layout loader asks for the pages, and the layout passes them in:
 
 ```ts
@@ -22,7 +22,7 @@ export async function load({ navigation }) {
   <defs>
     <prop name="pages" type="list(object({ href: string, label: string, current: string, depth: number, pageName: string, group?: string, ... }))" required>Site pages</prop>
   </defs>
-  <aside><hk-nav from:items="$pages" label="Site"></hk-nav></aside>
+  <aside><mk-nav from:items="$pages" label="Site"></mk-nav></aside>
   <main><slot name="page"></slot></main>
 </template>
 ```
@@ -50,21 +50,21 @@ Numbers compare as numbers, so `10.` comes after `02.`. Zero-padded names (`01.`
 correctly in your editor. A folder's own page comes before the pages inside it. A dash is part of a
 name, not an order: `2024-recap.html` is `/2024-recap/`.
 
-A page can also set its number with `hk:order`, which is how a page format such as Markdown passes
+A page can also set its number with `mk:order`, which is how a page format such as Markdown passes
 on an order from its front matter. The number takes the place of the file name's own prefix, and
 compares with its neighbours' prefixes as one, so this page sorts as `03.about.html` would:
 
 ```html
 <template component="page-about">
-  <defs><meta name="hk:order" content="3"></defs>
+  <defs><meta name="mk:order" content="3"></defs>
   …
 </template>
 ```
 
-`hk:order` orders a page among the pages in its folder. A folder's `index.html` comes first in its
-folder, so on an index page, `hk:order` orders the whole folder among its neighbours, in place of
-the folder's own prefix: `hk:order` 5 on `guide/index.html` sorts `guide/` as `05.guide/` would.
-The site's home page has no folder to order, so `hk:order` there is an error.
+`mk:order` orders a page among the pages in its folder. A folder's `index.html` comes first in its
+folder, so on an index page, `mk:order` orders the whole folder among its neighbours, in place of
+the folder's own prefix: `mk:order` 5 on `guide/index.html` sorts `guide/` as `05.guide/` would.
+The site's home page has no folder to order, so `mk:order` there is an error.
 
 ## Groups
 
@@ -86,7 +86,7 @@ app/pages/docs/
   faq.html                    /docs/faq/       last
 ```
 
-Each navigation item in a group has a `group` field with the group's label. `<hk-nav>` shows the
+Each navigation item in a group has a `group` field with the group's label. `<mk-nav>` shows the
 label as a list item, with a `data-group` attribute, before the group's first link, so a sidebar can
 style it as a heading:
 
@@ -108,7 +108,7 @@ including `group` and fields a later release adds:
 object({ href: string, label: string, current: string, depth: number, pageName: string, group?: string, ... })
 ```
 
-`<hk-nav>`, `<hk-breadcrumbs>`, and `<hk-pager>` declare their items this way.
+`<mk-nav>`, `<mk-breadcrumbs>`, and `<mk-pager>` declare their items this way.
 
 ## Labels and hidden pages
 
@@ -117,23 +117,23 @@ out of navigation while remaining a page:
 
 ```html
 <template component="page-install">
-  <defs><meta name="hk:label" content="Installation"></defs>
+  <defs><meta name="mk:label" content="Installation"></defs>
   …
 </template>
 
 <template component="page-thanks">
-  <defs><meta name="hk:navigation" content="hidden"></defs>
+  <defs><meta name="mk:navigation" content="hidden"></defs>
   …
 </template>
 ```
 
-An `hk:alias` URL, such as `<meta name="hk:alias" content="/start/">`, opens the same page but never
+An `mk:alias` URL, such as `<meta name="mk:alias" content="/start/">`, opens the same page but never
 gets its own link. Visiting it marks the page's own link as current.
 
 ## A navigation tree
 
 `navigationTree()` returns the same pages as `navigation()`, in the same order, nested by folder and
-[group](#groups). `<hk-nav>` renders it as nested lists, with each folder and group in a native
+[group](#groups). `<mk-nav>` renders it as nested lists, with each folder and group in a native
 `<details>` element that is open when it holds the current page:
 
 ```ts
@@ -149,7 +149,7 @@ export async function load({ navigationTree }) {
   <defs>
     <prop name="pages" type="list(object({ label: string, current: string, depth: number, ... }))" required>Site pages</prop>
   </defs>
-  <aside><hk-nav from:items="$pages" label="Site"></hk-nav></aside>
+  <aside><mk-nav from:items="$pages" label="Site"></mk-nav></aside>
   <main><slot name="page"></slot></main>
 </template>
 ```
@@ -176,7 +176,7 @@ For `01.guide/index.html` (titled "The guide"), `01.guide/01.install.html`, and 
 ::: table
 
 - Field: `label`
-  Value: A page's label. A folder's is its index page's `hk:label`, then its static `<title>`, then the folder name; a group's is the text in its parentheses.
+  Value: A page's label. A folder's is its index page's `mk:label`, then its static `<title>`, then the folder name; a group's is the text in its parentheses.
 
 - Field: `href`, `pageName`
   Value: The page's URL and component name, on a page or a folder with an index page.
@@ -191,7 +191,7 @@ For `01.guide/index.html` (titled "The guide"), `01.guide/01.install.html`, and 
   Value: The nesting level, `0` at the top.
 
 - Field: `order`
-  Value: The node's number-and-dot prefix or `hk:order`, or `null`.
+  Value: The node's number-and-dot prefix or `mk:order`, or `null`.
 
 - Field: `children`
   Value: The pages, folders, and groups inside it, in navigation order.
@@ -199,13 +199,13 @@ For `01.guide/index.html` (titled "The guide"), `01.guide/01.install.html`, and 
 :::
 
 A folder with an index page is that page's node, and its summary links to the page. `from` gives the
-tree under a folder, with the folder's own index page first. `<hk-nav>` also takes `navigation()`'s
+tree under a folder, with the folder's own index page first. `<mk-nav>` also takes `navigation()`'s
 flat list, which it renders as one list. `pager()` follows the same order, so the
 previous and next links walk the tree from top to bottom.
 
 ## Breadcrumbs and previous/next links
 
-`<hk-breadcrumbs>` shows the trail from the home page to the current page, and `<hk-pager>` links
+`<mk-breadcrumbs>` shows the trail from the home page to the current page, and `<mk-pager>` links
 the pages before and after it in navigation order. Both are built in, and their loader helpers sit
 next to `navigation()`:
 
@@ -225,19 +225,19 @@ export async function load({ breadcrumbs, pager }) {
     <prop name="next" type="object({ href: string, label: string, current: string, depth: number, pageName: string, group?: string, ... })">Next page</prop>
   </defs>
   <main>
-    <hk-breadcrumbs from:items="$crumbs"></hk-breadcrumbs>
+    <mk-breadcrumbs from:items="$crumbs"></mk-breadcrumbs>
     <slot name="page"></slot>
-    <hk-pager from:previous="$previous" from:next="$next"></hk-pager>
+    <mk-pager from:previous="$previous" from:next="$next"></mk-pager>
   </main>
 </template>
 ```
 
 ::: table
 
-- Component: `<hk-breadcrumbs>`
+- Component: `<mk-breadcrumbs>`
   Renders: `<nav aria-label="Breadcrumb">` with an ordered list of links. The last is the current page, with `aria-current="page"`. Only pages that exist appear, so a folder without an `index` page is skipped.
 
-- Component: `<hk-pager>`
+- Component: `<mk-pager>`
   Renders: `<nav aria-label="Pages">` with `rel="prev"` and `rel="next"` links. Each starts with "Previous" or "Next", which `previous-text` and `next-text` change. A link is left out at either end.
 
 :::

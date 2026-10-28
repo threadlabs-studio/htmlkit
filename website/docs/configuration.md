@@ -87,7 +87,7 @@ export default defineConfig({
 
 :::
 
-A page's own `hk:layout` wins over `layoutDefaults`, which win over `layout`. Each selects the outermost
+A page's own `mk:layout` wins over `layoutDefaults`, which win over `layout`. Each selects the outermost
 layout; a folder's `_layout.html` nests inside it ([nested layouts](/routes#nested-layouts)).
 
 ## `@/` and built-in components
@@ -103,7 +103,7 @@ import { site } from '@/lib/site.ts';
 ```
 
 It works in component links, component modules, stylesheet `@import`s, and loader imports. The built-in
-components `<hk-nav>`, `<hk-breadcrumbs>`, and `<hk-pager>` need no link at all; the `hk-` prefix is
+components `<mk-nav>`, `<mk-breadcrumbs>`, and `<mk-pager>` need no link at all; the `mk-` prefix is
 reserved for them.
 
 ## Routes in code
@@ -137,7 +137,7 @@ export default defineConfig({
 });
 ```
 
-A page's own `hk:layout` wins over its folder's layout, which wins over `layoutDefaults` and `layout`.
+A page's own `mk:layout` wins over its folder's layout, which wins over `layoutDefaults` and `layout`.
 
 A folder served at a second prefix, such as the current version of the docs at both `/` and
 `/v/current/`, marks that entry `alias: true`. Its pages are served and navigable there, are left
@@ -180,7 +180,7 @@ export default defineConfig({ plugins: [notes] });
 ```
 
 MarkupKit routes, orders, watches, renders, and builds `.note` files like `.html` pages, and errors
-name the `.note` file. A compiled page is an HTML Next component, so its head content and `hk:`
+name the `.note` file. A compiled page is an HTML Next component, so its head content and `mk:`
 settings go in its `<defs>`. While compiling, a plugin can call:
 
 - `page.href(file)` for another page's URL;
@@ -207,7 +207,7 @@ so it doesn't wrap the site's other pages. A plugin can also set a `headScript` 
 
 ### Named layouts
 
-`layouts` gives layouts names that `hk:layout`, `layout`, `layoutDefaults`, and a `pages` entry's
+`layouts` gives layouts names that `mk:layout`, `layout`, `layoutDefaults`, and a `pages` entry's
 `layout` can use, as they use the files in `app/layouts/`. Each is a component with an optional
 loader: a module path, or for a plugin, the loader itself:
 
@@ -222,7 +222,7 @@ const theme: MarkupKitPlugin = {
 };
 ```
 
-A page with `<meta name="hk:layout" content="home">` then renders inside it, and its loader's
+A page with `<meta name="mk:layout" content="home">` then renders inside it, and its loader's
 `data` reaches the page's loader as `parent`. A `default` entry wraps every page as `default.html`
 does. MarkupKit looks a name up in this order, and the first match is the layout:
 
@@ -374,9 +374,9 @@ export default defineConfig({ origin: 'https://example.com', base: '/docs/', rob
 ```
 
 It lists every page in the [manifest](#build-manifest)'s `routes` except an
-[`hk:alias`](/routes#the-page-head) URL or [alias page folder](#page-folders) page, whose page names its own URL as canonical, and a page
+[`mk:alias`](/routes#the-page-head) URL or [alias page folder](#page-folders) page, whose page names its own URL as canonical, and a page
 with `<meta name="robots" content="noindex">` (or `none`). Redirects and the not-found page are
-outside `routes`. A page with `hk:navigation="hidden"` is listed: that setting concerns navigation,
+outside `routes`. A page with `mk:navigation="hidden"` is listed: that setting concerns navigation,
 and `noindex` takes a page out of search results. A `sitemap.xml` in `public/` is the site's own,
 and the build keeps it.
 
@@ -534,7 +534,7 @@ const { base, routes, pages, redirects, files } = await readManifest('dist');
   Value: URLs of the shared modules the page imports.
 
 - Field: `redirects`
-  Value: Each redirect page the build wrote, from the [`redirects` option](/routes#redirects), pages' [`hk:redirect-from`](/routes#redirects) and loaders' [`redirect()`](/loaders#redirecting).
+  Value: Each redirect page the build wrote, from the [`redirects` option](/routes#redirects), pages' [`mk:redirect-from`](/routes#redirects) and loaders' [`redirect()`](/loaders#redirecting).
 
 - Field: `redirects[].from`
   Value: The old URL path, where the redirect page is.
@@ -543,7 +543,7 @@ const { base, routes, pages, redirects, files } = await readManifest('dist');
   Value: Where it sends readers: a URL path including `base`, or an absolute URL.
 
 - Field: `redirects[].status`
-  Value: The status a server answers with: 308 for the option and `hk:redirect-from`, and the loader's status for `redirect()`.
+  Value: The status a server answers with: 308 for the option and `mk:redirect-from`, and the loader's status for `redirect()`.
 
 - Field: `files`
   Value: Each file plugins' [`generate`](#generated-files) returned.

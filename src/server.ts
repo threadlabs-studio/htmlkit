@@ -251,6 +251,7 @@ export async function renderRoute(input: RenderInput): Promise<Rendered> {
   const attributes: Record<string, string>[] = [];
   let parent: Readonly<Record<string, unknown>> = Object.freeze({});
   let lang: string | undefined;
+  let dir: RenderedHead["dir"];
   // A pattern's URL with this request's parameters.
   const at = (pattern: string) => base + pattern.slice(1).split("/").filter(Boolean).map(segment => {
     const value = params[parameter(segment) ?? ""];
@@ -315,10 +316,12 @@ export async function renderRoute(input: RenderInput): Promise<Rendered> {
     catch (error) { return stopped(error); }
     if (result === null || typeof result !== "object" || Array.isArray(result)) throw new MarkupKitError("load() must return a LoaderResult object.", layer.origin);
     if (result.head !== undefined) {
-      if (Object.keys(result.head).some(name => name !== "lang")) {
-        throw new MarkupKitError("A loader's head sets only lang; a page or layout declares its <title> and <meta> in <defs>, bound to props its loader returns.", layer.origin);
+      if (Object.keys(result.head).some(name => name !== "lang" && name !== "dir")) {
+        throw new MarkupKitError("A loader's head sets only lang and dir; a page or layout declares its <title> and <meta> in <defs>, bound to props its loader returns.", layer.origin);
       }
+      if (result.head.dir !== undefined && !["ltr", "rtl", "auto"].includes(result.head.dir)) throw new MarkupKitError("head.dir must be ltr, rtl or auto.", layer.origin);
       lang = result.head.lang ?? lang;
+      dir = result.head.dir ?? dir;
     }
     // An action's props are the page's, over its loader's.
     if (submitted !== undefined && layer === layers.at(-1)) result = { ...result, props: { ...result.props, ...submitted } };
@@ -359,7 +362,7 @@ export async function renderRoute(input: RenderInput): Promise<Rendered> {
   finally { bridge?.close(); }
   signal.throwIfAborted();
   const { policy } = input;
-  const head: RenderedHead = { html: output.head, ...(lang === undefined ? {} : { lang }), ...(canonical === undefined ? {} : { canonical }),
+  const head: RenderedHead = { html: output.head, ...(lang === undefined ? {} : { lang }), ...(dir === undefined ? {} : { dir }), ...(canonical === undefined ? {} : { canonical }),
     ...(input.scripts.length === 0 ? {} : { scripts: input.scripts }), ...(policy === undefined ? {} : { csp: policy }) };
   return { kind: "page", status: response.status, headers: response.headers, body: output.html, css: output.css, head, layers: rendered,
     ...Object.keys(modules).length === 0 ? {} : { prepared: true } };

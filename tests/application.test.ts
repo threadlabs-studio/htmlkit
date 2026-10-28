@@ -15,6 +15,36 @@ afterEach(async () => { await Promise.all(roots.splice(0).map(root => rm(root, {
 async function app(): Promise<string> { const root = await fixture(); roots.push(root); return root; }
 
 describe("application platform", () => {
+  it("carries loader direction through rendering, payloads and static output with page-over-layout precedence", async () => {
+    const root = await app();
+    await write(root, "app/layouts/default.server.ts", 'export const load = () => ({ props: { brand: "MarkupKit" }, head: { lang: "ar", dir: "rtl" } });');
+    const application = await createApplication({ root });
+    try {
+      expect((await application.render("/")).html).toContain('<html lang="ar" dir="rtl">');
+      expect((await (await application.fetch(new Request("http://localhost/_markupkit/pages/payload.json"))).json()).head).toMatchObject({ lang: "ar", dir: "rtl" });
+    } finally { await application.close(); }
+    await buildApplication({ root });
+    expect(await readFile(join(root, "dist/index.html"), "utf8")).toContain('<html lang="ar" dir="rtl">');
+    await write(root, "app/pages/index.server.ts", 'export const load = ({ base }) => ({ props: { asset: base + "mark.svg" }, head: { dir: "ltr" } });');
+    const overridden = await createApplication({ root });
+    try { expect((await overridden.render("/")).html).toContain('<html lang="ar" dir="ltr">'); }
+    finally { await overridden.close(); }
+  }, 60_000);
+
+  it.each(["ltr", "rtl", "auto"])("accepts native document direction %s", async dir => {
+    const root = await app();
+    await write(root, "app/layouts/default.server.ts", `export const load = () => ({ props: { brand: "MarkupKit" }, head: { dir: ${JSON.stringify(dir)} } });`);
+    const application = await createApplication({ root });
+    try { expect((await application.render("/")).html).toContain(`<html lang="en" dir="${dir}">`); }
+    finally { await application.close(); }
+  });
+  it.each(["sideways", null, 1, true])("rejects invalid document direction %s at its loader", async dir => {
+    const root = await app();
+    await write(root, "app/layouts/default.server.ts", `export const load = () => ({ props: { brand: "MarkupKit" }, head: { dir: ${JSON.stringify(dir)} } });`);
+    const application = await createApplication({ root });
+    try { await expect(application.render("/")).rejects.toThrow(/default.server.ts.*head.dir must be ltr, rtl or auto/); }
+    finally { await application.close(); }
+  });
   it.each([false, true])("prepares a layout provider when a typed id prop supplies the native root id (delegated: %s)", async delegated => {
     const root = await retainedProviderFixture(delegated); roots.push(root);
     const application = await createApplication({ root, services: { read: (id: string) => "Product:" + id } });

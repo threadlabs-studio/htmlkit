@@ -13,7 +13,7 @@ export function documentHTML(body: string, head: RenderedHead, assets: PageAsset
   // Head scripts precede stylesheets, which would otherwise delay them until they load.
   // The policy precedes every script it governs.
   const policy = head.csp?.meta === undefined ? "" : `<meta http-equiv="Content-Security-Policy" content="${head.csp.meta.replace(/&/g, "&amp;").replace(/"/g, "&quot;")}">`;
-  return `<!doctype html>\n<html lang="${escapeHTML(head.lang ?? "en")}"><head><meta charset="utf-8">${policy}` +
+  return `<!doctype html>\n<html lang="${escapeHTML(head.lang ?? "en")}"${head.dir === undefined ? "" : ` dir="${escapeHTML(head.dir)}"`}><head><meta charset="utf-8">${policy}` +
     (head.scripts ?? []).map(script => `<script>${script}</script>`).join("") + head.html +
     assets.styles.map(href => `<link rel="stylesheet" href="${escapeHTML(href)}">`).join("") +
     assets.modules.map(src => `<script type="module" src="${escapeHTML(src)}"></script>`).join("") +
@@ -59,9 +59,9 @@ export function pagePayload(page: Pick<RenderedPage, "status" | "head" | "layers
   if (page.status !== 200 || !page.layers.every(layer =>
     (layer.state === undefined || exact(layer.state, new Set())) &&
     (layer.props === undefined || exact(layer.props, new Set())))) return undefined;
-  const { lang = "en", canonical } = page.head;
+  const { lang = "en", dir, canonical } = page.head;
   if (page.prepared && page.body === undefined) return undefined;
-  return { version: page.prepared ? 2 : 1, head: { lang, ...(canonical === undefined ? {} : { canonical }) },
+  return { version: page.prepared ? 2 : 1, head: { lang, ...(dir === undefined ? {} : { dir }), ...(canonical === undefined ? {} : { canonical }) },
     ...page.prepared ? { rendered: { body: page.body!, head: page.head.html } } : {},
     styles: assets.styles, modules: assets.modules, layers: page.layers };
 }

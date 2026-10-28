@@ -412,7 +412,7 @@ external scripts it needs. They read the component's props, state, and data:
   titles.
 
 Every document starts from `<meta charset="utf-8">` and `<meta name="viewport" content="width=device-width, initial-scale=1">`, which a page's own viewport meta replaces. A
-loader sets the document's language with `head: { lang }`; a loader's other values reach the head
+loader sets the document's language and optional native direction with `head: { lang, dir }`, where `dir` is `"ltr"`, `"rtl"` or `"auto"`. A page can override its layout's direction. When no loader sets a direction, the document uses the browser default, and navigation to it removes the preceding page's direction. A loader's other values reach the head
 as props.
 
 ### Declared scripts

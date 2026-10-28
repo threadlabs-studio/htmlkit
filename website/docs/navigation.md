@@ -173,15 +173,30 @@ For `01.guide/index.html` (titled "The guide"), `01.guide/01.install.html`, and 
 }
 ```
 
-| Field | Value |
-| --- | --- |
-| `label` | A page's label. A folder's is its index page's `hk:label`, then its static `<title>`, then the folder name; a group's is the text in its parentheses. |
-| `href`, `pageName` | The page's URL and component name, on a page or a folder with an index page. |
-| `current` | `"page"` for the page being rendered, otherwise `"false"`. |
-| `open` | `true` when the node or a node inside it is the current page. |
-| `depth` | The nesting level, `0` at the top. |
-| `order` | The node's number-and-dot prefix or `hk:order`, or `null`. |
-| `children` | The pages, folders, and groups inside it, in navigation order. |
+::: table
+
+- Field: `label`
+  Value: A page's label. A folder's is its index page's `hk:label`, then its static `<title>`, then the folder name; a group's is the text in its parentheses.
+
+- Field: `href`, `pageName`
+  Value: The page's URL and component name, on a page or a folder with an index page.
+
+- Field: `current`
+  Value: `"page"` for the page being rendered, otherwise `"false"`.
+
+- Field: `open`
+  Value: `true` when the node or a node inside it is the current page.
+
+- Field: `depth`
+  Value: The nesting level, `0` at the top.
+
+- Field: `order`
+  Value: The node's number-and-dot prefix or `hk:order`, or `null`.
+
+- Field: `children`
+  Value: The pages, folders, and groups inside it, in navigation order.
+
+:::
 
 A folder with an index page is that page's node, and its summary links to the page. `from` gives the
 tree under a folder, with the folder's own index page first. `<hk-nav>` also takes `navigation()`'s
@@ -217,10 +232,15 @@ export async function load({ breadcrumbs, pager }) {
 </template>
 ```
 
-| Component | Renders |
-| --- | --- |
-| `<hk-breadcrumbs>` | `<nav aria-label="Breadcrumb">` with an ordered list of links. The last is the current page, with `aria-current="page"`. Only pages that exist appear, so a folder without an `index` page is skipped. |
-| `<hk-pager>` | `<nav aria-label="Pages">` with `rel="prev"` and `rel="next"` links. Each starts with "Previous" or "Next", which `previous-text` and `next-text` change. A link is left out at either end. |
+::: table
+
+- Component: `<hk-breadcrumbs>`
+  Renders: `<nav aria-label="Breadcrumb">` with an ordered list of links. The last is the current page, with `aria-current="page"`. Only pages that exist appear, so a folder without an `index` page is skipped.
+
+- Component: `<hk-pager>`
+  Renders: `<nav aria-label="Pages">` with `rel="prev"` and `rel="next"` links. Each starts with "Previous" or "Next", which `previous-text` and `next-text` change. A link is left out at either end.
+
+:::
 
 `breadcrumbs({ from })` starts the trail at a folder instead of the home page, and `pager({ from })`
 moves only between the pages under it.
@@ -229,14 +249,27 @@ moves only between the pages under it.
 
 `navigation({ from: '/guide/' })` lists only the pages under `/guide/`. Each item has:
 
-| Field | Value |
-| --- | --- |
-| `href` | The page URL, including the site's base path. |
-| `label` | The link text. |
-| `current` | `"page"` for the page being rendered, otherwise `"false"`. |
-| `depth` | How deep the page is below `from`. |
-| `pageName` | The page's component name. |
-| `group` | On a page in a [group](#groups), the label of the innermost group holding it. |
+::: table
+
+- Field: `href`
+  Value: The page URL, including the site's base path.
+
+- Field: `label`
+  Value: The link text.
+
+- Field: `current`
+  Value: `"page"` for the page being rendered, otherwise `"false"`.
+
+- Field: `depth`
+  Value: How deep the page is below `from`.
+
+- Field: `pageName`
+  Value: The page's component name.
+
+- Field: `group`
+  Value: On a page in a [group](#groups), the label of the innermost group holding it.
+
+:::
 
 Dynamic pages appear once per value their loader's `entries()` lists. Outside loaders,
 `application.navigation({ from, current })` returns the same list.

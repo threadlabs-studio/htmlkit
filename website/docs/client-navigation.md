@@ -18,16 +18,33 @@ pages share, and swaps in the new page. There's nothing to set up.
 
 ## What stays and what changes
 
-| Part of the page | When you move to another page |
-| --- | --- |
-| A layout both pages use | Stays, with its state and module instance. An open menu stays open. |
-| That layout's props | Update from its loader. `<hk-nav>` marks the new page current. |
-| That layout's providers | A changed selected input adopts compatible prepared data without repeating the read. An existing read for the same input stays current. |
-| The page, and any layout only one page uses | Replaced. A fresh page starts from its loader's state. |
-| `<title>`, description, and other head declarations | Update to the new page's in one step, also inside a view transition. |
-| Declared scripts | Stay loaded. A script the next page declares loads once; none runs twice. |
-| Scroll position | Top of the page, or the `#fragment` in the link. Back and forward return to where you were. |
-| Keyboard focus | Starts from the top, as after a page load. |
+::: table
+
+- Part of the page: A layout both pages use
+  When you move to another page: Stays, with its state and module instance. An open menu stays open.
+
+- Part of the page: That layout's props
+  When you move to another page: Update from its loader. `<hk-nav>` marks the new page current.
+
+- Part of the page: That layout's providers
+  When you move to another page: A changed selected input adopts compatible prepared data without repeating the read. An existing read for the same input stays current.
+
+- Part of the page: The page, and any layout only one page uses
+  When you move to another page: Replaced. A fresh page starts from its loader's state.
+
+- Part of the page: `<title>`, description, and other head declarations
+  When you move to another page: Update to the new page's in one step, also inside a view transition.
+
+- Part of the page: Declared scripts
+  When you move to another page: Stay loaded. A script the next page declares loads once; none runs twice.
+
+- Part of the page: Scroll position
+  When you move to another page: Top of the page, or the `#fragment` in the link. Back and forward return to where you were.
+
+- Part of the page: Keyboard focus
+  When you move to another page: Starts from the top, as after a page load.
+
+:::
 
 Screen readers hear the new page's title. Back, forward, and reload work as usual, and every URL
 still loads directly.
@@ -41,14 +58,27 @@ input or explicitly refresh when the data should be read again.
 
 These links load normally, as they would without MarkupKit:
 
-| Link | Example |
-| --- | --- |
-| Another site | `<a href="https://example.com/">` |
-| Outside the app's base path | `/elsewhere/` when the base is `/docs/` |
-| A file rather than a page | `<a href="/report.pdf">` |
-| A download, or a new tab or window | `download`, `target="_blank"`, or Ctrl, ⌘, Shift, or middle click |
-| A `#fragment` on the same page | `<a href="#install">` |
-| Marked with `data-hk-reload` | `<a href="/print/" data-hk-reload>` |
+::: table
+
+- Link: Another site
+  Example: `<a href="https://example.com/">`
+
+- Link: Outside the app's base path
+  Example: `/elsewhere/` when the base is `/docs/`
+
+- Link: A file rather than a page
+  Example: `<a href="/report.pdf">`
+
+- Link: A download, or a new tab or window
+  Example: `download`, `target="_blank"`, or Ctrl, ⌘, Shift, or middle click
+
+- Link: A `#fragment` on the same page
+  Example: `<a href="#install">`
+
+- Link: Marked with `data-hk-reload`
+  Example: `<a href="/print/" data-hk-reload>`
+
+:::
 
 Forms submit in place as well: a `GET` form loads its page with the form's query, and a
 [form that posts](/forms#submitting-in-place) runs its page's action.
@@ -89,11 +119,25 @@ Or for one link, or every link inside an element:
 <nav data-hk-prefetch="visible">…</nav>
 ```
 
-| `prefetch` / `data-hk-prefetch` | Link on screen | Hover, focus, or touch |
-| --- | --- | --- |
-| `interaction` (default) | Shared code | The page's code and data |
-| `visible` | The page's code and data | The page's code and data |
-| `none` | Nothing | Nothing |
+::: table {header}
+
+- - `prefetch` / `data-hk-prefetch`
+  - Link on screen
+  - Hover, focus, or touch
+
+- - `interaction` (default)
+  - Shared code
+  - The page's code and data
+
+- - `visible`
+  - The page's code and data
+  - The page's code and data
+
+- - `none`
+  - Nothing
+  - Nothing
+
+:::
 
 `visible` suits small sites. Prefetching never runs a page's code in the browser; it only downloads
 it. For a page that [renders on each request](/loaders#rendering-on-each-request), loading its

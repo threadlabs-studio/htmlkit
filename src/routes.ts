@@ -5,7 +5,7 @@ import { basename, join, relative, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 import { configure, withPlugins, MarkupKitError, pluginLayouts, within, type PluginOptions } from "./config.js";
 import { applicationResource, pageDefinition } from "./resource.js";
-import type { ApplicationOptions, ApplicationRoute, EndpointRoute, MarkupKitPlugin, RouteGroup, RouteInput, RouteLayer } from "./types.js";
+import type { ApplicationOptions, ApplicationRoute, EndpointRoute, MarkupKitPlugin, PageSource, RouteGroup, RouteInput, RouteLayer } from "./types.js";
 
 /** The name of a [name], [...name] catch-all, or [[...name]] optional catch-all segment. */
 export function parameter(segment: string): string | undefined {
@@ -182,8 +182,11 @@ export async function discover(root: string, options: DiscoveryOptions) {
   }
 
   // A plugin page links to another page's first static URL, and serves the files it references.
+  const pages: readonly PageSource[] = Object.freeze(routes.filter(route => route.params.length === 0 && !route.notFound && !route.error)
+    .map(route => Object.freeze({ file: route.component, href: base + route.pattern.slice(1),
+      ...(route.aliasOf === undefined ? {} : { aliasOf: base + route.aliasOf.slice(1) }) })));
   const pageURLs = new Map<string, string>();
-  for (const route of routes) if (route.params.length === 0 && !route.notFound && !route.error && !pageURLs.has(route.component)) pageURLs.set(route.component, base + route.pattern.slice(1));
+  for (const page of pages) if (!pageURLs.has(page.file)) pageURLs.set(page.file, page.href);
   const realRoot = await realpath(root);
   const sources = new Map<string, string>();
   const files = new Map<string, string>();
@@ -196,7 +199,7 @@ export async function discover(root: string, options: DiscoveryOptions) {
     let text = await readFile(identity, "utf8");
     const compiler = compilers.get(pageExtension(component) ?? ".html");
     if (compiler !== undefined) {
-      text = await compiler.compile(text, { file: component, watch,
+      text = await compiler.compile(text, { file: component, watch, pages,
         href: target => pageURLs.get(resolve(target)),
         asset(file) {
           const absolute = resolve(file);

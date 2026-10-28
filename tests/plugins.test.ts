@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { afterEach, expect, it } from "vitest";
 import { withPlugins } from "../dist/config.js";
-import { buildApplication, createApplication, devApplication, loadConfig, type MarkupKitPlugin, type NavigationItem, type NavigationQuery } from "../dist/index.js";
+import { buildApplication, createApplication, devApplication, loadConfig, type MarkupKitPlugin, type NavigationItem, type NavigationQuery, type PageSource } from "../dist/index.js";
 import { write } from "./fixture.js";
 
 const roots: string[] = [];
@@ -219,3 +219,58 @@ it("makes a page directory's 404 page the not-found page only at /, with that di
   await write(root, "more/404.html", '<template component="page-other-404"><h1>Other</h1></template>');
   await expect(createApplication({ root, plugins: [notes(root)], pages: [{ dir: "more" }] })).rejects.toThrow(/Route conflict: .*404\.html \(\/404\/\) and .*404\.note/);
 });
+
+
+it("shares an immutable static page-source catalog before compilation, with native mount aliases", async () => {
+  const root = await site();
+  await write(root, "docs/04.later.note", "<article>Later</article>");
+  await write(root, "docs/404.note", "<article>Lost</article>");
+  await write(root, "app/pages/about.html", '<template component="catalog-about"><main>About</main></template>');
+  await write(root, "app/pages/account/[id].html", '<template component="catalog-account"><main>Account</main></template>');
+  const original = notes(root); const seen: (readonly PageSource[])[] = [];
+  const plugin: MarkupKitPlugin = { ...original, pages: { extensions: [".note"], compile(source, page) {
+    expect(page.pages).toBeDefined(); seen.push(page.pages);
+    return original.pages!.compile(source, page);
+  } } };
+  const application = await createApplication({ root, base: "/manual/", plugins: [plugin] });
+  try {
+    const catalog = seen[0]!;
+    expect(new Set(seen).size).toBe(1);
+    expect(Object.isFrozen(catalog)).toBe(true);
+    expect(catalog.every(Object.isFrozen)).toBe(true);
+    expect(catalog).toEqual(expect.arrayContaining([
+      { file: join(root, "docs/01.index.note"), href: "/manual/v/one/", aliasOf: "/manual/" },
+      { file: join(root, "docs/01.index.note"), href: "/manual/" },
+      { file: join(root, "docs/04.later.note"), href: "/manual/v/one/later/", aliasOf: "/manual/later/" },
+      { file: join(root, "app/pages/about.html"), href: "/manual/about/" },
+    ]));
+    expect(catalog.some(page => page.file.endsWith("404.note") || page.file.endsWith("[id].html"))).toBe(false);
+    // Metadata aliases are known only after compilation; the catalog names source mounts.
+    expect(catalog.some(page => page.href.endsWith("/start/"))).toBe(false);
+  } finally { await application.close(); }
+});
+
+it("refreshes page-source cache identity and membership after development edits", async () => {
+  const root = await site(); const original = notes(root);
+  const cache = new WeakMap<readonly PageSource[], string>();
+  const generations = new Set<readonly PageSource[]>();
+  const plugin: MarkupKitPlugin = { ...original, pages: { extensions: [".note"], async compile(source, page) {
+    expect(page.pages).toBeDefined(); generations.add(page.pages);
+    let catalog = cache.get(page.pages);
+    if (catalog === undefined) {
+      catalog = [...new Set(page.pages.map(entry => entry.file.split(/[/\\]/).at(-1)))].join(",");
+      cache.set(page.pages, catalog);
+    }
+    return (await original.pages!.compile(source, page)).replace("Install body", `Install body <aside>${catalog}</aside>`);
+  } } };
+  const server = await devApplication({ root, port: 0, plugins: [plugin] });
+  try {
+    const content = async () => (await fetch(server.url + "v/one/install/")).text();
+    expect(await content()).toContain("03.hidden.note");
+    await write(root, "docs/04.added.note", "<article>Added</article>");
+    await expect.poll(content, { timeout: 10_000 }).toContain("04.added.note");
+    await rm(join(root, "docs/03.hidden.note"));
+    await expect.poll(content, { timeout: 10_000 }).not.toContain("03.hidden.note");
+    expect(generations.size).toBeGreaterThanOrEqual(3);
+  } finally { await server.close(); }
+}, 30_000);

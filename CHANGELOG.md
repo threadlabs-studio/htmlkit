@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1
+
+- Support alternate-language head links that share a URL, including a language and x-default, through HTML Next alpha.70.
+
 ## 0.4.0
 
 - Expose immutable static page-source mounts to page compilers, including native alias-directory targets and deployment bases. Metadata caches can use the shared catalog identity and refresh on each discovery in development.

@@ -15,6 +15,21 @@ afterEach(async () => { await Promise.all(roots.splice(0).map(root => rm(root, {
 async function app(): Promise<string> { const root = await fixture(); roots.push(root); return root; }
 
 describe("application platform", () => {
+  it("keeps language and default alternates sharing one URL in rendering and static output", async () => {
+    const root = await app();
+    await write(root, "app/pages/languages.html", '<template component="language-page"><defs><link rel="alternate" hreflang="en" href="https://docs.example/kit/"><link rel="alternate" hreflang="x-default" href="https://docs.example/kit/"></defs><article>Languages</article></template>');
+    const application = await createApplication({ root, base: "/kit/" });
+    try {
+      const page = await application.render("/kit/languages/");
+      expect(page.html).toContain('hreflang="en" href="https://docs.example/kit/"');
+      expect(page.html).toContain('hreflang="x-default" href="https://docs.example/kit/"');
+    } finally { await application.close(); }
+    await buildApplication({ root, base: "/kit/" });
+    const html = await readFile(join(root, "dist/languages/index.html"), "utf8");
+    expect(html).toContain('hreflang="en" href="https://docs.example/kit/"');
+    expect(html).toContain('hreflang="x-default" href="https://docs.example/kit/"');
+  }, 60_000);
+
   it("carries loader direction through rendering, payloads and static output with page-over-layout precedence", async () => {
     const root = await app();
     await write(root, "app/layouts/default.server.ts", 'export const load = () => ({ props: { brand: "MarkupKit" }, head: { lang: "ar", dir: "rtl" } });');

@@ -167,8 +167,8 @@ importers:
   .:
     dependencies:
       '@nextwebwg/html-next':
-        specifier: 1.0.0-alpha.70
-        version: 1.0.0-alpha.70
+        specifier: '>=1.0.0-alpha.71'
+        version: 1.0.0-alpha.71
       parse5:
         specifier: 8.0.1
         version: 8.0.1
@@ -180,8 +180,8 @@ importers:
         version: 8.3.4(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1)
     devDependencies:
       '@threadlabs/looma':
-        specifier: 0.44.0
-        version: 0.44.0(@nextwebwg/html-next@1.0.0-alpha.70)(@threadlabs/markupkit@0.3.0(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))(markupress@0.14.4)(vite@8.3.4(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))
+        specifier: '>=0.44.0'
+        version: 0.44.0(@nextwebwg/html-next@1.0.0-alpha.71)(@threadlabs/markupkit@0.3.0(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))(markupress@0.14.4)(vite@8.3.4(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))
       '@types/node':
         specifier: 22.20.1
         version: 22.20.1
@@ -189,8 +189,8 @@ importers:
         specifier: 18.1.1
         version: 18.1.1
       markupress:
-        specifier: '>=0.14.4 <1'
-        version: 0.14.4(@nextwebwg/html-next@1.0.0-alpha.70)(@threadlabs/looma@0.44.0)(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)
+        specifier: '>=0.14.4'
+        version: 0.14.4(@nextwebwg/html-next@1.0.0-alpha.71)(@threadlabs/looma@0.44.0)(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)
       oxlint:
         specifier: 1.81.0
         version: 1.81.0
@@ -477,8 +477,8 @@ packages:
     engines: {node: '>=22.22.2 <23 || >=24.15 <25'}
     hasBin: true
 
-  '@nextwebwg/html-next@1.0.0-alpha.70':
-    resolution: {integrity: sha512-vcgZmtKCEnTK5IC8yO6AlLKCMxTj3lBN05jb12I+qW2CBXhO5UpcsPi7SSWbbQv3Qo4uU1RpRE7Rb6hkHngoDg==}
+  '@nextwebwg/html-next@1.0.0-alpha.71':
+    resolution: {integrity: sha512-bc+7lqrL5nBaQedPXtgdIvvz5u5mWvlJfDSV+mjmLzysvxcSOwvAGwP5hzEA0uEraubTlGE5yYb3WLk3oe/y2A==}
     engines: {node: '>=22.22.2 <23 || >=24.15 <25'}
     hasBin: true
 
@@ -2076,7 +2076,7 @@ snapshots:
       - '@noble/hashes'
       - canvas
 
-  '@nextwebwg/html-next@1.0.0-alpha.70':
+  '@nextwebwg/html-next@1.0.0-alpha.71':
     dependencies:
       '@dprint/formatter': 0.6.0
       '@dprint/typescript': 0.96.1
@@ -2364,9 +2364,9 @@ snapshots:
 
   '@shikijs/vscode-textmate@10.1.0': {}
 
-  '@threadlabs/looma@0.44.0(@nextwebwg/html-next@1.0.0-alpha.70)(@threadlabs/markupkit@0.3.0(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))(markupress@0.14.4)(vite@8.3.4(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))':
+  '@threadlabs/looma@0.44.0(@nextwebwg/html-next@1.0.0-alpha.71)(@threadlabs/markupkit@0.3.0(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))(markupress@0.14.4)(vite@8.3.4(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))':
     dependencies:
-      '@nextwebwg/html-next': 1.0.0-alpha.70
+      '@nextwebwg/html-next': 1.0.0-alpha.71
       dompurify: 3.4.15
       expressmark: 0.2.1
       highlight.js: 11.11.2
@@ -2375,7 +2375,7 @@ snapshots:
       markdown-it: 14.3.1
     optionalDependencies:
       '@threadlabs/markupkit': 0.3.0(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1)
-      markupress: 0.14.4(@nextwebwg/html-next@1.0.0-alpha.70)(@threadlabs/looma@0.44.0)(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)
+      markupress: 0.14.4(@nextwebwg/html-next@1.0.0-alpha.71)(@threadlabs/looma@0.44.0)(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)
       vite: 8.3.4(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1)
 
   '@threadlabs/markupkit@0.3.0(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1)':
@@ -2812,10 +2812,10 @@ snapshots:
 
   marked@18.1.1: {}
 
-  markupress@0.14.4(@nextwebwg/html-next@1.0.0-alpha.70)(@threadlabs/looma@0.44.0)(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15):
+  markupress@0.14.4(@nextwebwg/html-next@1.0.0-alpha.71)(@threadlabs/looma@0.44.0)(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15):
     dependencies:
-      '@nextwebwg/html-next': 1.0.0-alpha.70
-      '@threadlabs/looma': 0.44.0(@nextwebwg/html-next@1.0.0-alpha.70)(@threadlabs/markupkit@0.3.0(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))(markupress@0.14.4)(vite@8.3.4(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))
+      '@nextwebwg/html-next': 1.0.0-alpha.71
+      '@threadlabs/looma': 0.44.0(@nextwebwg/html-next@1.0.0-alpha.71)(@threadlabs/markupkit@0.3.0(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))(markupress@0.14.4)(vite@8.3.4(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))
       '@threadlabs/markupkit': 0.3.0(@types/node@22.20.1)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1)
       expressmark: 0.4.0
       minisearch: 7.2.0

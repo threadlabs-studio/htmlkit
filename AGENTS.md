@@ -12,3 +12,8 @@
 - Run focused tests and `corepack pnpm verify:inner` during development; run `corepack pnpm verify:pr` before handoff. Exercise packed installed consumers.
 - Run one foreground browser-test runner at a time with one worker. Keep CI jobs within 15 minutes and shard longer browser suites.
 - Publish through the npm environment using trusted publishing. The first publication requires an authenticated npm owner; deprecate `@nextwebwg/htmlkit` and `@threadlabs/htmlkit` only after the replacement is published and its consumer migration is verified.
+
+- Use minimum-version ranges for Threadlabs and Nextwebwg dependencies without a
+  speculative 1.0 or later major-version ceiling. Lockfiles record exact tested
+  resolutions. Restrict a range only for a demonstrated API requirement or verified
+  incompatible release, and record the reason.

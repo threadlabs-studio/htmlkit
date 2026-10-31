@@ -1,6 +1,6 @@
 {
   "name": "@threadlabs/markupkit",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "Build applications with HTML, CSS, and JavaScript, powered by HTML Next.",
   "license": "MIT",
   "type": "module",
@@ -18,6 +18,10 @@
     "./description": {
       "types": "./dist/description.d.ts",
       "import": "./dist/description.js"
+    },
+    "./navigation": {
+      "types": "./dist/navigation.d.ts",
+      "import": "./dist/navigation.js"
     }
   },
   "files": [
@@ -41,12 +45,13 @@
     "test:package": "vitest run tests/package.test.ts",
     "test:browser": "pnpm build && vitest run --config vitest.browser.config.ts",
     "verify:inner": "pnpm lint && pnpm typecheck && pnpm test",
-    "verify:pr": "pnpm verify:inner && pnpm build && pnpm test:package && pnpm build:site",
+    "verify:pr": "pnpm verify:inner && pnpm build && pnpm test:package && pnpm build:site && pnpm test:system-ui",
     "verify:release": "pnpm verify:pr",
-    "build:site": "markupress build --root website"
+    "build:site": "markupress build --root website",
+    "test:system-ui": "pnpm --filter @threadlabs/system-ui build && pnpm --filter @threadlabs/system-ui test"
   },
   "dependencies": {
-    "@nextwebwg/html-next": ">=1.0.0-alpha.71",
+    "@nextwebwg/html-next": ">=1.0.0-alpha.74",
     "typescript-compiler": "npm:@typescript/typescript6@6.0.2",
     "vite": "8.3.4",
     "parse5": "8.0.1"
@@ -59,8 +64,8 @@
     "marked": "18.1.1",
     "tsx": "4.23.15",
     "oxlint": "1.81.0",
-    "markupress": ">=0.14.4",
-    "@threadlabs/looma": ">=0.44.0"
+    "markupress": ">=0.14.6",
+    "@threadlabs/looma": ">=0.49.0"
   },
   "publishConfig": {
     "access": "public",

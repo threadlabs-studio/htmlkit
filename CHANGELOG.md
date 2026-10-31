@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.4
+
+- Add the `@threadlabs/system-ui` package with shared application models, HTML Next compositions, scoped web themes and explicit Apple/Android presenter registrations. Its initial release uses the alpha channel.
+- Expose page-departure integration through `@threadlabs/markupkit/navigation`. Editing applications can preserve the current URL and document while saving or confirming departure through native navigation precommit.
+- Qualify the package and documentation with the HTML Next-only Looma 0.49.0 and one HTML Next runtime. Compatible first-party releases use minimum-version ranges and package-level install-age exceptions.
+
 ## 0.4.3
 
 - Prepare library-owned component bindings that export the existing `connect`, `prepare` and `adopt` functions. Initial connection and rendered navigation retain matching server read identities, preserve caller values and avoid repeating accepted reads. Environment provider overrides require a raw `props` or `create` module.

@@ -61,3 +61,7 @@ Its Markdown dependency and theme live in the consumer, outside the platform run
 package. Its input is trusted, checked-in author content; it does not sanitize arbitrary Markdown.
 
 MarkupKit is MIT-licensed.
+
+## System UI
+
+The optional [`@threadlabs/system-ui`](packages/system-ui/README.md) package supplies shared editing and navigation models, HTML Next compositions over Looma, and native presenter registrations. Import its portable root for application-owned models, `/web` for browser bindings, `/markupkit` for page departure, and `/native` for explicitly selected native presenters. It lives in `packages/system-ui` and uses the alpha release channel.

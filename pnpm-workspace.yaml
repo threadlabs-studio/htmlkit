@@ -1,11 +1,15 @@
+packages:
+  - packages/*
 minimumReleaseAge: 1440
+# First-party releases are qualified here immediately after publication.
 minimumReleaseAgeExclude:
-  - '@nextwebwg/html-next@1.0.0-alpha.71'
-  - '@nextwebwg/html-next@1.0.0-alpha.70'
-  - '@threadlabs/looma@0.44.0'
-  - '@threadlabs/markupkit@0.3.0'
-  - 'markupress@0.14.4'
-  - 'expressmark@0.2.1 || 0.4.0'
-  - 'parseman@0.56.0'
+  - '@nextwebwg/html-next'
+  - '@threadlabs/looma'
+  - '@threadlabs/markupkit'
+  - 'markupress'
+  - 'expressmark'
+  - 'parseman'
+linkWorkspacePackages: true
+preferWorkspacePackages: true
 allowBuilds:
   esbuild: true

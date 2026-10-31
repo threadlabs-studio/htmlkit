@@ -1,6 +1,6 @@
 {
   "name": "@threadlabs/markupkit",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Build applications with HTML, CSS, and JavaScript, powered by HTML Next.",
   "license": "MIT",
   "type": "module",
@@ -46,7 +46,7 @@
     "build:site": "markupress build --root website"
   },
   "dependencies": {
-    "@nextwebwg/html-next": "1.0.0-alpha.70",
+    "@nextwebwg/html-next": ">=1.0.0-alpha.71",
     "typescript-compiler": "npm:@typescript/typescript6@6.0.2",
     "vite": "8.3.4",
     "parse5": "8.0.1"
@@ -59,8 +59,8 @@
     "marked": "18.1.1",
     "tsx": "4.23.15",
     "oxlint": "1.81.0",
-    "markupress": ">=0.14.4 <1",
-    "@threadlabs/looma": "0.44.0"
+    "markupress": ">=0.14.4",
+    "@threadlabs/looma": ">=0.44.0"
   },
   "publishConfig": {
     "access": "public",

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.2
+
+- Require HTML Next alpha.71’s corrected compiled projection/hydration behavior for component consumers. Admit newer HTML Next, Markupress and Looma releases through minimum-version ranges without a 1.0 or later major-version ceiling. The lockfile records the exact verified runtime and docs graph.
+
 ## 0.4.1
 
 - Support alternate-language head links that share a URL, including a language and x-default, through HTML Next alpha.70.

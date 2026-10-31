@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.3
+
+- Prepare library-owned component bindings that export the existing `connect`, `prepare` and `adopt` functions. Initial connection and rendered navigation retain matching server read identities, preserve caller values and avoid repeating accepted reads. Environment provider overrides require a raw `props` or `create` module.
+- Keep Vite dependency optimization enabled in development so transitive CommonJS dependencies load correctly.
+
 ## 0.4.2
 
 - Require HTML Next alpha.71’s corrected compiled projection/hydration behavior for component consumers. Admit newer HTML Next, Markupress and Looma releases through minimum-version ranges without a 1.0 or later major-version ceiling. The lockfile records the exact verified runtime and docs graph.

@@ -27,6 +27,7 @@ describe("standalone package contract", () => {
     const consumer = join(workspace, "markupkit-consumer");
     mkdirSync(join(consumer, "app/pages"), { recursive: true });
     mkdirSync(join(consumer, "app/layouts"), { recursive: true });
+    mkdirSync(join(consumer, "app/components"), { recursive: true });
     writeFileSync(join(consumer, "package.json"), JSON.stringify({ name: "markupkit-consumer", private: true, type: "module" }));
     execFileSync("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund", pack()], { cwd: consumer, shell: useCommandShell });
     writeFileSync(join(consumer, "markupkit.config.ts"), 'import { defineConfig, type MarkupKitPlugin, type PageSource } from "@threadlabs/markupkit"; const notes: MarkupKitPlugin = { name: "notes", pages: { extensions: [".note"], compile(_source, page) { const sources: readonly PageSource[] = page.pages; return `<template component="packed-note"><main>${sources.map(source => source.href).join(",")}</main></template>`; } } }; export default defineConfig({ base: "/packed/", plugins: [notes] });');
@@ -34,12 +35,25 @@ describe("standalone package contract", () => {
     writeFileSync(join(consumer, "app/layouts/default.server.ts"), 'export const load = async ({ navigation }) => ({ props: { navigation: await navigation() } });');
     writeFileSync(join(consumer, "app/pages/01.index.html"), '<meta name="mk:page" content="packed-page"><template component="packed-label"><strong>Packaged helper</strong></template><template component="packed-page"><defs><prop name="label" type="string" required>Label</prop><title>{$label}</title><link rel="alternate" hreflang="ar" href="https://docs.example/packed/"><link rel="alternate" hreflang="x-default" href="https://docs.example/packed/"></defs><section><h1 $value="$label"></h1><packed-label></packed-label></section></template>');
     writeFileSync(join(consumer, "app/pages/01.index.server.ts"), 'export const load = () => ({ props: { label: "Installed platform" }, head: { lang: "ar", dir: "rtl" } });');
+    writeFileSync(join(consumer, "app/components/prepared.html"), '<template component="packed-prepared" module="./prepared.js"><defs><prop name="label" type="string">Prepared value.</prop></defs><aside><p $await="$label">{$label}</p><p $else>Waiting.</p></aside></template>');
+    writeFileSync(join(consumer, "app/components/prepared.js"), `import { bindModule } from '@nextwebwg/html-next/bindings';
+      const instances = new WeakMap();
+      const binding = (host, source) => {
+        if (!instances.has(host.props)) instances.set(host.props, bindModule({ props: { label: { input: () => null, load: () => 'Packed prepared value' } } }, { browser: { source } }));
+        return instances.get(host.props);
+      };
+      export const connect = (host, context) => binding(host).connect(host, context);
+      export const prepare = (host, context) => binding(host).prepare(host, context);
+      export const adopt = (host, context) => binding(host, context.snapshot.source).adopt(host, context);`);
+    const pagePath = join(consumer, "app/pages/01.index.html");
+    writeFileSync(pagePath, '<link rel="component" href="../components/prepared.html">' + readFileSync(pagePath, "utf8").replace("<section>", "<section><packed-prepared></packed-prepared>"));
     writeFileSync(join(consumer, "app/pages/catalog.note"), "Catalog sources");
     const installed = join(consumer, "node_modules/@threadlabs/markupkit");
     const output = runBin(consumer, "markupkit", ["build"]);
     expect(output).toContain("Generated 2 pages");
     const html = readFileSync(join(consumer, "dist/index.html"), "utf8");
     expect(html).toContain("Installed platform");
+    expect(html).toContain(">Packed prepared value</p>");
     expect(html).toContain('hreflang="ar" href="https://docs.example/packed/"');
     expect(html).toContain('hreflang="x-default" href="https://docs.example/packed/"');
     expect(readFileSync(join(consumer, "dist/catalog/index.html"), "utf8")).toContain("/packed/catalog/");

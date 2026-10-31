@@ -1,6 +1,48 @@
-import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+/** A library-owned, host-aware binding exposes the existing prepare/adopt functions. */
+export async function preparedFixture(commonJS = false): Promise<string> {
+  const root = await mkdtemp(join(tmpdir(), "markupkit-prepared-"));
+  await write(root, "package.json", '{"name":"markupkit-prepared-fixture","private":true,"type":"module"}');
+  await mkdir(join(root, "node_modules/@nextwebwg"), { recursive: true });
+  await symlink(fileURLToPath(new URL("..", import.meta.resolve("@nextwebwg/html-next/bindings"))), join(root, "node_modules/@nextwebwg/html-next"), "dir");
+  for (const name of ["index", "fixture"]) await write(root, `app/pages/${name}.html`, `<template component="prepared-${name}" module="../../lib/entry.ts"><defs>
+    <meta name="mk:layout" content="none"><prop name="label" type="string">Prepared label.</prop>
+    <state name="query" type="string" value="A"></state><state name="draft" type="string" from="$label"></state>
+    <handler name="next"><set name="query" value="B"></set></handler></defs><main>
+    <h1 $await="$label">{$label}</h1><p $else>Waiting.</p><input bind:value="$draft">
+    <button type="button" on:click="next">Next</button><a href="/fixture/">Fixture</a><a href="/">Home</a></main></template>`);
+  await write(root, "app/pages/fixture.server.ts", 'export const load = () => ({ props: { label: "Caller" } });');
+  await write(root, "lib/entry.ts", 'export * from "./binding.ts";');
+  if (commonJS) {
+    await write(root, "node_modules/@example/commonjs/package.json", '{"name":"@example/commonjs","main":"index.cjs"}');
+    await write(root, "node_modules/@example/commonjs/index.cjs", "module.exports = value => value;");
+  }
+  await write(root, "lib/binding.ts", `${commonJS ? 'import format from "@example/commonjs";\n' : ''}import { bindModule } from "@nextwebwg/html-next/bindings";
+    const instances = new WeakMap();
+    function binding(host, source) {
+      let instance = instances.get(host.props);
+      if (!instance) {
+        instance = bindModule({ props: { label: { input: (_props, { state }) => state.query,
+          load(query, { phase }) {
+            if (phase === 'browser') (window.preparedReads ||= []).push(query);
+            return ${commonJS ? "format(phase + ':' + query)" : "phase + ':' + query"};
+          }
+        } }, connect(host) { host.root.dataset.connected = 'true'; } }, { browser: { source } });
+        instances.set(host.props, instance);
+      }
+      return instance;
+    }
+    export const { connect, prepare, adopt } = {
+      connect(host, context) { return binding(host).connect(host, context); },
+      prepare(host, options) { return binding(host).prepare(host, options); },
+      adopt(host, options) { return binding(host, options.snapshot.source).adopt(host, options); }
+    };`);
+  return root;
+}
 
 export async function write(root: string, file: string, contents: string): Promise<void> {
   const path = join(root, file);
